@@ -1,0 +1,43 @@
+package org.jenkins.event;
+
+import org.junit.Test;
+
+import java.util.Properties;
+
+import static org.junit.Assert.*;
+
+/**
+ * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
+ */
+public class MessageTest {
+    
+    @Test
+    public void test_item_Message() {
+        Message message = new ItemMessage(new MockItem("a"));
+        assertEquals("a", message.getName());
+    }
+    
+    @Test
+    public void test_containsAll() {
+        Message message = new SimpleMessage();
+        
+        message.setProperty("a", "a");
+        message.setProperty("b", "b");
+        message.setProperty("c", "c");
+
+        Properties filter = new Properties();
+        
+        assertTrue(message.containsAll(filter));
+        
+        filter.setProperty("a", "a");
+        assertTrue(message.containsAll(filter));
+        filter.setProperty("b", "b");
+        assertTrue(message.containsAll(filter));
+        filter.setProperty("c", "c");
+        assertTrue(message.containsAll(filter));
+        
+        // Set a diff value for a ... should cause it to not match
+        filter.setProperty("c", "--");
+        assertFalse(message.containsAll(filter));
+    }
+}
