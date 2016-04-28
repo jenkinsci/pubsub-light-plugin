@@ -40,4 +40,11 @@ public class MessageTest {
         filter.setProperty("c", "--");
         assertFalse(message.containsAll(filter));
     }
+    
+    @Test
+    public void test_toJSON() {
+        Message message = new SimpleMessage().set("a", "aVal");
+        assertEquals("{\"a\":\"aVal\"}", message.toJSON());
+        assertEquals("{\"a\":\"aVal\"}", message.toString());
+    }
 }

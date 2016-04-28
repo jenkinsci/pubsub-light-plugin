@@ -23,8 +23,13 @@
  */
 package org.jenkins.event;
 
+import net.sf.json.JSONObject;
+
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -122,5 +127,38 @@ abstract class Message extends Properties {
             }
         }
         return true;
+    }
+
+    /**
+     * Write the message properties to JSON.
+     * @return The message properties as a String.
+     */
+    public final @Nonnull String toJSON() {
+        StringWriter writer = new StringWriter();
+        try {
+            toJSON(writer);
+        } catch (IOException e) {
+            throw new IllegalStateException("Unexpected IOException while writing to a StringWriter.", e);
+        }
+        return writer.toString();
+    }
+
+    /**
+     * Write the message properties as JSON to a {@link Writer}. 
+     * @param writer The {@link Writer} instance.
+     * @throws IOException Error writing to the {@link Writer}.
+     */
+    public final void toJSON(@Nonnull Writer writer) throws IOException {
+        JSONObject json = JSONObject.fromObject(this);
+        json.write(writer);
+    }
+
+    /**
+     * Same as {@link #toJSON()}.
+     * @return The message properties as a JSON String.
+     */
+    @Override
+    public final String toString() {
+        return toJSON();
     }
 }
