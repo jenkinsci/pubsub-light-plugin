@@ -89,7 +89,7 @@ class GuavaMessageBus extends MessageBus {
         return channelBus;
     }
     
-    private class GuavaSubscriber {
+    private static class GuavaSubscriber {
         private ChannelSubscriber subscriber;
         private Authentication authentication;
         private final Properties eventFilter;
