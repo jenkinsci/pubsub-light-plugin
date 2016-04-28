@@ -91,12 +91,14 @@ class GuavaMessageBus extends MessageBus {
     
     private class GuavaSubscriber {
         private ChannelSubscriber subscriber;
-        private final Authentication authentication;
+        private Authentication authentication;
         private final Properties eventFilter;
 
-        public GuavaSubscriber(@Nonnull ChannelSubscriber subscriber, @Nonnull User user, Properties eventFilter) {
+        public GuavaSubscriber(@Nonnull ChannelSubscriber subscriber, User user, Properties eventFilter) {
             this.subscriber = subscriber;
-            this.authentication = user.impersonate();
+            if (user != null) {
+                this.authentication = user.impersonate();
+            }
             this.eventFilter = eventFilter;
         }
 
@@ -107,15 +109,17 @@ class GuavaMessageBus extends MessageBus {
                 return;
             }
             if (message instanceof AccessControlledMessage) {
-                final AccessControlledMessage accMessage = (AccessControlledMessage) message;
-                ACL.impersonate(authentication, new Runnable() {
-                    @Override
-                    public void run() {
-                        if (accMessage.hasPermission(accMessage.getRequiredPermission())) {
-                            subscriber.onMessage(message.clone());
+                if (authentication != null) {
+                    final AccessControlledMessage accMessage = (AccessControlledMessage) message;
+                    ACL.impersonate(authentication, new Runnable() {
+                        @Override
+                        public void run() {
+                            if (accMessage.hasPermission(accMessage.getRequiredPermission())) {
+                                subscriber.onMessage(message.clone());
+                            }
                         }
-                    }
-                });
+                    });
+                }
             } else {
                 subscriber.onMessage(message.clone());
             }
