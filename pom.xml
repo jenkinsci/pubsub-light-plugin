@@ -8,7 +8,7 @@
     <version>2.6</version>
   </parent>
   
-  <groupId>org.jenkins-ci</groupId>
+  <groupId>org.jenkins-ci.modules</groupId>
   <artifactId>jenkins-message-bus</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jenkins-module</packaging>
@@ -44,5 +44,21 @@
     </dependency>
     
   </dependencies>
+  
+  <build>
+    <plugins>
+        <plugin>
+          <groupId>org.jenkins-ci.tools</groupId>
+          <artifactId>maven-hpi-plugin</artifactId>
+          <extensions>true</extensions>
+          <configuration>
+            <showDeprecation>true</showDeprecation>
+            <contextPath>/jenkins</contextPath>
+            <!-- TODO specify ${java.level} when JENKINS-20679 implemented -->
+            <disabledTestInjection>true</disabledTestInjection>
+          </configuration>
+        </plugin>
+    </plugins>
+  </build>
   
 </project>
