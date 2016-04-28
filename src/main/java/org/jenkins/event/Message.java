@@ -151,6 +151,7 @@ abstract class Message extends Properties {
     public final void toJSON(@Nonnull Writer writer) throws IOException {
         JSONObject json = JSONObject.fromObject(this);
         json.write(writer);
+        writer.flush();
     }
 
     /**
