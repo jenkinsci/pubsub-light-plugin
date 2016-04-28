@@ -36,7 +36,7 @@ import java.util.Set;
 
 /**
  * {@link MessageBus} message instance.
- * <p/>
+ * <p>
  * Purposely chose a very simple {@link Properties} based extension for the message
  * type, so as to avoid marshal/unmarshal issues with more complex message type
  * (the {@link MessageBus} implementation could be distributed).
@@ -81,7 +81,7 @@ abstract class Message extends Properties {
 
     /**
      * Fluent property setter.
-     * <p/>
+     * <p>
      * Same as {@link #setProperty(String, String)}, but returns {@code this}.
      * 
      * @param name Property name.
@@ -95,7 +95,7 @@ abstract class Message extends Properties {
 
     /**
      * Clone this {@link Message} instance.
-     * <p/>
+     * <p>
      * Base implementation creates a {@link SimpleMessage} instance.
      * @return The clone.
      */
@@ -109,8 +109,8 @@ abstract class Message extends Properties {
      * Does this message contain all of the properties supplied in the properties
      * argument.
      * @param properties The properties to check for.
-     * @return {@link true} if this message contain all of the properties supplied
-     * in the properties argument, otherwise {@link false}.
+     * @return {@code true} if this message contain all of the properties supplied in the properties
+     * argument, otherwise {@code false}.
      */
     public boolean containsAll(@Nonnull Properties properties) {
         if (!properties.isEmpty()) {

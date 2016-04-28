@@ -41,7 +41,7 @@ import java.util.Properties;
 
 /**
  * Default {@link MessageBus} implementation.
- * <p/>
+ * <p>
  * An in-memory implementation based on <a href="https://github.com/google/guava/wiki/EventBusExplained">Google's Guava EventBus</a>.
  * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
