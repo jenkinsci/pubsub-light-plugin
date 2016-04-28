@@ -2,7 +2,6 @@ package org.jenkins.event;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.model.User;
@@ -11,13 +10,11 @@ import hudson.security.ACL;
 import hudson.security.AuthorizationMatrixProperty;
 import hudson.security.Permission;
 import hudson.security.ProjectMatrixAuthorizationStrategy;
-import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,17 +44,16 @@ public class GuavaMessageBusRunTest {
     
     @Test
     public void test_Run() throws Exception {
-        GuavaMessageBus bus = new GuavaMessageBus();
+        final MessageBus bus = MessageBus.getBus();
         User alice = User.get("alice");
         User bob = User.get("bob");
 
-        final ChannelPublisher jobPublisher = bus.newPublisher("jenkins.job");
         MockSubscriber aliceSubs = new MockSubscriber();
         MockSubscriber bobSubs = new MockSubscriber();
 
         // alice and bob both subscribe to job event messages ...
-        bus.subscribe("jenkins.job", aliceSubs, alice, null);
-        bus.subscribe("jenkins.job", bobSubs, bob, null);
+        bus.subscribe(JobMessage.CHANNEL_NAME, aliceSubs, alice, null);
+        bus.subscribe(JobMessage.CHANNEL_NAME, bobSubs, bob, null);
         
         // Create a job as Alice and restrict it to her
         // bob etc should not be able to see it.
@@ -74,7 +70,7 @@ public class GuavaMessageBusRunTest {
                     QueueTaskFuture<FreeStyleBuild> future = job.scheduleBuild2(0);
                     Run run = jenkins.assertBuildStatusSuccess(future);
                     
-                    jobPublisher.publish(new RunMessage(run));
+                    bus.publish(new RunMessage(run).setEventName("blah"));
                 } catch (Exception e) {
                     fail(e.getMessage());
                 }

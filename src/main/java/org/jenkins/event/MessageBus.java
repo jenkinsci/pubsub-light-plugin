@@ -26,7 +26,6 @@ package org.jenkins.event;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.User;
-import jenkins.model.TransientActionFactory;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -58,12 +57,34 @@ public abstract class MessageBus implements ExtensionPoint {
     }
 
     /**
-     * Create a new {@link ChannelPublisher} instance for the specified
+     * Publish a message on a channel.
+     * <p>
+     * The message instance must have the {@link Message#setChannelName(String) channel}
+     * and {@link Message#setEventName(String) event} name properties set on it.
+     *     
+     * @param message The message properties.
+     */
+    public void publish(@Nonnull Message message) throws MessageException {
+        String channelName = message.getChannelName();
+        String eventName = message.getEventName();
+        
+        if (channelName == null || channelName.length() == 0) {
+            throw new MessageException(String.format("Channel name property '%s' not set on the Message instance.", Message.CHANNEL_NAME_KEY));
+        }
+        if (eventName == null || eventName.length() == 0) {
+            throw new MessageException(String.format("Event name property '%s' not set on the Message instance.", Message.EVENT_NAME_KEY));
+        }
+
+        publisher(channelName).publish(message);
+    }
+
+    /**
+     * Get/create a new {@link ChannelPublisher} instance for the specified
      * channel name.
      * @param channelName       The channel name.
      * @return The {@link ChannelPublisher} instance.
      */
-    public abstract @Nonnull ChannelPublisher newPublisher(@Nonnull String channelName);
+    protected abstract @Nonnull ChannelPublisher publisher(@Nonnull String channelName);
 
     /**
      * Subscribe to events on the specified event channel.

@@ -57,7 +57,7 @@ public class GuavaLoadTester {
         
         try {
             // publisher...
-            ChannelPublisher publisher = bus.newPublisher("channel.a");
+            ChannelPublisher publisher = bus.publisher("channel.a");
 
             // subscribers...
             List<MockSubscriber> subscribers = new ArrayList<>();

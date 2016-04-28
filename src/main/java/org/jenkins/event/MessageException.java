@@ -23,55 +23,13 @@
  */
 package org.jenkins.event;
 
-import hudson.model.Job;
-import hudson.security.Permission;
-
-import javax.annotation.Nonnull;
-
 /**
- * Jenkins {@link Job} domain model {@link MessageBus} message instance.
- *
+ * Message exception.
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-abstract class JobMessage extends AccessControlledMessage {
+public class MessageException extends Exception {
     
-    public static final String CHANNEL_NAME = "job";
-    
-    public static final String JOB_NAME_KEY = "jenkins.jobName";
-
-    /**
-     * Create a Hob message instance.
-     */
-    JobMessage() {
-        super();
-        setChannelName(CHANNEL_NAME);
-    }
-
-    /**
-     * Create a message instance associated with a Jenkins {@link Job}.
-     * @param job The Jenkins {@link Job} that this message instance is to be associated.
-     */
-    public JobMessage(@Nonnull Job job) {
-        setProperty(JOB_NAME_KEY, job.getFullName());
-    }
-
-    @Override
-    public final String getChannelName() {
-        return CHANNEL_NAME;
-    }
-
-    @Override
-    public final Message setChannelName(String name) {
-        return super.setChannelName(CHANNEL_NAME);
-    }
-    
-    public String getJobName() {
-        return getProperty(JOB_NAME_KEY);
-    }
-
-    @Nonnull
-    @Override
-    protected Permission getRequiredPermission() {
-        return Job.READ;
+    public MessageException(String message) {
+        super(message);
     }
 }

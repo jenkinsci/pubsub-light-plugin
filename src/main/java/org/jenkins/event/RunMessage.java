@@ -39,6 +39,9 @@ import javax.annotation.Nonnull;
 public final class RunMessage extends JobMessage {
     
     private static final long serialVersionUID = -1L;
+
+    public static final String RUN_START_KEY = "run.start";
+    public static final String RUN_END_KEY = "run.end";
     
     transient Run messageRun;
     private transient boolean messageRunLookupComplete = false;

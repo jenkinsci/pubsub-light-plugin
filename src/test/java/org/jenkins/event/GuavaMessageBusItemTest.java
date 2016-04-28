@@ -28,8 +28,8 @@ public class GuavaMessageBusItemTest {
         
         MessageBus x = MessageBus.getBus();
 
-        ChannelPublisher jobPublisher = bus.newPublisher("jenkins.job");
-        ChannelPublisher slavePublisher = bus.newPublisher("jenkins.slave");
+        ChannelPublisher jobPublisher = bus.publisher("jenkins.job");
+        ChannelPublisher slavePublisher = bus.publisher("jenkins.slave");
         MockSubscriber subs1 = new MockSubscriber();
         MockSubscriber subs2 = new MockSubscriber();
 
@@ -53,7 +53,7 @@ public class GuavaMessageBusItemTest {
         GuavaMessageBus bus = new GuavaMessageBus();
         User alice = User.get("alice");
 
-        ChannelPublisher jobPublisher = bus.newPublisher("jenkins.job");
+        ChannelPublisher jobPublisher = bus.publisher("jenkins.job");
         MockSubscriber subs = new MockSubscriber();
 
         // Subscribers ...
@@ -73,7 +73,7 @@ public class GuavaMessageBusItemTest {
         GuavaMessageBus bus = new GuavaMessageBus();
         User alice = User.get("alice");
 
-        ChannelPublisher jobPublisher = bus.newPublisher("jenkins.job");
+        ChannelPublisher jobPublisher = bus.publisher("jenkins.job");
         MockSubscriber subs = new MockSubscriber();
 
         bus.subscribe("jenkins.job", subs, alice, null);

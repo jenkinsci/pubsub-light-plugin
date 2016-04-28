@@ -53,7 +53,7 @@ class GuavaMessageBus extends MessageBus {
     
     @Nonnull
     @Override
-    public ChannelPublisher newPublisher(@Nonnull String channelName) {
+    protected ChannelPublisher publisher(@Nonnull String channelName) {
         final EventBus channelBus = getChannelBus(channelName);
         return new ChannelPublisher() {
             public void publish(@Nonnull Message message) {

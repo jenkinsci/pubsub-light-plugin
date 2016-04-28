@@ -7,7 +7,6 @@ implementation based on [Google's Guava EventBus](https://github.com/google/guav
 
 ```java
 MessageBus bus = MessageBus.getBus();
-ChannelPublisher jobPublisher = bus.newPublisher("jenkins.job");
 
 jobPublisher.publish(new RunMessage(run));
 ```
@@ -17,19 +16,18 @@ jobPublisher.publish(new RunMessage(run));
 ```java
 MessageBus bus = MessageBus.getBus();
 
-bus.subscribe("jenkins.job", new ChannelSubscriber() {
-    @Override
-    public void onMessage(@Nonnull Message message) {
-        if (message instanceof JobMessage) {
-            JobMessage jobMessage = (JobMessage)message;
-            String jobName = jobMessage.getJobName();
-            
+bus.subscribe(RunMessage.CHANNEL_NAME, new ChannelSubscriber() {
+        @Override
+        public void onMessage(@Nonnull Message message) {
             if (message instanceof RunMessage) {
+                RunMessage jobMessage = (RunMessage)message;
+                String jobName = jobMessage.getJobName();
                 String runId = message.getId();
                 
                 // etc etc
             }
         }
-    }
-}, User.current(), null);
+    }, 
+    User.current(), // Used for authentication 
+    null);          // Event filter (none here)
 ```

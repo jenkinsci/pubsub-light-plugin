@@ -52,8 +52,8 @@ import java.util.Set;
  */
 abstract class Message extends Properties {
 
-    public static final String CHANNEL_KEY = "jenkins.channel";
-    public static final String EVENT_KEY = "jenkins.event";
+    public static final String CHANNEL_NAME_KEY = "jenkins.channel";
+    public static final String EVENT_NAME_KEY = "jenkins.event";
     
     public static final String OBJECT_NAME_KEY = "jenkins.object.name";
     public static final String OBJECT_ID_KEY = "jenkins.object.id";
@@ -93,13 +93,50 @@ abstract class Message extends Properties {
      * Fluent property setter.
      * <p>
      * Same as {@link #setProperty(String, String)}, but returns {@code this}.
+     * Also checks for {@code null} name and value args.
      * 
      * @param name Property name.
      * @param value Property value.
      * @return {@code this} message instance.
      */
     public Message set(String name, String value) {
-        setProperty(name, value);
+        if (name != null && value != null) {
+            setProperty(name, value);
+        }
+        return this;
+    }
+
+    /**
+     * Get the channel name for the message.
+     * @return The channel name for the message, or {@code null} if none set.
+     */
+    public String getChannelName() {
+        return getProperty(CHANNEL_NAME_KEY);
+    }
+    
+    /**
+     * Set the channel name for the message.
+     * @param name The channel name for the message.
+     */
+    public Message setChannelName(String name) {
+        set(CHANNEL_NAME_KEY, name);
+        return this;
+    }
+    
+    /**
+     * Get the event name for the message.
+     * @return The event name for the message, or {@code null} if none set.
+     */
+    public String getEventName() {
+        return getProperty(EVENT_NAME_KEY);
+    }
+    
+    /**
+     * Set the event name for the message.
+     * @param name The event name for the message.
+     */
+    public Message setEventName(String name) {
+        set(EVENT_NAME_KEY, name);
         return this;
     }
 
