@@ -57,9 +57,9 @@ public final class RunMessage extends JobMessage {
     public RunMessage(@Nonnull Run run) {
         super(run.getParent());
         this.messageRun = run;
-        setProperty(NAME_KEY, run.getDisplayName());
-        setProperty(ID_KEY, run.getId());
-        setProperty(URL_KEY, run.getUrl());
+        setProperty(OBJECT_NAME_KEY, run.getDisplayName());
+        setProperty(OBJECT_ID_KEY, run.getId());
+        setProperty(OBJECT_URL_KEY, run.getUrl());
     }
 
     /**
@@ -90,7 +90,7 @@ public final class RunMessage extends JobMessage {
             if (jobName != null) {
                 Job job = (Job) jenkins.getItemByFullName(jobName);
                 if (job != null) {
-                    String buildId = getId();
+                    String buildId = getObjectId();
                     if (buildId != null) {
                         messageRun = job.getBuild(buildId);
                     }

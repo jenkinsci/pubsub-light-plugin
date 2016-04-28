@@ -40,14 +40,24 @@ import java.util.Set;
  * Purposely chose a very simple {@link Properties} based extension for the message
  * type, so as to avoid marshal/unmarshal issues with more complex message type
  * (the {@link MessageBus} implementation could be distributed).
+ * 
+ * <h1>Event property namespaces</h1>
+ * Event property names are opaque {@link String}s. Any {@link String} is valid, but
+ * we do recommend using valid Java package identifier type names e.g. "a.b.c". 
+ * This will help to avoid name collisions.
+ * <p>
+ * <strong>NOTE</strong> that the "jenkins" namespace prefix of reserved.
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 abstract class Message extends Properties {
 
-    public static final String NAME_KEY = "jenkinsName";
-    public static final String ID_KEY = "jenkinsId";
-    public static final String URL_KEY = "url";
+    public static final String CHANNEL_KEY = "jenkins.channel";
+    public static final String EVENT_KEY = "jenkins.event";
+    
+    public static final String OBJECT_NAME_KEY = "jenkins.object.name";
+    public static final String OBJECT_ID_KEY = "jenkins.object.id";
+    public static final String OBJECT_URL_KEY = "jenkins.object.url";
     
     /**
      * Create a plain message instance.
@@ -61,10 +71,10 @@ abstract class Message extends Properties {
      *
      * @return The Jenkins domain model object name (full name) that this message instance is
      * associated with.
-     * @see #NAME_KEY
+     * @see #OBJECT_NAME_KEY
      */
-    @CheckForNull protected String getName() {
-        return getProperty(NAME_KEY);
+    @CheckForNull protected String getObjectName() {
+        return getProperty(OBJECT_NAME_KEY);
     }
 
     /**
@@ -73,10 +83,10 @@ abstract class Message extends Properties {
      *
      * @return The Jenkins domain model object Id that this message instance is
      * associated with, or {@code null} if no id was set on this message instance.
-     * @see #ID_KEY
+     * @see #OBJECT_ID_KEY
      */
-    @CheckForNull protected String getId() {
-        return getProperty(ID_KEY);
+    @CheckForNull protected String getObjectId() {
+        return getProperty(OBJECT_ID_KEY);
     }
 
     /**

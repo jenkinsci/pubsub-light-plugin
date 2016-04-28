@@ -30,7 +30,6 @@ import jenkins.model.Jenkins;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import java.util.Properties;
 
 /**
  * Jenkins {@link Item} domain model {@link MessageBus} message instance.
@@ -58,8 +57,8 @@ public final class ItemMessage extends AccessControlledMessage {
      */
     public ItemMessage(@Nonnull Item messageItem) {
         this.messageItem = messageItem;
-        setProperty(NAME_KEY, messageItem.getFullName());
-        setProperty(URL_KEY, messageItem.getUrl());
+        setProperty(OBJECT_NAME_KEY, messageItem.getFullName());
+        setProperty(OBJECT_URL_KEY, messageItem.getUrl());
     }
 
     /**
@@ -92,7 +91,7 @@ public final class ItemMessage extends AccessControlledMessage {
         try {
             Jenkins jenkins = Jenkins.getInstance();
 
-            String itemName = getName();
+            String itemName = getObjectName();
             if (itemName != null) {
                 messageItem = jenkins.getItemByFullName(itemName);
             }

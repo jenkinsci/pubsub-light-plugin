@@ -78,7 +78,7 @@ abstract class AccessControlledMessage extends Message implements AccessControll
      */
     public void checkPermission(@Nonnull Permission permission) throws AccessDeniedException {
         if (isUnknownToJenkins()) {
-            throw new AccessDeniedException(String.format("Jenkins Item '%s' Unknown.", getName()));
+            throw new AccessDeniedException(String.format("Jenkins Object '%s' Unknown.", getObjectName()));
         }
         getACL().checkPermission(permission);
     }

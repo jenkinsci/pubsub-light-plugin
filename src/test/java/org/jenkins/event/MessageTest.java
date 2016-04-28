@@ -14,7 +14,7 @@ public class MessageTest {
     @Test
     public void test_item_Message() {
         Message message = new ItemMessage(new MockItem("a"));
-        assertEquals("a", message.getName());
+        assertEquals("a", message.getObjectName());
     }
     
     @Test
