@@ -33,7 +33,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
- * {@link AccessControlled} {@link MessageBus} message instance.
+ * {@link AccessControlled} {@link PubsubBus} message instance.
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */

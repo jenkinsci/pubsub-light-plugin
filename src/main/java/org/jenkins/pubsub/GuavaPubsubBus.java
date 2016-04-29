@@ -36,13 +36,13 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * Default {@link MessageBus} implementation.
+ * Default {@link PubsubBus} implementation.
  * <p>
  * An in-memory implementation based on <a href="https://github.com/google/guava/wiki/EventBusExplained">Google's Guava EventBus</a>.
  * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-class GuavaMessageBus extends MessageBus {
+class GuavaPubsubBus extends PubsubBus {
     
     private Map<String, EventBus> channels = new CopyOnWriteMap.Hash<String, EventBus>();
     private Map<ChannelSubscriber, GuavaSubscriber> subscribers = new CopyOnWriteMap.Hash<ChannelSubscriber, GuavaSubscriber>();

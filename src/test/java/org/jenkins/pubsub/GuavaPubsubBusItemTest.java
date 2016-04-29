@@ -11,7 +11,7 @@ import static org.junit.Assert.*;
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class GuavaMessageBusItemTest {
+public class GuavaPubsubBusItemTest {
     
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();
@@ -23,10 +23,10 @@ public class GuavaMessageBusItemTest {
 
     @Test
     public void test_non_filtered() {
-        GuavaMessageBus bus = new GuavaMessageBus();
+        GuavaPubsubBus bus = new GuavaPubsubBus();
         User alice = User.get("alice");
         
-        MessageBus x = MessageBus.getBus();
+        PubsubBus x = PubsubBus.getBus();
 
         ChannelPublisher jobPublisher = bus.publisher("jenkins.job");
         ChannelPublisher slavePublisher = bus.publisher("jenkins.slave");
@@ -50,7 +50,7 @@ public class GuavaMessageBusItemTest {
 
     @Test
     public void test_filtered() {
-        GuavaMessageBus bus = new GuavaMessageBus();
+        GuavaPubsubBus bus = new GuavaPubsubBus();
         User alice = User.get("alice");
 
         ChannelPublisher jobPublisher = bus.publisher("jenkins.job");
@@ -70,7 +70,7 @@ public class GuavaMessageBusItemTest {
 
     @Test
     public void test_has_permissions() {
-        GuavaMessageBus bus = new GuavaMessageBus();
+        GuavaPubsubBus bus = new GuavaPubsubBus();
         User alice = User.get("alice");
 
         ChannelPublisher jobPublisher = bus.publisher("jenkins.job");

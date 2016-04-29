@@ -52,7 +52,7 @@ public class GuavaLoadTester {
     //
 
     public static void main(String[] args) throws IOException {
-        MessageBus bus = new GuavaMessageBus();
+        PubsubBus bus = new GuavaPubsubBus();
         final Writer testWriter = new FileWriter("./target/guava-load-write.txt", false);
         
         try {

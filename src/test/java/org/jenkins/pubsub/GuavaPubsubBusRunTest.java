@@ -28,7 +28,7 @@ import static org.junit.Assert.fail;
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class GuavaMessageBusRunTest {
+public class GuavaPubsubBusRunTest {
     
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();
@@ -44,7 +44,7 @@ public class GuavaMessageBusRunTest {
     
     @Test
     public void test_Run() throws Exception {
-        final MessageBus bus = MessageBus.getBus();
+        final PubsubBus bus = PubsubBus.getBus();
         User alice = User.get("alice");
         User bob = User.get("bob");
 

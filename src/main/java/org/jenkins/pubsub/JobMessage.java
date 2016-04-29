@@ -29,7 +29,7 @@ import hudson.security.Permission;
 import javax.annotation.Nonnull;
 
 /**
- * Jenkins {@link Job} domain model {@link MessageBus} message instance.
+ * Jenkins {@link Job} domain model {@link PubsubBus} message instance.
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */

@@ -35,25 +35,26 @@ import java.util.Properties;
  * Abstract message bus.
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public abstract class MessageBus implements ExtensionPoint {
+public abstract class PubsubBus implements ExtensionPoint {
     
-    private static MessageBus messageBus;
+    private static PubsubBus pubsubBus;
     
     /**
-     * Get the installed {@link MessageBus} implementation.
-     * @return The installed {@link MessageBus} implementation, or default
+     * Get the installed {@link PubsubBus} implementation.
+     * @return The installed {@link PubsubBus} implementation, or default
      * implementation if none are found.
      */
-    public synchronized static @Nonnull MessageBus getBus() {
-        if (messageBus == null) {
-            ExtensionList<MessageBus> installedBusImpls = ExtensionList.lookup(MessageBus.class);
+    public synchronized static @Nonnull
+    PubsubBus getBus() {
+        if (pubsubBus == null) {
+            ExtensionList<PubsubBus> installedBusImpls = ExtensionList.lookup(PubsubBus.class);
             if (!installedBusImpls.isEmpty()) {
-                messageBus = installedBusImpls.get(0);
+                pubsubBus = installedBusImpls.get(0);
             } else {
-                messageBus = new GuavaMessageBus();
+                pubsubBus = new GuavaPubsubBus();
             }
         }
-        return messageBus;
+        return pubsubBus;
     }
 
     /**

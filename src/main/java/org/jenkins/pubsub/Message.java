@@ -35,11 +35,11 @@ import java.util.Properties;
 import java.util.Set;
 
 /**
- * {@link MessageBus} message instance.
+ * {@link PubsubBus} message instance.
  * <p>
  * Purposely chose a very simple {@link Properties} based extension for the message
  * type, so as to avoid marshal/unmarshal issues with more complex message type
- * (the {@link MessageBus} implementation could be distributed).
+ * (the {@link PubsubBus} implementation could be distributed).
  * 
  * <h1>Event property namespaces</h1>
  * Event property names are opaque {@link String}s. Any {@link String} is valid, but

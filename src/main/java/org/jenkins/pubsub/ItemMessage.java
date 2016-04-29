@@ -32,7 +32,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
- * Jenkins {@link Item} domain model {@link MessageBus} message instance.
+ * Jenkins {@link Item} domain model {@link PubsubBus} message instance.
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
