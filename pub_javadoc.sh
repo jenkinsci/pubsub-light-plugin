@@ -1,5 +1,7 @@
 #!/bin/bash
 
+mvn javadoc:javadoc -Dshow=package
+
 pushd target/site/apidocs
 
 git init
