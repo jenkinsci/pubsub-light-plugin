@@ -9,11 +9,11 @@
   </parent>
   
   <groupId>org.jenkins-ci.modules</groupId>
-  <artifactId>jenkins-message-bus</artifactId>
+  <artifactId>jenkins-pubsub-bus</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jenkins-module</packaging>
 
-  <name>message-bus</name>
+  <name>jenkins-pubsub-bus</name>
   <url>http://maven.apache.org</url>
 
   <properties>
