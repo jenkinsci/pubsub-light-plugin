@@ -31,7 +31,8 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
- * Abstract message bus.
+ * Abstract Pub-sub bus.
+ * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public abstract class PubsubBus implements ExtensionPoint {

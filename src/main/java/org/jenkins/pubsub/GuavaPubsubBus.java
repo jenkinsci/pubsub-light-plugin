@@ -43,6 +43,9 @@ import java.util.concurrent.TimeUnit;
  * Default {@link PubsubBus} implementation.
  * <p>
  * An in-memory implementation based on <a href="https://github.com/google/guava/wiki/EventBusExplained">Google's Guava EventBus</a>.
+ * <p>
+ * Use system property <strong><code>org.jenkins.pubsub.GuavaPubsubBus.MAX_THREADS</code></strong> to configure the 
+ * thread pool size used by the bus. The default value is 5 threads.
  * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
