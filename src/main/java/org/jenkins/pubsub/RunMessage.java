@@ -36,7 +36,7 @@ import javax.annotation.Nonnull;
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public final class RunMessage extends JobMessage<RunMessage> {
+public final class RunMessage extends JobChannelMessage<RunMessage> {
     
     private static final long serialVersionUID = -1L;
 

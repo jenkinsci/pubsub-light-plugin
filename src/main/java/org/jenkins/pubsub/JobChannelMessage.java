@@ -33,7 +33,7 @@ import javax.annotation.Nonnull;
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-abstract class JobMessage<T extends JobMessage> extends AccessControlledMessage {
+abstract class JobChannelMessage<T extends JobChannelMessage> extends AccessControlledMessage {
     
     public static final String CHANNEL_NAME = "job";
     
@@ -42,7 +42,7 @@ abstract class JobMessage<T extends JobMessage> extends AccessControlledMessage 
     /**
      * Create a Hob message instance.
      */
-    JobMessage() {
+    JobChannelMessage() {
         super();
         setChannelName(CHANNEL_NAME);
     }
@@ -51,7 +51,7 @@ abstract class JobMessage<T extends JobMessage> extends AccessControlledMessage 
      * Create a message instance associated with a Jenkins {@link Job}.
      * @param job The Jenkins {@link Job} that this message instance is to be associated.
      */
-    public JobMessage(@Nonnull Job job) {
+    public JobChannelMessage(@Nonnull Job job) {
         setProperty(JOB_NAME_KEY, job.getFullName());
     }
 
