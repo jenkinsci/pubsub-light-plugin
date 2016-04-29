@@ -78,6 +78,7 @@ class GuavaPubsubBus extends PubsubBus {
     private EventBus getChannelBus(String channelName) {
         EventBus channelBus = channels.get(channelName);
         if (channelBus == null) {
+            // TODO: consider using AsyncEventBus
             channelBus = new EventBus(channelName);
             channels.put(channelName, channelBus);
         }
