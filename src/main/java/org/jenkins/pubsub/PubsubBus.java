@@ -107,4 +107,9 @@ public abstract class PubsubBus implements ExtensionPoint {
      */
     public abstract void unsubscribe(@Nonnull String channelName,
                                        @Nonnull ChannelSubscriber subscriber);
+
+    /**
+     * Shutdown the bus.
+     */
+    public abstract void shutdown();
 }

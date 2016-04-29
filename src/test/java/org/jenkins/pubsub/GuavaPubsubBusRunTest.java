@@ -45,48 +45,54 @@ public class GuavaPubsubBusRunTest {
     @Test
     public void test_Run() throws Exception {
         final PubsubBus bus = PubsubBus.getBus();
-        User alice = User.get("alice");
-        User bob = User.get("bob");
+        try {
+            User alice = User.get("alice");
+            User bob = User.get("bob");
 
-        MockSubscriber aliceSubs = new MockSubscriber();
-        MockSubscriber bobSubs = new MockSubscriber();
+            MockSubscriber aliceSubs = new MockSubscriber();
+            MockSubscriber bobSubs = new MockSubscriber();
 
-        // alice and bob both subscribe to job event messages ...
-        bus.subscribe(Events.JobChannel.NAME, aliceSubs, alice, null);
-        bus.subscribe(Events.JobChannel.NAME, bobSubs, bob, null);
-        
-        // Create a job as Alice and restrict it to her
-        // bob etc should not be able to see it.
-        ACL.impersonate(alice.impersonate(), new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    FreeStyleProject job = jenkins.createFreeStyleProject("a-job");
-                    
-                    Map<Permission,Set<String>> perms = new HashMap<>();
-                    perms.put(Job.CREATE, Collections.singleton("alice"));
-                    job.addProperty(new AuthorizationMatrixProperty(perms));
-                    
-                    QueueTaskFuture<FreeStyleBuild> future = job.scheduleBuild2(0);
-                    Run run = jenkins.assertBuildStatusSuccess(future);
-                    
-                    bus.publish(new RunMessage(run).setEventName("blah"));
-                } catch (Exception e) {
-                    fail(e.getMessage());
+            // alice and bob both subscribe to job event messages ...
+            bus.subscribe(Events.JobChannel.NAME, aliceSubs, alice, null);
+            bus.subscribe(Events.JobChannel.NAME, bobSubs, bob, null);
+
+            // Create a job as Alice and restrict it to her
+            // bob etc should not be able to see it.
+            ACL.impersonate(alice.impersonate(), new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        FreeStyleProject job = jenkins.createFreeStyleProject("a-job");
+
+                        Map<Permission,Set<String>> perms = new HashMap<>();
+                        perms.put(Job.CREATE, Collections.singleton("alice"));
+                        job.addProperty(new AuthorizationMatrixProperty(perms));
+
+                        QueueTaskFuture<FreeStyleBuild> future = job.scheduleBuild2(0);
+                        Run run = jenkins.assertBuildStatusSuccess(future);
+
+                        bus.publish(new RunMessage(run).setEventName("blah"));
+                    } catch (Exception e) {
+                        fail(e.getMessage());
+                    }
                 }
-            }
-        });
+            });
 
-        // alice should have received the run message, but not bob.
-        assertEquals(1, aliceSubs.messages.size());
-        assertEquals(0, bobSubs.messages.size());
-        
-        // The Run instance should not be on the message, but calling
-        // getAccessControlled() should get the run via the event 
-        // properties (job name, build Id etc).
-        RunMessage runMessage = (RunMessage) aliceSubs.messages.get(0);
-        assertNull(runMessage.run);
-        runMessage.getAccessControlled();
-        assertNotNull(runMessage.run);
+            Thread.sleep(200);
+            
+            // alice should have received the run message, but not bob.
+            assertEquals(1, aliceSubs.messages.size());
+            assertEquals(0, bobSubs.messages.size());
+
+            // The Run instance should not be on the message, but calling
+            // getAccessControlled() should get the run via the event 
+            // properties (job name, build Id etc).
+            RunMessage runMessage = (RunMessage) aliceSubs.messages.get(0);
+            assertNull(runMessage.run);
+            runMessage.getAccessControlled();
+            assertNotNull(runMessage.run);
+        } finally {
+            bus.shutdown();
+        }
     }
 }

@@ -23,6 +23,8 @@
  */
 package org.jenkins.pubsub;
 
+import org.junit.Assert;
+
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,5 +37,19 @@ public class MockSubscriber implements ChannelSubscriber {
 
     public void onMessage(@Nonnull Message message) {
         messages.add(message);
+    }
+    
+    public void waitForMessageCount(int count) {
+        long start = System.currentTimeMillis();
+        while(messages.size() < count) {
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (System.currentTimeMillis() > start + 10000) {
+                Assert.fail("Timed out waiting on message count to reach " + count);
+            }
+        }
     }
 }

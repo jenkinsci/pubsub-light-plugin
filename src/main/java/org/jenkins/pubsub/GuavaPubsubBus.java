@@ -23,6 +23,7 @@
  */
 package org.jenkins.pubsub;
 
+import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import hudson.model.User;
@@ -33,6 +34,10 @@ import org.acegisecurity.Authentication;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Default {@link PubsubBus} implementation.
@@ -43,9 +48,22 @@ import java.util.Map;
  */
 class GuavaPubsubBus extends PubsubBus {
     
-    private Map<String, EventBus> channels = new CopyOnWriteMap.Hash<String, EventBus>();
-    private Map<ChannelSubscriber, GuavaSubscriber> subscribers = new CopyOnWriteMap.Hash<ChannelSubscriber, GuavaSubscriber>();
-    
+    private final Map<String, EventBus> channels = new CopyOnWriteMap.Hash<String, EventBus>();
+    private final Map<ChannelSubscriber, GuavaSubscriber> subscribers = new CopyOnWriteMap.Hash<ChannelSubscriber, GuavaSubscriber>();
+    private final ExecutorService executor;
+    private final int MAX_THREADS = Integer.getInteger(GuavaPubsubBus.class.getName() + ".MAX_THREADS", 5);
+
+    public GuavaPubsubBus() {
+        // Might want to make the executor configuration configurable.
+        executor = new ThreadPoolExecutor(0, MAX_THREADS, 10L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                shutdown();
+            }
+        });
+    }
+
     @Nonnull
     @Override
     protected ChannelPublisher publisher(@Nonnull String channelName) {
@@ -75,11 +93,17 @@ class GuavaPubsubBus extends PubsubBus {
         }
     }
 
+    @Override
+    public void shutdown() {
+        if (!executor.isShutdown()) {
+            executor.shutdown();
+        }
+    }
+
     private EventBus getChannelBus(String channelName) {
         EventBus channelBus = channels.get(channelName);
         if (channelBus == null) {
-            // TODO: consider using AsyncEventBus
-            channelBus = new EventBus(channelName);
+            channelBus = new AsyncEventBus(channelName, executor);
             channels.put(channelName, channelBus);
         }
         return channelBus;

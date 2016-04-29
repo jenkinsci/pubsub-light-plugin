@@ -45,9 +45,9 @@ public class GuavaLoadTester {
     //    mimic some event processing load
     //
     // Findings:
-    //  - Setup time for registerig the subscribers was the biggest chunk of time (by far).
+    //  - Setup time for registering the subscribers was the biggest chunk of time (by far).
     //  - Publishing a message and all subscribers receiving an processing was small enough.
-    //    e.g. about 300 ms to deliver to 20,000 subscribers and them all processing as
+    //    e.g. about 30 ms to deliver to 20,000 subscribers and them all processing as
     //    described above.
     //
 
@@ -85,10 +85,13 @@ public class GuavaLoadTester {
             System.out.println("Took: " + (System.currentTimeMillis() - start) + " ms");
 
             for (MockSubscriber subscriber : subscribers) {
-                Assert.assertEquals(1, subscriber.messages.size());
+                subscriber.waitForMessageCount(1);
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         } finally {
             testWriter.close();
+            bus.shutdown();
         }
     }
 }

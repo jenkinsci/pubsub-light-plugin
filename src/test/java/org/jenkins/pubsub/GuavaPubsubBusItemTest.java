@@ -1,6 +1,7 @@
 package org.jenkins.pubsub;
 
 import hudson.model.User;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -16,14 +17,25 @@ public class GuavaPubsubBusItemTest {
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();
     
+    private GuavaPubsubBus bus;
+    
     @Before
     public void setupRealm() {
         jenkins.jenkins.setSecurityRealm(jenkins.createDummySecurityRealm());
     }
 
+    @Before
+    public void startBus() {
+        bus = new GuavaPubsubBus();
+    }
+
+    @After
+    public void stop() {
+        bus.shutdown();
+    }
+    
     @Test
     public void test_non_filtered() {
-        GuavaPubsubBus bus = new GuavaPubsubBus();
         User alice = User.get("alice");
         
         PubsubBus x = PubsubBus.getBus();
@@ -42,15 +54,14 @@ public class GuavaPubsubBusItemTest {
         slavePublisher.publish(new SimpleMessage().set("slavea", "slavea"));
         
         // Check receipt ...
-        assertEquals(1, subs1.messages.size());
+        subs1.waitForMessageCount(1);
         assertEquals("joba", subs1.messages.get(0).getProperty("joba"));
-        assertEquals(1, subs2.messages.size());
+        subs1.waitForMessageCount(1);
         assertEquals("slavea", subs2.messages.get(0).getProperty("slavea"));
     }
 
     @Test
     public void test_filtered() {
-        GuavaPubsubBus bus = new GuavaPubsubBus();
         User alice = User.get("alice");
 
         ChannelPublisher jobPublisher = bus.publisher("jenkins.job");
@@ -64,13 +75,12 @@ public class GuavaPubsubBusItemTest {
         jobPublisher.publish(new SimpleMessage().set("joba", "----")); // Should get filtered out
         
         // Check receipt ...
-        assertEquals(1, subs.messages.size());
+        subs.waitForMessageCount(1);
         assertEquals("joba", subs.messages.get(0).getProperty("joba"));
     }
 
     @Test
-    public void test_has_permissions() {
-        GuavaPubsubBus bus = new GuavaPubsubBus();
+    public void test_has_permissions() throws InterruptedException {
         User alice = User.get("alice");
 
         ChannelPublisher jobPublisher = bus.publisher("jenkins.job");
@@ -80,10 +90,13 @@ public class GuavaPubsubBusItemTest {
         
         jobPublisher.publish(new ItemMessage(new MockItem().setACL(MockItem.YES_ACL)).set("joba", "1"));
         jobPublisher.publish(new ItemMessage(new MockItem().setACL(MockItem.YES_ACL)).set("joba", "2"));
+        subs.waitForMessageCount(2);
         assertEquals(2, subs.messages.size());
         jobPublisher.publish(new ItemMessage(new MockItem().setACL(MockItem.NO_ACL)).set("joba", "3"));
+        Thread.sleep(200);
         assertEquals(2, subs.messages.size()); // Should still be 2 because the last message use the NO_ACL
         jobPublisher.publish(new ItemMessage(new MockItem().setACL(MockItem.YES_ACL)).set("joba", "4"));
+        subs.waitForMessageCount(3);
         assertEquals(3, subs.messages.size());
         
         // Check and make sure all the messages are clones i.e. do not have a copy of
