@@ -57,8 +57,8 @@ public final class ItemMessage extends AccessControlledMessage<ItemMessage> {
      */
     public ItemMessage(@Nonnull Item messageItem) {
         this.messageItem = messageItem;
-        setProperty(OBJECT_NAME_KEY, messageItem.getFullName());
-        setProperty(OBJECT_URL_KEY, messageItem.getUrl());
+        set(EventProps.Jenkins.jenkins_object_name, messageItem.getFullName());
+        set(EventProps.Jenkins.jenkins_object_url, messageItem.getUrl());
     }
 
     /**

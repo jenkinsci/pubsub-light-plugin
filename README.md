@@ -9,7 +9,7 @@ implementation based on [Google's Guava EventBus](https://github.com/google/guav
 PubsubBus bus = PubsubBus.getBus();
 
 bus.publish(new RunMessage(run)
-            .setEventName("run.started"));
+            .setEventName(Events.JobChannel.run_started));
 ```
 
 # Subscribing to an event Channel
@@ -17,7 +17,7 @@ bus.publish(new RunMessage(run)
 ```java
 PubsubBus bus = PubsubBus.getBus();
 
-bus.subscribe(RunMessage.CHANNEL_NAME, new ChannelSubscriber() {
+bus.subscribe(Events.JobChannel.NAME, new ChannelSubscriber() {
         @Override
         public void onMessage(@Nonnull Message message) {
             if (message instanceof RunMessage) {
@@ -30,5 +30,6 @@ bus.subscribe(RunMessage.CHANNEL_NAME, new ChannelSubscriber() {
         }
     }, 
     User.current(), // Used for authentication 
-    new EventFilter().setEventName("run.started")); // Event filter (optional)
+    new EventFilter().setEventName(Events.JobChannel.run_started) // Event filter (optional)
+); 
 ```

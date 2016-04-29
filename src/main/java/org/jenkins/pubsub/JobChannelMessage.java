@@ -37,8 +37,6 @@ import javax.annotation.Nonnull;
  */
 abstract class JobChannelMessage<T extends JobChannelMessage> extends AccessControlledMessage {
     
-    public static final String CHANNEL_NAME = "job";
-    
     public static final String JOB_NAME_KEY = "jenkins.jobName";
     
     transient Job job;
@@ -48,7 +46,7 @@ abstract class JobChannelMessage<T extends JobChannelMessage> extends AccessCont
      */
     JobChannelMessage() {
         super();
-        setChannelName(CHANNEL_NAME);
+        setChannelName(Events.JobChannel.NAME);
     }
 
     /**
@@ -56,21 +54,21 @@ abstract class JobChannelMessage<T extends JobChannelMessage> extends AccessCont
      * @param job The Jenkins {@link Job} that this message instance is to be associated.
      */
     public JobChannelMessage(@Nonnull Job job) {
-        setProperty(JOB_NAME_KEY, job.getFullName());
+        set(EventProps.Job.job_name, job.getFullName());
     }
 
     @Override
     public final String getChannelName() {
-        return CHANNEL_NAME;
+        return Events.JobChannel.NAME;
     }
 
     @Override
     public final Message setChannelName(String name) {
-        return super.setChannelName(CHANNEL_NAME);
+        return super.setChannelName(Events.JobChannel.NAME);
     }
     
     public String getJobName() {
-        return getProperty(JOB_NAME_KEY);
+        return get(EventProps.Job.job_name);
     }
     
     private transient boolean jobLookupComplete = false;
@@ -86,7 +84,7 @@ abstract class JobChannelMessage<T extends JobChannelMessage> extends AccessCont
         }
         
         try {
-            String jobName = getProperty(JOB_NAME_KEY);
+            String jobName = get(EventProps.Job.job_name);
             if (jobName != null) {
                 Jenkins jenkins = Jenkins.getInstance();
                 job = (Job) jenkins.getItemByFullName(jobName);

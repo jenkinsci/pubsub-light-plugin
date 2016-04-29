@@ -52,8 +52,8 @@ public class GuavaPubsubBusRunTest {
         MockSubscriber bobSubs = new MockSubscriber();
 
         // alice and bob both subscribe to job event messages ...
-        bus.subscribe(JobChannelMessage.CHANNEL_NAME, aliceSubs, alice, null);
-        bus.subscribe(JobChannelMessage.CHANNEL_NAME, bobSubs, bob, null);
+        bus.subscribe(Events.JobChannel.NAME, aliceSubs, alice, null);
+        bus.subscribe(Events.JobChannel.NAME, bobSubs, bob, null);
         
         // Create a job as Alice and restrict it to her
         // bob etc should not be able to see it.

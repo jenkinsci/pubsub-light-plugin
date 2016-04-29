@@ -69,10 +69,10 @@ public abstract class PubsubBus implements ExtensionPoint {
         String eventName = message.getEventName();
         
         if (channelName == null || channelName.length() == 0) {
-            throw new MessageException(String.format("Channel name property '%s' not set on the Message instance.", Message.CHANNEL_NAME_KEY));
+            throw new MessageException(String.format("Channel name property '%s' not set on the Message instance.", EventProps.Jenkins.jenkins_channel));
         }
         if (eventName == null || eventName.length() == 0) {
-            throw new MessageException(String.format("Event name property '%s' not set on the Message instance.", Message.EVENT_NAME_KEY));
+            throw new MessageException(String.format("Event name property '%s' not set on the Message instance.", EventProps.Jenkins.jenkins_event));
         }
 
         publisher(channelName).publish(message);

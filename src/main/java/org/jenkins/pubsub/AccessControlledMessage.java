@@ -28,13 +28,30 @@ import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
+import org.acegisecurity.Authentication;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
  * {@link AccessControlled} {@link PubsubBus} message instance.
- *
+ * <p>
+ * Most of the time, a {@link Message} should be very light-weight in nature,
+ * containing only enough information to let {@link ChannelSubscriber}s know
+ * "something" has happened that "may be of interest". See {@link Message}
+ * docs for more on this.
+ * <p>
+ * However, some channel events may contain sensitive data and these events
+ * should only be delivered to {@link ChannelSubscriber}s that have permission
+ * to see those events. This {@link Message} is geared at helping in these
+ * situations.
+ * 
+ * <h1>PubsubBus implementations</h1>
+ * {@link PubsubBus} implementations should watch for this message subtype,
+ * calling the relevant Jenkins security APIs as appropriate
+ * ({@link ACL#impersonate(Authentication)}, {@link AccessControlled} etc).
+ * See {@link GuavaPubsubBus} implementation as an example.
+ * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 abstract class AccessControlledMessage<T extends AccessControlledMessage> extends Message implements AccessControlled {

@@ -39,9 +39,6 @@ import javax.annotation.Nonnull;
 public final class RunMessage extends JobChannelMessage<RunMessage> {
     
     private static final long serialVersionUID = -1L;
-
-    public static final String RUN_START_KEY = "run.start";
-    public static final String RUN_END_KEY = "run.end";
     
     transient Run run;
 
@@ -59,9 +56,9 @@ public final class RunMessage extends JobChannelMessage<RunMessage> {
     public RunMessage(@Nonnull Run run) {
         super(run.getParent());
         this.run = run;
-        setProperty(OBJECT_NAME_KEY, run.getDisplayName());
-        setProperty(OBJECT_ID_KEY, run.getId());
-        setProperty(OBJECT_URL_KEY, run.getUrl());
+        set(EventProps.Jenkins.jenkins_object_name, run.getDisplayName());
+        set(EventProps.Jenkins.jenkins_object_id, run.getId());
+        set(EventProps.Jenkins.jenkins_object_url, run.getUrl());
     }
 
     /**

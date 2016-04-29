@@ -36,29 +36,37 @@ import java.util.Set;
 
 /**
  * {@link PubsubBus} message instance.
- * <p>
- * Purposely chose a very simple {@link Properties} based extension for the message
- * type, so as to avoid marshal/unmarshal issues with more complex message type
- * (the {@link PubsubBus} implementation could be distributed).
  * 
+ * <h1>Light-weight messages</h1>
+ * We purposely chose a very simple {@link Properties} based extension for the message
+ * type, so as to avoid marshal/unmarshal issues with more complex message type
+ * (the {@link PubsubBus} implementation could be distributed). It is also hoped that
+ * this approach will promote the use of very light-weight event messages that contain
+ * "just enough" information as to allow {@link ChannelSubscriber}s to decide if they
+ * are interested in the event (or not). If they are interested in the event, they can
+ * use standard Jenkins mechanisms to gain access to the full domain model object(s)
+ * relating to the event.
+ * <p>
+ * <strong>Note</strong> that the use of lose typing is very intentional as complex types
+ * are a notorious source of problems in distributed (the
+ * {@link GuavaPubsubBus default bus implementation} is not distributed, but one could
+ * implement one) asynchronous libraries. Also consider that this should not be a major
+ * inconvenience if you stick with light-weight events i.e. sending complex/bloated events
+ * is already considered as being an anti-pattern here.
+ * <p>
+ * <strong>Note</strong> the {@link AccessControlledMessage} subtype.
+ *  
  * <h1>Event property namespaces</h1>
  * Event property names are opaque {@link String}s. Any {@link String} is valid, but
- * we do recommend using valid Java package identifier type names e.g. "a.b.c". 
+ * we do recommend using valid underscores to namespace e.g. "a_b_c". 
  * This will help to avoid name collisions.
  * <p>
- * <strong>NOTE</strong> that the "jenkins" namespace prefix of reserved.
+ * <strong>NOTE</strong> that the "jenkins" namespace prefix of reserved e.g. "jenkins_channel".
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 abstract class Message<T extends Message> extends Properties {
 
-    public static final String CHANNEL_NAME_KEY = "jenkins.channel";
-    public static final String EVENT_NAME_KEY = "jenkins.event";
-    
-    public static final String OBJECT_NAME_KEY = "jenkins.object.name";
-    public static final String OBJECT_ID_KEY = "jenkins.object.id";
-    public static final String OBJECT_URL_KEY = "jenkins.object.url";
-    
     /**
      * Create a plain message instance.
      */
@@ -71,10 +79,10 @@ abstract class Message<T extends Message> extends Properties {
      *
      * @return The Jenkins domain model object name (full name) that this message instance is
      * associated with.
-     * @see #OBJECT_NAME_KEY
+     * @see EventProps.Jenkins#jenkins_object_name
      */
     @CheckForNull protected String getObjectName() {
-        return getProperty(OBJECT_NAME_KEY);
+        return get(EventProps.Jenkins.jenkins_object_name);
     }
 
     /**
@@ -83,10 +91,10 @@ abstract class Message<T extends Message> extends Properties {
      *
      * @return The Jenkins domain model object Id that this message instance is
      * associated with, or {@code null} if no id was set on this message instance.
-     * @see #OBJECT_ID_KEY
+     * @see EventProps.Jenkins#jenkins_object_id
      */
     @CheckForNull protected String getObjectId() {
-        return getProperty(OBJECT_ID_KEY);
+        return get(EventProps.Jenkins.jenkins_object_id);
     }
 
     /**
@@ -107,11 +115,40 @@ abstract class Message<T extends Message> extends Properties {
     }
 
     /**
+     * Fluent property setter (by enum).
+     * 
+     * @param name Property name enum.
+     * @param value Property value.
+     * @return {@code this} message instance.
+     */
+    public T set(Enum name, String value) {
+        return set(name.name(), value);
+    }
+
+    /**
+     * Get the named message property value.
+     * @param name Propery name.
+     * @return The property value, or {@code null} if not defined.
+     */
+    public String get(String name) {
+        return getProperty(name);
+    }
+
+    /**
+     * Get the named message property value (by enum).
+     * @param name Propery name enum.
+     * @return The property value, or {@code null} if not defined.
+     */
+    public String get(Enum name) {
+        return getProperty(name.name());
+    }
+    
+    /**
      * Get the channel name for the message.
      * @return The channel name for the message, or {@code null} if none set.
      */
     public String getChannelName() {
-        return getProperty(CHANNEL_NAME_KEY);
+        return get(EventProps.Jenkins.jenkins_channel);
     }
     
     /**
@@ -119,7 +156,7 @@ abstract class Message<T extends Message> extends Properties {
      * @param name The channel name for the message.
      */
     public T setChannelName(String name) {
-        set(CHANNEL_NAME_KEY, name);
+        set(EventProps.Jenkins.jenkins_channel, name);
         return (T) this;
     }
     
@@ -128,7 +165,7 @@ abstract class Message<T extends Message> extends Properties {
      * @return The event name for the message, or {@code null} if none set.
      */
     public String getEventName() {
-        return getProperty(EVENT_NAME_KEY);
+        return get(EventProps.Jenkins.jenkins_event);
     }
     
     /**
@@ -136,9 +173,21 @@ abstract class Message<T extends Message> extends Properties {
      * @param name The event name for the message.
      */
     public T setEventName(String name) {
-        set(EVENT_NAME_KEY, name);
+        set(EventProps.Jenkins.jenkins_event, name);
         return (T) this;
     }
+    
+    /**
+     * Set the event name for the message.
+     * @param name The event name for the message.
+     */
+    public T setEventName(Enum name) {
+        set(EventProps.Jenkins.jenkins_event, name.name());
+        return (T) this;
+    }
+    
+    // NOTE: Purposely not adding an Enum version of getEventName in 
+    //       case a new event name (not defined in the enum) was used.
 
     /**
      * Clone this {@link Message} instance.
@@ -146,10 +195,10 @@ abstract class Message<T extends Message> extends Properties {
      * Base implementation creates a {@link SimpleMessage} instance.
      * @return The clone.
      */
-    public T clone() {
+    public Message clone() {
         Message clone = new SimpleMessage();
         clone.putAll(this);
-        return (T) clone;
+        return clone;
     }
 
     /**
