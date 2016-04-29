@@ -85,8 +85,8 @@ public class GuavaPubsubBusRunTest {
         // getAccessControlled() should get the run via the event 
         // properties (job name, build Id etc).
         RunMessage runMessage = (RunMessage) aliceSubs.messages.get(0);
-        assertNull(runMessage.messageRun);
+        assertNull(runMessage.run);
         runMessage.getAccessControlled();
-        assertNotNull(runMessage.messageRun);
+        assertNotNull(runMessage.run);
     }
 }

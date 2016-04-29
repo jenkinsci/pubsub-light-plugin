@@ -43,8 +43,7 @@ public final class RunMessage extends JobChannelMessage<RunMessage> {
     public static final String RUN_START_KEY = "run.start";
     public static final String RUN_END_KEY = "run.end";
     
-    transient Run messageRun;
-    private transient boolean messageRunLookupComplete = false;
+    transient Run run;
 
     /**
      * Create a plain message instance.
@@ -59,7 +58,7 @@ public final class RunMessage extends JobChannelMessage<RunMessage> {
      */
     public RunMessage(@Nonnull Run run) {
         super(run.getParent());
-        this.messageRun = run;
+        this.run = run;
         setProperty(OBJECT_NAME_KEY, run.getDisplayName());
         setProperty(OBJECT_ID_KEY, run.getId());
         setProperty(OBJECT_URL_KEY, run.getUrl());
@@ -83,6 +82,7 @@ public final class RunMessage extends JobChannelMessage<RunMessage> {
         return getRun();
     }
 
+    private transient boolean runLookupComplete = false;
     /**
      * Get the Jenkins {@link Run} associated with this message.
      * @return The Jenkins {@link Run} associated with this message,
@@ -90,26 +90,21 @@ public final class RunMessage extends JobChannelMessage<RunMessage> {
      * Jenkins {@link Run}.
      */
     public synchronized @CheckForNull Run getRun() {
-        if (messageRunLookupComplete || messageRun != null) {
-            return messageRun;
+        if (runLookupComplete || run != null) {
+            return run;
         }
         
         try {
-            Jenkins jenkins = Jenkins.getInstance();
-
-            String jobName = getProperty(JOB_NAME_KEY);
-            if (jobName != null) {
-                Job job = (Job) jenkins.getItemByFullName(jobName);
-                if (job != null) {
-                    String buildId = getObjectId();
-                    if (buildId != null) {
-                        messageRun = job.getBuild(buildId);
-                    }
+            Job job = getJob();
+            if (job != null) {
+                String buildId = getObjectId();
+                if (buildId != null) {
+                    run = job.getBuild(buildId);
                 }
             }
         } finally {
-            messageRunLookupComplete = true;
+            runLookupComplete = true;
         }
-        return messageRun;
+        return run;
     }
 }

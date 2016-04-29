@@ -25,7 +25,9 @@ package org.jenkins.pubsub;
 
 import hudson.model.Job;
 import hudson.security.Permission;
+import jenkins.model.Jenkins;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
@@ -38,6 +40,8 @@ abstract class JobChannelMessage<T extends JobChannelMessage> extends AccessCont
     public static final String CHANNEL_NAME = "job";
     
     public static final String JOB_NAME_KEY = "jenkins.jobName";
+    
+    transient Job job;
 
     /**
      * Create a Hob message instance.
@@ -67,6 +71,30 @@ abstract class JobChannelMessage<T extends JobChannelMessage> extends AccessCont
     
     public String getJobName() {
         return getProperty(JOB_NAME_KEY);
+    }
+    
+    private transient boolean jobLookupComplete = false;
+    /**
+     * Get the Jenkins {@link Job} associated with this message.
+     * @return The Jenkins {@link Job} associated with this message,
+     * or {code null} if the message is not associated with a
+     * Jenkins {@link Job}.
+     */
+    public synchronized @CheckForNull Job getJob() {
+        if (jobLookupComplete || job != null) {
+            return job;
+        }
+        
+        try {
+            String jobName = getProperty(JOB_NAME_KEY);
+            if (jobName != null) {
+                Jenkins jenkins = Jenkins.getInstance();
+                job = (Job) jenkins.getItemByFullName(jobName);
+            }
+        } finally {
+            jobLookupComplete = true;
+        }
+        return job;        
     }
 
     @Nonnull
