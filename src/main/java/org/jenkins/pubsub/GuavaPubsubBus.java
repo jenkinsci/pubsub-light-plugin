@@ -33,7 +33,6 @@ import org.acegisecurity.Authentication;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * Default {@link PubsubBus} implementation.
@@ -59,7 +58,7 @@ class GuavaPubsubBus extends PubsubBus {
     }
 
     @Override
-    public void subscribe(@Nonnull String channelName, @Nonnull ChannelSubscriber subscriber, @Nonnull User user, @CheckForNull Properties eventFilter) {
+    public void subscribe(@Nonnull String channelName, @Nonnull ChannelSubscriber subscriber, @Nonnull User user, @CheckForNull EventFilter eventFilter) {
         GuavaSubscriber guavaSubscriber = new GuavaSubscriber(subscriber, user, eventFilter);
         EventBus channelBus = getChannelBus(channelName);
         channelBus.register(guavaSubscriber);
@@ -88,9 +87,9 @@ class GuavaPubsubBus extends PubsubBus {
     private static class GuavaSubscriber {
         private ChannelSubscriber subscriber;
         private Authentication authentication;
-        private final Properties eventFilter;
+        private final EventFilter eventFilter;
 
-        public GuavaSubscriber(@Nonnull ChannelSubscriber subscriber, User user, Properties eventFilter) {
+        public GuavaSubscriber(@Nonnull ChannelSubscriber subscriber, User user, EventFilter eventFilter) {
             this.subscriber = subscriber;
             if (user != null) {
                 this.authentication = user.impersonate();

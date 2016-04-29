@@ -24,8 +24,8 @@
 package org.jenkins.pubsub;
 
 /**
- * A simple {@link Message} implementation.
+ * Event filter.
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public final class SimpleMessage extends Message<SimpleMessage> {
+public final class EventFilter extends Message<EventFilter> {
 }

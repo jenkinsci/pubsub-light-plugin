@@ -8,7 +8,8 @@ implementation based on [Google's Guava EventBus](https://github.com/google/guav
 ```java
 PubsubBus bus = PubsubBus.getBus();
 
-bus.publish(new RunMessage(run));
+bus.publish(new RunMessage(run)
+            .setEventName("run.started"));
 ```
 
 # Subscribing to an event Channel
@@ -29,5 +30,5 @@ bus.subscribe(RunMessage.CHANNEL_NAME, new ChannelSubscriber() {
         }
     }, 
     User.current(), // Used for authentication 
-    null);          // Event filter (none here)
+    new EventFilter().setEventName("run.started")); // Event filter (optional)
 ```

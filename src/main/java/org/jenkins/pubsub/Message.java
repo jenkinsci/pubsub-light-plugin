@@ -50,7 +50,7 @@ import java.util.Set;
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-abstract class Message extends Properties {
+abstract class Message<T extends Message> extends Properties {
 
     public static final String CHANNEL_NAME_KEY = "jenkins.channel";
     public static final String EVENT_NAME_KEY = "jenkins.event";
@@ -99,11 +99,11 @@ abstract class Message extends Properties {
      * @param value Property value.
      * @return {@code this} message instance.
      */
-    public Message set(String name, String value) {
+    public T set(String name, String value) {
         if (name != null && value != null) {
             setProperty(name, value);
         }
-        return this;
+        return (T) this;
     }
 
     /**
@@ -118,9 +118,9 @@ abstract class Message extends Properties {
      * Set the channel name for the message.
      * @param name The channel name for the message.
      */
-    public Message setChannelName(String name) {
+    public T setChannelName(String name) {
         set(CHANNEL_NAME_KEY, name);
-        return this;
+        return (T) this;
     }
     
     /**
@@ -135,9 +135,9 @@ abstract class Message extends Properties {
      * Set the event name for the message.
      * @param name The event name for the message.
      */
-    public Message setEventName(String name) {
+    public T setEventName(String name) {
         set(EVENT_NAME_KEY, name);
-        return this;
+        return (T) this;
     }
 
     /**
@@ -146,10 +146,10 @@ abstract class Message extends Properties {
      * Base implementation creates a {@link SimpleMessage} instance.
      * @return The clone.
      */
-    public Message clone() {
+    public T clone() {
         Message clone = new SimpleMessage();
         clone.putAll(this);
-        return clone;
+        return (T) clone;
     }
 
     /**

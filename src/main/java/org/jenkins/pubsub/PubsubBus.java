@@ -29,7 +29,6 @@ import hudson.model.User;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import java.util.Properties;
 
 /**
  * Abstract message bus.
@@ -99,7 +98,7 @@ public abstract class PubsubBus implements ExtensionPoint {
     public abstract void subscribe(@Nonnull String channelName,
                                        @Nonnull ChannelSubscriber subscriber,
                                        @Nonnull User user,
-                                       @CheckForNull Properties eventFilter);
+                                       @CheckForNull EventFilter eventFilter);
 
     /**
      * Unsubscribe from events on the specified event channel.

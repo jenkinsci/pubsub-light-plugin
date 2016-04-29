@@ -36,7 +36,7 @@ import javax.annotation.Nonnull;
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public final class ItemMessage extends AccessControlledMessage {
+public final class ItemMessage extends AccessControlledMessage<ItemMessage> {
     
     private static final long serialVersionUID = -1L;
 

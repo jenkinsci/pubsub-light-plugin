@@ -33,7 +33,7 @@ import javax.annotation.Nonnull;
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-abstract class JobMessage extends AccessControlledMessage {
+abstract class JobMessage<T extends JobMessage> extends AccessControlledMessage {
     
     public static final String CHANNEL_NAME = "job";
     

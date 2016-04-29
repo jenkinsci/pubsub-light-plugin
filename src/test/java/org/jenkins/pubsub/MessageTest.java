@@ -2,8 +2,6 @@ package org.jenkins.pubsub;
 
 import org.junit.Test;
 
-import java.util.Properties;
-
 import static org.junit.Assert.*;
 
 /**
@@ -25,7 +23,7 @@ public class MessageTest {
         message.setProperty("b", "b");
         message.setProperty("c", "c");
 
-        Properties filter = new Properties();
+        EventFilter filter = new EventFilter();
         
         assertTrue(message.containsAll(filter));
         

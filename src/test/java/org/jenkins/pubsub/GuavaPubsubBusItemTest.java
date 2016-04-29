@@ -57,7 +57,7 @@ public class GuavaPubsubBusItemTest {
         MockSubscriber subs = new MockSubscriber();
 
         // Subscribers ...
-        bus.subscribe("jenkins.job", subs, alice, new SimpleMessage().set("joba", "joba"));
+        bus.subscribe("jenkins.job", subs, alice, new EventFilter().set("joba", "joba"));
         
         // Publish ...
         jobPublisher.publish(new SimpleMessage().set("joba", "joba")); // Should get delivered
