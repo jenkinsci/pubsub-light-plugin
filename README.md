@@ -3,33 +3,6 @@ A simple [Publish-Subscribe](http://www.enterpriseintegrationpatterns.com/patter
 Contains the `org.jenkins.pubsub.PubsubBus` abstract class, which is a Jenkins `ExtensionPoint`, with a default
 implementation based on [Google's Guava EventBus](https://github.com/google/guava/wiki/EventBusExplained).
 
-# Publishing to an event Channel
+# API
 
-```java
-PubsubBus bus = PubsubBus.getBus();
-
-bus.publish(new RunMessage(run)
-            .setEventName(Events.JobChannel.run_started));
-```
-
-# Subscribing to an event Channel
-
-```java
-PubsubBus bus = PubsubBus.getBus();
-
-bus.subscribe(Events.JobChannel.NAME, new ChannelSubscriber() {
-        @Override
-        public void onMessage(@Nonnull Message message) {
-            if (message instanceof RunMessage) {
-                RunMessage jobMessage = (RunMessage)message;
-                String jobName = jobMessage.getJobName();
-                String runId = message.getId();
-                
-                // etc etc
-            }
-        }
-    }, 
-    User.current(), // Used for authentication 
-    new EventFilter().setEventName(Events.JobChannel.run_started) // Event filter (optional)
-); 
-```
+Please [see the online Javadoc](http://tfennelly.github.io/jenkins-pubsub-bus-module/) for how to use the API.

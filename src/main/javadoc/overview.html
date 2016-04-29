@@ -1,0 +1,74 @@
+<html>
+<body>
+A simple <a href="http://www.enterpriseintegrationpatterns.com/patterns/messaging/PublishSubscribeChannel.html">Publish-Subscribe</a> event bus module for Jenkins.
+<p>
+
+<h1>Light-weight messages</h1>
+We purposely chose a very simple {@link Properties} based (name-value pairs) extension for the message
+type, so as to avoid marshal/unmarshal issues with more complex message type
+(the {@link PubsubBus} implementation could be distributed). It is also hoped that
+this approach will promote the use of very light-weight event messages that contain
+"just enough" information as to allow {@link ChannelSubscriber}s to decide if they
+are interested in the event (or not). If they are interested in the event, they can
+use standard Jenkins mechanisms to gain access to the full domain model object(s)
+relating to the event.
+<p>
+<strong>Note</strong> that the use of lose typing is very intentional as complex types
+are a notorious source of problems in distributed asynchronous messaging middleware.
+Also consider that this should not be a major inconvenience if you stick with 
+light-weight events i.e. sending complex/bloated events is already considered as
+being an anti-pattern here.
+
+<h1>Pre-defined Events and EventProps</h1>
+As stated above, this library assumes light-weight {@link Properties} based (name-value pairs)
+messages, where the names and values are opague/untyped Strings.
+<p>
+For this reason, we have defined a few types that we hope will help us to standardize
+on some of the property names used in the messages.
+<ul>
+    <li><a href="org/jenkins/pubsub/Events.html">Events</a></li>
+    <li><a href="org/jenkins/pubsub/EventProps.html">EventProps</a></li>
+</ul>
+Please try to use this property name types. If you find you need to create messages that
+are not covered by the properties defined here, and you think that the properties are likely to be needed by others,
+then please create a PR on the GitHub repo so we can create a standardized name for the property.
+
+<h1>Anti-patterns</h1>
+The main one is: <strong>DO NOT ADD LOTS OF PROPERTIES TO MESSAGE</strong>. Please keep them as light-weight
+events with a small few properties i.e. just enough for the
+<a href="org/jenkins/pubsub/ChannelSubscriber.html">ChannelSubscriber</a> (see below) to be able to determine
+if it is interested in the event data and to be able to get it (e.g. 
+<a href="org/jenkins/pubsub/EventProps.Jenkins.html#jenkins_object_url">EventProps.Jenkins.html.jenkins_object_url</a> - see below).
+
+<h1>Publishing to an event Channel</h1>
+
+<pre>
+<a href="org/jenkins/pubsub/PubsubBus.html">PubsubBus</a> bus = PubsubBus.getBus();
+
+bus.publish(new <a href="org/jenkins/pubsub/Message.html">RunMessage</a>(run)
+            .setEventName(<a href="org/jenkins/pubsub/Events.JobChannel.html">Events.JobChannel</a>.run_started));    
+</pre>
+
+<h1>Subscribing to an event Channel</h1>
+
+<pre>
+<a href="org/jenkins/pubsub/PubsubBus.html">PubsubBus</a> bus = PubsubBus.getBus();
+
+bus.subscribe(<a href="org/jenkins/pubsub/Events.JobChannel.html#NAME">Events.JobChannel.NAME</a>, new <a href="org/jenkins/pubsub/ChannelSubscriber.html">ChannelSubscriber</a>() {
+        
+        public void onMessage(@Nonnull <a href="org/jenkins/pubsub/Message.html">Message</a> message) {
+            if (message instanceof <a href="org/jenkins/pubsub/RunMessage.html">RunMessage</a>) {
+                RunMessage jobMessage = (RunMessage)message;
+                String jobName = jobMessage.getJobName();
+                String runId = message.getId();
+                
+                // etc etc
+            }
+        }
+    }, 
+    User.current(), // Used for authentication 
+    new <a href="org/jenkins/pubsub/EventFilter.html">EventFilter</a>().setEventName(Events.JobChannel.run_started) // Event filter (optional)
+);    
+</pre>
+</body>
+</html>
