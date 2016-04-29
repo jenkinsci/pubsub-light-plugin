@@ -76,12 +76,20 @@ public final class RunMessage extends JobMessage<RunMessage> {
     }
 
     /**
-     * Get the Jenkins {@link Run} assocated with this message.
-     * @return The Jenkins {@link Run} assocated with this message,
+     * {@inheritDoc}
+     */
+    @Override
+    protected AccessControlled getAccessControlled() {
+        return getRun();
+    }
+
+    /**
+     * Get the Jenkins {@link Run} associated with this message.
+     * @return The Jenkins {@link Run} associated with this message,
      * or {code null} if the message is not associated with a
      * Jenkins {@link Run}.
      */
-    protected synchronized @CheckForNull AccessControlled getAccessControlled() {
+    public synchronized @CheckForNull Run getRun() {
         if (messageRunLookupComplete || messageRun != null) {
             return messageRun;
         }
