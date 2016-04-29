@@ -1,20 +1,20 @@
-A simple [Message Bus](http://www.enterpriseintegrationpatterns.com/patterns/messaging/MessageBus.html) module for Jenkins.
+A simple [Publish-Subscribe](http://www.enterpriseintegrationpatterns.com/patterns/messaging/PublishSubscribeChannel.html) event bus module for Jenkins.
 
-Contains the `org.jenkins.event.MessageBus` abstract class, which is a Jenkins `ExtensionPoint`, with a default
+Contains the `org.jenkins.pubsub.PubsubBus` abstract class, which is a Jenkins `ExtensionPoint`, with a default
 implementation based on [Google's Guava EventBus](https://github.com/google/guava/wiki/EventBusExplained).
 
 # Publishing to an event Channel
 
 ```java
-MessageBus bus = MessageBus.getBus();
+PubsubBus bus = PubsubBus.getBus();
 
-jobPublisher.publish(new RunMessage(run));
+bus.publish(new RunMessage(run));
 ```
 
 # Subscribing to an event Channel
 
 ```java
-MessageBus bus = MessageBus.getBus();
+PubsubBus bus = PubsubBus.getBus();
 
 bus.subscribe(RunMessage.CHANNEL_NAME, new ChannelSubscriber() {
         @Override
