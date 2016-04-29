@@ -21,19 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkins.event;
-
-import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
+package org.jenkins.pubsub;
 
 /**
+ * Message exception.
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class MockSubscriber implements ChannelSubscriber {
-    public List<Message> messages = new ArrayList<>();
-
-    public void onMessage(@Nonnull Message message) {
-        messages.add(message);
+public class MessageException extends Exception {
+    
+    public MessageException(String message) {
+        super(message);
     }
 }

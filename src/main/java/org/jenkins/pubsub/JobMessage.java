@@ -21,15 +21,57 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkins.event;
+package org.jenkins.pubsub;
+
+import hudson.model.Job;
+import hudson.security.Permission;
+
+import javax.annotation.Nonnull;
 
 /**
- * Message exception.
+ * Jenkins {@link Job} domain model {@link MessageBus} message instance.
+ *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class MessageException extends Exception {
+abstract class JobMessage extends AccessControlledMessage {
     
-    public MessageException(String message) {
-        super(message);
+    public static final String CHANNEL_NAME = "job";
+    
+    public static final String JOB_NAME_KEY = "jenkins.jobName";
+
+    /**
+     * Create a Hob message instance.
+     */
+    JobMessage() {
+        super();
+        setChannelName(CHANNEL_NAME);
+    }
+
+    /**
+     * Create a message instance associated with a Jenkins {@link Job}.
+     * @param job The Jenkins {@link Job} that this message instance is to be associated.
+     */
+    public JobMessage(@Nonnull Job job) {
+        setProperty(JOB_NAME_KEY, job.getFullName());
+    }
+
+    @Override
+    public final String getChannelName() {
+        return CHANNEL_NAME;
+    }
+
+    @Override
+    public final Message setChannelName(String name) {
+        return super.setChannelName(CHANNEL_NAME);
+    }
+    
+    public String getJobName() {
+        return getProperty(JOB_NAME_KEY);
+    }
+
+    @Nonnull
+    @Override
+    protected Permission getRequiredPermission() {
+        return Job.READ;
     }
 }

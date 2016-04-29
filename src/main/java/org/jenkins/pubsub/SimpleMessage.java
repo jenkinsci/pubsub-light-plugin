@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2015, CloudBees, Inc.
+ * Copyright (c) 2016, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,19 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkins.event;
-
-import javax.annotation.Nonnull;
+package org.jenkins.pubsub;
 
 /**
+ * A simple {@link Message} implementation.
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public interface ChannelSubscriber {
-
-    /**
-     * Consume a message.
-     * 
-     * @param message The message properties.
-     */
-    void onMessage(@Nonnull Message message);
+public final class SimpleMessage extends Message {
 }

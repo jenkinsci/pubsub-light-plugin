@@ -1,4 +1,4 @@
-package org.jenkins.event;
+package org.jenkins.pubsub;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;

@@ -21,11 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkins.event;
+package org.jenkins.pubsub;
+
+import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * A simple {@link Message} implementation.
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public final class SimpleMessage extends Message {
+public class MockSubscriber implements ChannelSubscriber {
+    public List<Message> messages = new ArrayList<>();
+
+    public void onMessage(@Nonnull Message message) {
+        messages.add(message);
+    }
 }

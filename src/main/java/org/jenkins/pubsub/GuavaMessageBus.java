@@ -21,17 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkins.event;
+package org.jenkins.pubsub;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
-import hudson.model.Item;
 import hudson.model.User;
 import hudson.security.ACL;
-import hudson.security.AccessControlled;
-import hudson.security.Permission;
 import hudson.util.CopyOnWriteMap;
-import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 
 import javax.annotation.CheckForNull;
