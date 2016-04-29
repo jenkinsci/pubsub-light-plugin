@@ -32,6 +32,8 @@ package org.jenkins.pubsub;
  * If you find yourself needing a new event type (or channel), consider
  * creating a Pull Request on this repo, adding it as one of the pre-defined
  * event types.
+ * <p>
+ * <strong>*** SEE the docs on the nested types for more details ***</strong>
  *  
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  * @see EventProps
