@@ -23,6 +23,8 @@
  */
 package org.jenkins.pubsub;
 
+import hudson.model.Queue;
+
 /**
  * Pre-defined event type name enumerations.
  * <p>
@@ -45,9 +47,25 @@ public interface Events {
      */
     enum JobChannel {
         /**
-         * Job run queued.
+         * Job run queue entered.
+         * @see hudson.model.queue.QueueListener#onEnterWaiting(Queue.WaitingItem)  
          */
-        job_run_queued,
+        job_run_queue_enter,
+        /**
+         * Job run queue buildable.
+         * @see hudson.model.queue.QueueListener#onEnterBuildable(Queue.BuildableItem) 
+         */
+        job_run_queue_buildable,
+        /**
+         * Job run queue left.
+         * @see hudson.model.queue.QueueListener#onLeft(Queue.LeftItem)  
+         */
+        job_run_queue_left,
+        /**
+         * Job run queue blocked.
+         * @see hudson.model.queue.QueueListener#onEnterBlocked(Queue.BlockedItem)
+         */
+        job_run_queue_blocked,
         /**
          * Job run started.
          */

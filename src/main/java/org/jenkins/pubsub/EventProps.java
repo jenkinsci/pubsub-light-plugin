@@ -77,7 +77,14 @@ public interface EventProps {
         job_name,
         /**
          * Job run Queue Id.
+         * <p>
+         * This is how you correlate between Job Queue tasks and the Runs
+         * that result from them.
          */
         job_run_queueId,
+        /**
+         * Job run status/result.
+         */
+        job_run_status,
     }
 }

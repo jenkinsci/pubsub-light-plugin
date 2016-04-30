@@ -41,7 +41,10 @@ import java.util.logging.Logger;
  * <p>
  * Publishes:
  * <ul>
- *     <li>{@link Events.JobChannel#job_run_queued job_run_queued}</li>
+ *     <li>{@link Events.JobChannel#job_run_queue_enter}</li>
+ *     <li>{@link Events.JobChannel#job_run_queue_buildable}</li>
+ *     <li>{@link Events.JobChannel#job_run_queue_left}</li>
+ *     <li>{@link Events.JobChannel#job_run_queue_blocked}</li>
  * </ul>
  *  
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -53,12 +56,39 @@ public class SyncQueueListener extends QueueListener {
 
     @Override
     public void onEnterWaiting(Queue.WaitingItem wi) {
-        Queue.Task task = wi.task;
+        publish(wi, Events.JobChannel.job_run_queue_enter);
+    }
+
+    @Override
+    public void onEnterBuildable(Queue.BuildableItem bi) {
+        publish(bi, Events.JobChannel.job_run_queue_buildable);
+    }
+
+    @Override
+    public void onLeft(Queue.LeftItem li) {
+        if (li.isCancelled()) {
+            publish(li, Events.JobChannel.job_run_queue_left, "CANCELLED");
+        } else {
+            publish(li, Events.JobChannel.job_run_queue_left, "ALLOCATED");
+        }
+    }
+
+    @Override
+    public void onEnterBlocked(Queue.BlockedItem bi) {
+        publish(bi, Events.JobChannel.job_run_queue_blocked);
+    }
+
+    private void publish(Queue.Item item, Events.JobChannel event) {
+        publish(item, event, "QUEUED");
+    }
+    private void publish(Queue.Item item, Events.JobChannel event, String status) {
+        Queue.Task task = item.task;
         if (task instanceof Job) {
             try {
                 PubsubBus.getBus().publish(new JobMessage((Job)task)
-                        .setEventName(Events.JobChannel.job_run_queued)
-                        .set(EventProps.Job.job_run_queueId, Long.toString(wi.getId()))
+                        .setEventName(event)
+                        .set(EventProps.Job.job_run_queueId, Long.toString(item.getId()))
+                        .set(EventProps.Job.job_run_status, status)
                 );
             } catch (MessageException e) {
                 LOGGER.log(Level.WARNING, "Error publishing Run queued event.", e);

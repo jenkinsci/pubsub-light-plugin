@@ -24,6 +24,7 @@
 package org.jenkins.pubsub;
 
 import hudson.model.Job;
+import hudson.model.Result;
 import hudson.model.Run;
 import hudson.security.AccessControlled;
 
@@ -59,6 +60,13 @@ public final class RunMessage extends JobChannelMessage<RunMessage> {
         set(EventProps.Jenkins.jenkins_object_id, run.getId());
         set(EventProps.Jenkins.jenkins_object_url, run.getUrl());
         set(EventProps.Job.job_run_queueId, Long.toString(run.getQueueId()));
+
+        Result result = run.getResult();
+        if (result != null) {
+            set(EventProps.Job.job_run_status, result.toString());
+        } else {
+            set(EventProps.Job.job_run_status, "RUNNING");
+        }
     }
 
     /**
