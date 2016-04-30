@@ -35,9 +35,7 @@ import javax.annotation.Nonnull;
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-abstract class JobChannelMessage<T extends JobChannelMessage> extends AccessControlledMessage {
-    
-    public static final String JOB_NAME_KEY = "jenkins.jobName";
+public abstract class JobChannelMessage<T extends JobChannelMessage> extends AccessControlledMessage {
     
     transient Job job;
 

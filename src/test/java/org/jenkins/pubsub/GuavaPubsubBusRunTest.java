@@ -3,7 +3,6 @@ package org.jenkins.pubsub;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Job;
-import hudson.model.Run;
 import hudson.model.User;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.security.ACL;
@@ -69,28 +68,38 @@ public class GuavaPubsubBusRunTest {
                         job.addProperty(new AuthorizationMatrixProperty(perms));
 
                         QueueTaskFuture<FreeStyleBuild> future = job.scheduleBuild2(0);
-                        Run run = jenkins.assertBuildStatusSuccess(future);
-
-                        bus.publish(new RunMessage(run).setEventName("blah"));
+                        jenkins.assertBuildStatusSuccess(future);
                     } catch (Exception e) {
                         fail(e.getMessage());
                     }
                 }
             });
 
-            Thread.sleep(200);
+            aliceSubs.waitForMessageCount(3);
             
-            // alice should have received the run message, but not bob.
-            assertEquals(1, aliceSubs.messages.size());
+            // Security check ...
+            // alice should have received the run messages, but not bob.
+            assertEquals(3, aliceSubs.messages.size());
             assertEquals(0, bobSubs.messages.size());
 
-            // The Run instance should not be on the message, but calling
-            // getAccessControlled() should get the run via the event 
-            // properties (job name, build Id etc).
-            RunMessage runMessage = (RunMessage) aliceSubs.messages.get(0);
+            JobMessage queueMessage = (JobMessage) aliceSubs.messages.get(0);
+            RunMessage runMessage = (RunMessage) aliceSubs.messages.get(1);
+
+            // The domain model object instances should not be on the messages...
+            assertNull(queueMessage.job);
+            assertNull(runMessage.job);
             assertNull(runMessage.run);
-            runMessage.getAccessControlled();
+            // But calling the getter methods should result in them being looked up...
+            queueMessage.getJob();
+            runMessage.getRun();
+            assertNotNull(queueMessage.job);
+            assertNotNull(runMessage.job);
             assertNotNull(runMessage.run);
+            assertEquals(queueMessage.job, runMessage.job);
+            
+            // And check that the queue Ids match
+            assertEquals(queueMessage.get(EventProps.Job.job_run_queueId), runMessage.get(EventProps.Job.job_run_queueId));
+                    
         } finally {
             bus.shutdown();
         }

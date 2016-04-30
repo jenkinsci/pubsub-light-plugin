@@ -49,7 +49,7 @@ import java.util.concurrent.TimeUnit;
  * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-class GuavaPubsubBus extends PubsubBus {
+public final class GuavaPubsubBus extends PubsubBus {
     
     private final Map<String, EventBus> channels = new CopyOnWriteMap.Hash<String, EventBus>();
     private final Map<ChannelSubscriber, GuavaSubscriber> subscribers = new CopyOnWriteMap.Hash<ChannelSubscriber, GuavaSubscriber>();

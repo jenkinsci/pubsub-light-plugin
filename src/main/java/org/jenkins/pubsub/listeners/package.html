@@ -1,0 +1,12 @@
+<html>
+<body>
+Jenkins Listener implementations.
+<p/>
+The Jenkins core "listener" model is typically synchronous in nature i.e. they look for
+{@code ExtensionPoint} implementations and call them synchronously from one {@link Thread}. This model obviously
+does not scale.
+<p/>
+The listener implementations in this package convert these heavy-weight synchronous events into light-weight asynchronous events,
+making it possible to distribute to a large number of subscribers (see <a href="../ChannelSubscriber.html">ChannelSubscriber</a>).
+</body>
+</html>

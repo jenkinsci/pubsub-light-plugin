@@ -23,43 +23,40 @@
  */
 package org.jenkins.pubsub;
 
+import hudson.model.Job;
+import hudson.security.AccessControlled;
+
+import javax.annotation.Nonnull;
+
 /**
- * Pre-defined event type name enumerations.
- * <p>
- * Of course new events (not pre-defined here) can be created. The idea of
- * types pre-defined here is to try help standardise on the event types.
- * <p>
- * If you find yourself needing a new event type (or channel), consider
- * creating a Pull Request on this repo, adding it as one of the pre-defined
- * event types.
- * <p>
- * <strong>*** SEE the docs on the nested types for more details ***</strong>
- *  
+ * Basic Job channel event message.
+ * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
- * @see EventProps
  */
-public interface Events {
+public final class JobMessage extends JobChannelMessage<JobMessage> {
+
+    public JobMessage() {
+    }
+
+    public JobMessage(@Nonnull Job job) {
+        super(job);
+    }
 
     /**
-     * Pre-defined "job" channel events.
+     * {@inheritDoc}
      */
-    enum JobChannel {
-        /**
-         * Job run queued.
-         */
-        job_run_queued,
-        /**
-         * Job run started.
-         */
-        job_run_started,
-        /**
-         * Job run ended.
-         */
-        job_run_ended;
+    @Override
+    protected AccessControlled getAccessControlled() {
+        return getJob();
+    }
 
-        /**
-         * The channel name.
-         */
-        public static final String NAME = "job";
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Message clone() {
+        Message clone = new JobMessage();
+        clone.putAll(this);
+        return clone;
     }
 }

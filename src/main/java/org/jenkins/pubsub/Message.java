@@ -65,7 +65,7 @@ import java.util.Set;
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-abstract class Message<T extends Message> extends Properties {
+public abstract class Message<T extends Message> extends Properties {
 
     /**
      * Create a plain message instance.

@@ -75,5 +75,9 @@ public interface EventProps {
          * Job name.
          */
         job_name,
+        /**
+         * Job run Queue Id.
+         */
+        job_run_queueId,
     }
 }
