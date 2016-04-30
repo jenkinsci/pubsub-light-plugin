@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mvn javadoc:javadoc -Dshow=package
+mvn javadoc:javadoc
 
 pushd target/site/apidocs
 
