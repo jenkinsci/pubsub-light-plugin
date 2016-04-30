@@ -45,15 +45,15 @@ public interface Events {
      */
     enum JobChannel {
         /**
-         * Job queued for running/building event.
+         * Job run queued.
          */
-        job_queued,
+        run_queued,
         /**
-         * Job run started event.
+         * Job run started.
          */
         run_started,
         /**
-         * Job run ended event.
+         * Job run ended.
          */
         run_ended;
 
