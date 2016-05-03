@@ -5,7 +5,7 @@ implementation based on [Google's Guava EventBus](https://github.com/google/guav
 
 # API
 
-Please [see the online Javadoc](http://tfennelly.github.io/jenkins-pubsub-bus-module/) for how to use the API.
+Please [see the online Javadoc](http://tfennelly.github.io/jenkins-pubsub-light-module/) for how to use the API.
 
 # This is not a full-blown Event Bus
  
