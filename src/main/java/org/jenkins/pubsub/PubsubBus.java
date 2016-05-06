@@ -75,7 +75,12 @@ public abstract class PubsubBus implements ExtensionPoint {
         if (eventName == null || eventName.length() == 0) {
             throw new MessageException(String.format("Event name property '%s' not set on the Message instance.", EventProps.Jenkins.jenkins_event));
         }
-
+        
+        // Make sure the channel name is set on the message.
+        // In case getChannelName is overridden.
+        message.setChannelName(channelName);
+        
+        // No publish it...
         publisher(channelName).publish(message);
     }
 

@@ -52,6 +52,7 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
      * @param job The Jenkins {@link Job} that this message instance is to be associated.
      */
     public JobChannelMessage(@Nonnull Job job) {
+        super.setChannelName(Events.JobChannel.NAME);
         set(EventProps.Job.job_name, job.getFullName());
     }
 
