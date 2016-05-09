@@ -23,6 +23,7 @@
  */
 package org.jenkins.pubsub;
 
+import hudson.model.Item;
 import net.sf.json.JSONObject;
 
 import javax.annotation.CheckForNull;
@@ -183,6 +184,16 @@ public abstract class Message<T extends Message> extends Properties {
      */
     public T setEventName(Enum name) {
         set(EventProps.Jenkins.jenkins_event, name.name());
+        return (T) this;
+    }
+    
+    /**
+     * Set {@link Item} propertis on the message instance.
+     * @param item The Jenkins {@link Item}.
+     */
+    protected T setItemProps(@Nonnull Item item) {
+        set(EventProps.Jenkins.jenkins_object_name, item.getFullName());
+        set(EventProps.Jenkins.jenkins_object_url, item.getUrl());
         return (T) this;
     }
     

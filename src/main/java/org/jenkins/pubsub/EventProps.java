@@ -68,7 +68,11 @@ public interface EventProps {
     }
 
     /**
-     * Pre-defined Job event property names.
+     * Pre-defined Job channel event property names.
+     * <ul>
+     *     <li>See {@link org.jenkins.pubsub.Events.JobChannel} for Job channel events.</li>
+     *     <li>See {@link Jenkins} for core properties common to most/all messages.</li>
+     * </ul>
      */
     enum Job {
         /**

@@ -54,6 +54,7 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
     public JobChannelMessage(@Nonnull Job job) {
         super.setChannelName(Events.JobChannel.NAME);
         set(EventProps.Job.job_name, job.getFullName());
+        setItemProps(job);
     }
 
     @Override

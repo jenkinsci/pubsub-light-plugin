@@ -44,6 +44,9 @@ public interface Events {
 
     /**
      * Pre-defined "job" channel events.
+     * <ul>
+     *     <li>See {@link org.jenkins.pubsub.EventProps.Job} for pre-defined job channel event properties.</li>
+     * </ul>
      */
     enum JobChannel {
         /**
