@@ -29,6 +29,7 @@ import com.google.common.eventbus.Subscribe;
 import hudson.model.User;
 import hudson.security.ACL;
 import hudson.util.CopyOnWriteMap;
+import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 
 import javax.annotation.CheckForNull;
@@ -120,7 +121,11 @@ public final class GuavaPubsubBus extends PubsubBus {
         public GuavaSubscriber(@Nonnull ChannelSubscriber subscriber, User user, EventFilter eventFilter) {
             this.subscriber = subscriber;
             if (user != null) {
-                this.authentication = user.impersonate();
+                if (user.getId().equalsIgnoreCase("anonymous")) {
+                    this.authentication = Jenkins.ANONYMOUS;
+                } else {
+                    this.authentication = user.impersonate();
+                }
             }
             this.eventFilter = eventFilter;
         }
