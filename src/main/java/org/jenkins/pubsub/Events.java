@@ -23,7 +23,9 @@
  */
 package org.jenkins.pubsub;
 
+import hudson.model.Item;
 import hudson.model.Queue;
+import hudson.model.listeners.ItemListener;
 
 /**
  * Pre-defined event type name enumerations.
@@ -49,6 +51,37 @@ public interface Events {
      * </ul>
      */
     enum JobChannel {
+        
+        // Job CRUD events
+
+        /**
+         * Job created.
+         * @see ItemListener#onCreated(Item)
+         */
+        job_crud_created,
+
+        /**
+         * Job deleted.
+         * @see ItemListener#onDeleted(Item)
+         */
+        job_crud_deleted,
+        
+        /**
+         * Job updated.
+         * @see ItemListener#onUpdated(Item)
+         */
+        job_crud_updated,
+        
+        /**
+         * Job renamed.
+         * @see org.jenkins.pubsub.EventProps.Item#item_rename_before
+         * @see org.jenkins.pubsub.EventProps.Item#item_rename_after
+         * @see ItemListener#onRenamed(Item, String, String)
+         */
+        job_crud_renamed,
+        
+        // Job run events
+        
         /**
          * Job run queue entered.
          * @see hudson.model.queue.QueueListener#onEnterWaiting(Queue.WaitingItem)  

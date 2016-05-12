@@ -91,4 +91,23 @@ public interface EventProps {
          */
         job_run_status,
     }
+    
+    /**
+     * Pre-defined {@link Item} event property names.
+     * <ul>
+     *     <li>See {@link Jenkins} for core properties common to most/all messages.</li>
+     * </ul>
+     */
+    enum Item {
+        
+        /**
+         * Item (e.g. a Job) name before a rename operation.
+         */
+        item_rename_before,
+        
+        /**
+         * Item (e.g. a Job) name after a rename operation.
+         */
+        item_rename_after,
+    }
 }

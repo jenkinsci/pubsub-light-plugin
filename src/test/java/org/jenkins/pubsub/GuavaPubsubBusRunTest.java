@@ -79,18 +79,19 @@ public class GuavaPubsubBusRunTest {
             
             // Security check ...
             // alice should have received the run messages, but not bob.
-            assertEquals(5, aliceSubs.messages.size());
+            assertEquals(6, aliceSubs.messages.size());
             assertEquals(0, bobSubs.messages.size());
 
-            assertEquals(Events.JobChannel.job_run_queue_enter.name(), aliceSubs.messages.get(0).getEventName());
-            assertEquals(Events.JobChannel.job_run_queue_buildable.name(), aliceSubs.messages.get(1).getEventName());
-            assertEquals(Events.JobChannel.job_run_queue_left.name(), aliceSubs.messages.get(2).getEventName());
-            assertEquals("ALLOCATED", aliceSubs.messages.get(2).get(EventProps.Job.job_run_status));
-            assertEquals(Events.JobChannel.job_run_started.name(), aliceSubs.messages.get(3).getEventName());
-            assertEquals(Events.JobChannel.job_run_ended.name(), aliceSubs.messages.get(4).getEventName());
+            assertEquals(Events.JobChannel.job_crud_created.name(), aliceSubs.messages.get(0).getEventName());
+            assertEquals(Events.JobChannel.job_run_queue_enter.name(), aliceSubs.messages.get(1).getEventName());
+            assertEquals(Events.JobChannel.job_run_queue_buildable.name(), aliceSubs.messages.get(2).getEventName());
+            assertEquals(Events.JobChannel.job_run_queue_left.name(), aliceSubs.messages.get(3).getEventName());
+            assertEquals("ALLOCATED", aliceSubs.messages.get(3).get(EventProps.Job.job_run_status));
+            assertEquals(Events.JobChannel.job_run_started.name(), aliceSubs.messages.get(4).getEventName());
+            assertEquals(Events.JobChannel.job_run_ended.name(), aliceSubs.messages.get(5).getEventName());
             
-            JobMessage queueMessage = (JobMessage) aliceSubs.messages.get(0);
-            RunMessage runMessage = (RunMessage) aliceSubs.messages.get(3);
+            JobMessage queueMessage = (JobMessage) aliceSubs.messages.get(1);
+            RunMessage runMessage = (RunMessage) aliceSubs.messages.get(4);
 
             // The domain model object instances should not be on the messages...
             assertNull(queueMessage.job);
