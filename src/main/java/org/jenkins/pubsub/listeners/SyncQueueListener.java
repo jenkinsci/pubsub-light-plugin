@@ -24,9 +24,9 @@
 package org.jenkins.pubsub.listeners;
 
 import hudson.Extension;
-import hudson.model.Job;
 import hudson.model.Queue;
 import hudson.model.queue.QueueListener;
+import jenkins.model.ParameterizedJobMixIn;
 import org.jenkins.pubsub.EventProps;
 import org.jenkins.pubsub.Events;
 import org.jenkins.pubsub.JobMessage;
@@ -83,9 +83,9 @@ public class SyncQueueListener extends QueueListener {
     }
     private void publish(Queue.Item item, Events.JobChannel event, String status) {
         Queue.Task task = item.task;
-        if (task instanceof Job) {
+        if (task instanceof ParameterizedJobMixIn.ParameterizedJob) {
             try {
-                PubsubBus.getBus().publish(new JobMessage((Job)task)
+                PubsubBus.getBus().publish(new JobMessage((ParameterizedJobMixIn.ParameterizedJob)task)
                         .setEventName(event)
                         .set(EventProps.Job.job_run_queueId, Long.toString(item.getId()))
                         .set(EventProps.Job.job_run_status, status)
