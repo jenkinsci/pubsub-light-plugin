@@ -25,8 +25,8 @@ package org.jenkins.pubsub.listeners;
 
 import hudson.Extension;
 import hudson.model.Item;
-import hudson.model.Job;
 import hudson.model.listeners.ItemListener;
+import jenkins.model.ParameterizedJobMixIn;
 import org.jenkins.pubsub.EventProps;
 import org.jenkins.pubsub.Events;
 import org.jenkins.pubsub.JobMessage;
@@ -81,9 +81,9 @@ public class SyncJobCRUDListener extends ItemListener {
     }
 
     private void publish(Item item, Events.JobChannel event, Properties properties) {
-        if (item instanceof Job) {
+        if (item instanceof ParameterizedJobMixIn.ParameterizedJob) {
             try {
-                Message message = new JobMessage((Job) item).setEventName(event);
+                Message message = new JobMessage((ParameterizedJobMixIn.ParameterizedJob) item).setEventName(event);
                 
                 if (properties != null) {
                     message.putAll(properties);

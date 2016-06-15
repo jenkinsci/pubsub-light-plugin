@@ -26,9 +26,12 @@ package org.jenkins.pubsub;
 import hudson.model.Job;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
+import jenkins.model.ParameterizedJobMixIn;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Jenkins {@link Job} domain model {@link PubsubBus} message instance.
@@ -37,7 +40,10 @@ import javax.annotation.Nonnull;
  */
 public abstract class JobChannelMessage<T extends JobChannelMessage> extends AccessControlledMessage {
     
-    transient Job job;
+    private static final Logger LOGGER = Logger.getLogger(JobChannelMessage.class.getName());
+
+    
+    transient ParameterizedJobMixIn.ParameterizedJob job;
 
     /**
      * Create a Hob message instance.
@@ -48,13 +54,26 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
     }
 
     /**
+     * @deprecated Use {@link #JobChannelMessage(ParameterizedJobMixIn.ParameterizedJob)} 
+     */
+    @Deprecated
+    public JobChannelMessage(@Nonnull Job job) {
+        if (job instanceof ParameterizedJobMixIn.ParameterizedJob) {
+            setJob((ParameterizedJobMixIn.ParameterizedJob) job);
+        } else {
+            LOGGER.log(Level.SEVERE, String.format("Job type '%s' does not implement '%s'. Unable to construct a valid event.",
+                    job.getClass().getName(),
+                    ParameterizedJobMixIn.ParameterizedJob.class.getName()));
+            // And an exception is likely to be thrown once this Message instance reaches the publisher.
+        }
+    }
+    
+    /**
      * Create a message instance associated with a Jenkins {@link Job}.
      * @param job The Jenkins {@link Job} that this message instance is to be associated.
      */
-    public JobChannelMessage(@Nonnull Job job) {
-        super.setChannelName(Events.JobChannel.NAME);
-        set(EventProps.Job.job_name, job.getFullName());
-        setItemProps(job);
+    public JobChannelMessage(@Nonnull ParameterizedJobMixIn.ParameterizedJob job) {
+        setJob(job);
     }
 
     @Override
@@ -66,19 +85,20 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
     public final Message setChannelName(String name) {
         return super.setChannelName(Events.JobChannel.NAME);
     }
-    
+
     public String getJobName() {
         return get(EventProps.Job.job_name);
     }
-    
+
     private transient boolean jobLookupComplete = false;
+
     /**
      * Get the Jenkins {@link Job} associated with this message.
      * @return The Jenkins {@link Job} associated with this message,
      * or {code null} if the message is not associated with a
      * Jenkins {@link Job}.
      */
-    public synchronized @CheckForNull Job getJob() {
+    public synchronized @CheckForNull ParameterizedJobMixIn.ParameterizedJob getJob() {
         if (jobLookupComplete || job != null) {
             return job;
         }
@@ -87,12 +107,18 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
             String jobName = get(EventProps.Job.job_name);
             if (jobName != null) {
                 Jenkins jenkins = Jenkins.getInstance();
-                job = (Job) jenkins.getItemByFullName(jobName);
+                job = (ParameterizedJobMixIn.ParameterizedJob) jenkins.getItemByFullName(jobName);
             }
         } finally {
             jobLookupComplete = true;
         }
         return job;        
+    }
+    
+    private void setJob(@Nonnull ParameterizedJobMixIn.ParameterizedJob job) {
+        super.setChannelName(Events.JobChannel.NAME);
+        set(EventProps.Job.job_name, job.getFullName());
+        setItemProps(job);
     }
 
     @Nonnull

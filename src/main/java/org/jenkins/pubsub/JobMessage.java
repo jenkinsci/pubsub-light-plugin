@@ -25,6 +25,7 @@ package org.jenkins.pubsub;
 
 import hudson.model.Job;
 import hudson.security.AccessControlled;
+import jenkins.model.ParameterizedJobMixIn;
 
 import javax.annotation.Nonnull;
 
@@ -38,7 +39,15 @@ public final class JobMessage extends JobChannelMessage<JobMessage> {
     public JobMessage() {
     }
 
+    /**
+     * @deprecated Use {@link #JobMessage(ParameterizedJobMixIn.ParameterizedJob)}
+     */
+    @Deprecated
     public JobMessage(@Nonnull Job job) {
+        super(job);
+    }
+    
+    public JobMessage(@Nonnull ParameterizedJobMixIn.ParameterizedJob job) {
         super(job);
     }
 
