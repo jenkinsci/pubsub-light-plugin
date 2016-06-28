@@ -87,6 +87,18 @@ public abstract class Message<T extends Message> extends Properties {
     }
 
     /**
+     * Get the Jenkins domain model object type that this message instance is
+     * associated with.
+     *
+     * @return The Jenkins domain model object type that this message instance is
+     * associated with.
+     * @see EventProps.Jenkins#jenkins_object_type
+     */
+    @CheckForNull protected String getObjectType() {
+        return get(EventProps.Jenkins.jenkins_object_type);
+    }
+
+    /**
      * Get the Jenkins domain model object Id that this message instance is
      * associated with.
      *

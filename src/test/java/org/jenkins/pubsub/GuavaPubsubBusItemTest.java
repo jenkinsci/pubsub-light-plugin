@@ -37,8 +37,6 @@ public class GuavaPubsubBusItemTest {
     @Test
     public void test_non_filtered() {
         User alice = User.get("alice");
-        
-        PubsubBus x = PubsubBus.getBus();
 
         ChannelPublisher jobPublisher = bus.publisher("jenkins.job");
         ChannelPublisher slavePublisher = bus.publisher("jenkins.slave");

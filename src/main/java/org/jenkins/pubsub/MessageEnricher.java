@@ -23,17 +23,25 @@
  */
 package org.jenkins.pubsub;
 
+import hudson.ExtensionPoint;
+
+import javax.annotation.Nonnull;
+
 /**
- * Message exception.
+ * Message enricher extension point.
+ * <p>
+ * This extension point should only be used to add enough additional event data
+ * to allow an event consumer make a decision on whether or not it is interested in
+ * this event i.e. where the default min data on the event was not enough.
+ * Please use sparingly!!
+ * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class MessageException extends Exception {
-    
-    public MessageException(String message) {
-        super(message);
-    }
-    
-    public MessageException(String message, Throwable cause) {
-        super(message, cause);
-    }
+public abstract class MessageEnricher implements ExtensionPoint {
+
+    /**
+     * Enrich the message with some additional data.
+     * @param message The message instance.
+     */
+    public abstract void enrich(@Nonnull Message message);
 }
