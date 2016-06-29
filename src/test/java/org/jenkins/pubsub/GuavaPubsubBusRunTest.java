@@ -22,6 +22,8 @@ import java.util.Set;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 /**
@@ -79,16 +81,15 @@ public class GuavaPubsubBusRunTest {
             
             // Security check ...
             // alice should have received the run messages, but not bob.
-            assertEquals(6, aliceSubs.messages.size());
-            assertEquals(0, bobSubs.messages.size());
+            assertFalse(aliceSubs.messages.isEmpty());
+            assertTrue(bobSubs.messages.isEmpty());
 
             assertEquals(Events.JobChannel.job_crud_created.name(), aliceSubs.messages.get(0).getEventName());
             assertEquals(Events.JobChannel.job_run_queue_enter.name(), aliceSubs.messages.get(1).getEventName());
-            assertEquals(Events.JobChannel.job_run_queue_buildable.name(), aliceSubs.messages.get(2).getEventName());
-            assertEquals(Events.JobChannel.job_run_queue_left.name(), aliceSubs.messages.get(3).getEventName());
-            assertEquals("ALLOCATED", aliceSubs.messages.get(3).get(EventProps.Job.job_run_status));
-            assertEquals(Events.JobChannel.job_run_started.name(), aliceSubs.messages.get(4).getEventName());
-            assertEquals(Events.JobChannel.job_run_ended.name(), aliceSubs.messages.get(5).getEventName());
+            
+            // Check make sure message enrichment happened.
+            // https://issues.jenkins-ci.org/browse/JENKINS-36218
+            assertEquals("nice one", aliceSubs.messages.get(0).get(NoddyMessageEnricher.NODDY_MESSAGE_ENRICHER_PROP));
             
             JobMessage queueMessage = (JobMessage) aliceSubs.messages.get(1);
             RunMessage runMessage = (RunMessage) aliceSubs.messages.get(4);

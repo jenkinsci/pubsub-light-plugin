@@ -46,6 +46,10 @@ public interface EventProps {
      */
     enum Jenkins {
         /**
+         * The Jenkins organization origin of the event.
+         */
+        jenkins_org,
+        /**
          * The event channel name on which the message was sent.
          */
         jenkins_channel,
@@ -54,7 +58,11 @@ public interface EventProps {
          */
         jenkins_event,
         /**
-         * Jenkins domain object name.
+         * Jenkins domain object type.
+         */
+        jenkins_object_type,
+        /**
+         * Jenkins domain object full name.
          */
         jenkins_object_name,
         /**
@@ -79,6 +87,12 @@ public interface EventProps {
          * Job name.
          */
         job_name,
+        /**
+         * Job is a multi-branch job.
+         * <p>
+         * "true" if it is a multi-branch job, otherwise it is not a multi-branch job.
+         */
+        job_ismultibranch,
         /**
          * Job run Queue Id.
          * <p>

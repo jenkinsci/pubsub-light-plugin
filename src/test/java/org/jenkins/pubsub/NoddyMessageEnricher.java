@@ -23,17 +23,20 @@
  */
 package org.jenkins.pubsub;
 
+import hudson.Extension;
+
+import javax.annotation.Nonnull;
+
 /**
- * Message exception.
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class MessageException extends Exception {
-    
-    public MessageException(String message) {
-        super(message);
-    }
-    
-    public MessageException(String message, Throwable cause) {
-        super(message, cause);
+@Extension
+public class NoddyMessageEnricher extends MessageEnricher {
+
+    public static final String NODDY_MESSAGE_ENRICHER_PROP = "NoddyMessageEnricher_prop";
+
+    @Override
+    public void enrich(@Nonnull Message message) {
+        message.set(NODDY_MESSAGE_ENRICHER_PROP, "nice one");
     }
 }

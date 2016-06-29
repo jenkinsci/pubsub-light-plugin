@@ -26,6 +26,7 @@ package org.jenkins.pubsub;
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.model.User;
+import hudson.security.AccessControlled;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -44,8 +45,7 @@ public abstract class PubsubBus implements ExtensionPoint {
      * @return The installed {@link PubsubBus} implementation, or default
      * implementation if none are found.
      */
-    public synchronized static @Nonnull
-    PubsubBus getBus() {
+    public synchronized static @Nonnull PubsubBus getBus() {
         if (pubsubBus == null) {
             ExtensionList<PubsubBus> installedBusImpls = ExtensionList.lookup(PubsubBus.class);
             if (!installedBusImpls.isEmpty()) {
@@ -79,6 +79,25 @@ public abstract class PubsubBus implements ExtensionPoint {
         // Make sure the channel name is set on the message.
         // In case getChannelName is overridden.
         message.setChannelName(channelName);
+        
+        if (message instanceof AccessControlledMessage) {
+            AccessControlled accessControlled = ((AccessControlledMessage) message).getAccessControlled();
+            if (accessControlled != null) {
+                message.set(EventProps.Jenkins.jenkins_object_type, accessControlled.getClass().getName());
+            }
+        }
+        
+        // Apply event enrichers.
+        ExtensionList<MessageEnricher> messageEnrichers = ExtensionList.lookup(MessageEnricher.class);
+        if (!messageEnrichers.isEmpty()) {
+            for (MessageEnricher enricher : messageEnrichers) {
+                try {
+                    enricher.enrich(message);
+                } catch (Exception e) {
+                    throw new MessageException(String.format("Event enrichment failure due to unexpected exception in %s.", enricher.getClass().getName()), e);
+                }
+            }
+        }
         
         // No publish it...
         publisher(channelName).publish(message);
