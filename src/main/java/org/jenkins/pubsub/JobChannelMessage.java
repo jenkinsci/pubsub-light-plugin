@@ -115,7 +115,8 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
         return job;        
     }
     
-    private void setJob(@Nonnull ParameterizedJobMixIn.ParameterizedJob job) {
+    private synchronized void setJob(@Nonnull ParameterizedJobMixIn.ParameterizedJob job) {
+        this.job = job;
         super.setChannelName(Events.JobChannel.NAME);
         set(EventProps.Job.job_name, job.getFullName());
         setItemProps(job);
