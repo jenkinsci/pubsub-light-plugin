@@ -58,6 +58,10 @@ public interface EventProps {
          */
         jenkins_event,
         /**
+         * The event UUID.
+         */
+        jenkins_event_uuid,
+        /**
          * Jenkins domain object type.
          */
         jenkins_object_type,

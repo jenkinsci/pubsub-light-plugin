@@ -26,7 +26,6 @@ package org.jenkins.pubsub;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
-import hudson.model.User;
 import hudson.security.ACL;
 import hudson.util.CopyOnWriteMap;
 import jenkins.model.Jenkins;
@@ -80,8 +79,8 @@ public final class GuavaPubsubBus extends PubsubBus {
     }
 
     @Override
-    public void subscribe(@Nonnull String channelName, @Nonnull ChannelSubscriber subscriber, @Nonnull User user, @CheckForNull EventFilter eventFilter) {
-        GuavaSubscriber guavaSubscriber = new GuavaSubscriber(subscriber, user, eventFilter);
+    public void subscribe(@Nonnull String channelName, @Nonnull ChannelSubscriber subscriber, @Nonnull Authentication authentication, @CheckForNull EventFilter eventFilter) {
+        GuavaSubscriber guavaSubscriber = new GuavaSubscriber(subscriber, authentication, eventFilter);
         EventBus channelBus = getChannelBus(channelName);
         channelBus.register(guavaSubscriber);
         subscribers.put(subscriber, guavaSubscriber);
@@ -118,14 +117,12 @@ public final class GuavaPubsubBus extends PubsubBus {
         private Authentication authentication;
         private final EventFilter eventFilter;
 
-        public GuavaSubscriber(@Nonnull ChannelSubscriber subscriber, User user, EventFilter eventFilter) {
+        public GuavaSubscriber(@Nonnull ChannelSubscriber subscriber, Authentication authentication, EventFilter eventFilter) {
             this.subscriber = subscriber;
-            if (user != null) {
-                if (user.getId().equalsIgnoreCase("anonymous")) {
-                    this.authentication = Jenkins.ANONYMOUS;
-                } else {
-                    this.authentication = user.impersonate();
-                }
+            if (authentication != null) {
+                this.authentication = authentication;
+            } else {
+                this.authentication = Jenkins.ANONYMOUS;
             }
             this.eventFilter = eventFilter;
         }

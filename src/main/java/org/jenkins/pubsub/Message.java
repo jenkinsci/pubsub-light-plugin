@@ -34,6 +34,7 @@ import java.io.Writer;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * {@link PubsubBus} message instance.
@@ -72,6 +73,8 @@ public abstract class Message<T extends Message> extends Properties {
      * Create a plain message instance.
      */
     Message() {
+        // Add a UUID to the event message.
+        this.set(EventProps.Jenkins.jenkins_event_uuid, UUID.randomUUID().toString());
     }
 
     /**
@@ -197,6 +200,14 @@ public abstract class Message<T extends Message> extends Properties {
     public T setEventName(Enum name) {
         set(EventProps.Jenkins.jenkins_event, name.name());
         return (T) this;
+    }
+    
+    /**
+     * Get the event UUID for the message.
+     * @return The event UUID for the message, or {@code null} if none set.
+     */
+    public String getEventUUID() {
+        return get(EventProps.Jenkins.jenkins_event_uuid);
     }
     
     /**
