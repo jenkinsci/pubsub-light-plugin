@@ -25,8 +25,8 @@ package org.jenkins.pubsub;
 
 import hudson.ExtensionList;
 import hudson.ExtensionPoint;
-import hudson.model.User;
 import hudson.security.AccessControlled;
+import org.acegisecurity.Authentication;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -115,14 +115,14 @@ public abstract class PubsubBus implements ExtensionPoint {
      * Subscribe to events on the specified event channel.
      * @param channelName The channel name.
      * @param subscriber  The subscriber instance that will receive the events.
-     * @param user        The Jenkins user associated with the subscriber.  
+     * @param authentication The authentication to which the subscription is associated.  
      * @param eventFilter A message filter, or {@code null} if no filtering is to be applied.
      *                    This tells the bus to only forward messages that match the properties
      *                    (names and values) specified in the filter.
      */
     public abstract void subscribe(@Nonnull String channelName,
                                        @Nonnull ChannelSubscriber subscriber,
-                                       @Nonnull User user,
+                                       @Nonnull Authentication authentication,
                                        @CheckForNull EventFilter eventFilter);
 
     /**

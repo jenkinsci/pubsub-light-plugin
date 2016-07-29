@@ -42,6 +42,12 @@ public class MessageTest {
     @Test
     public void test_toJSON() {
         Message message = new SimpleMessage().set("a", "aVal");
+
+        // Check that the message has a UUID. Then remove it
+        // so we can do a check on the rest of the content.
+        assertTrue(message.getEventUUID() != null);
+        message.remove(EventProps.Jenkins.jenkins_event_uuid.name());
+
         assertEquals("{\"a\":\"aVal\"}", message.toJSON());
         assertEquals("{\"a\":\"aVal\"}", message.toString());
     }

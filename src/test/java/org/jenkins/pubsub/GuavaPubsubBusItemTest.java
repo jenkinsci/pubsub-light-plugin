@@ -44,8 +44,8 @@ public class GuavaPubsubBusItemTest {
         MockSubscriber subs2 = new MockSubscriber();
 
         // Subscribers ...
-        bus.subscribe("jenkins.job", subs1, alice, null);
-        bus.subscribe("jenkins.slave", subs2, alice, null);
+        bus.subscribe("jenkins.job", subs1, alice.impersonate(), null);
+        bus.subscribe("jenkins.slave", subs2, alice.impersonate(), null);
         
         // Publish ...
         jobPublisher.publish(new SimpleMessage().set("joba", "joba"));
@@ -66,7 +66,7 @@ public class GuavaPubsubBusItemTest {
         MockSubscriber subs = new MockSubscriber();
 
         // Subscribers ...
-        bus.subscribe("jenkins.job", subs, alice, new EventFilter().set("joba", "joba"));
+        bus.subscribe("jenkins.job", subs, alice.impersonate(), new EventFilter().set("joba", "joba"));
         
         // Publish ...
         jobPublisher.publish(new SimpleMessage().set("joba", "joba")); // Should get delivered
@@ -84,7 +84,7 @@ public class GuavaPubsubBusItemTest {
         ChannelPublisher jobPublisher = bus.publisher("jenkins.job");
         MockSubscriber subs = new MockSubscriber();
 
-        bus.subscribe("jenkins.job", subs, alice, null);
+        bus.subscribe("jenkins.job", subs, alice.impersonate(), null);
         
         jobPublisher.publish(new ItemMessage(new MockItem().setACL(MockItem.YES_ACL)).set("joba", "1"));
         jobPublisher.publish(new ItemMessage(new MockItem().setACL(MockItem.YES_ACL)).set("joba", "2"));

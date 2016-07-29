@@ -28,4 +28,10 @@ package org.jenkins.pubsub;
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public final class EventFilter extends Message<EventFilter> {
+    EventFilter() {
+        super();
+        // Remove the UUID so as to prevent it from interfeering
+        // with the filter containsAll check.
+        remove(EventProps.Jenkins.jenkins_event_uuid.name());
+    }
 }
