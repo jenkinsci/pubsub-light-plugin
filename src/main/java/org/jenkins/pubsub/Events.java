@@ -107,6 +107,14 @@ public interface Events {
          */
         job_run_started,
         /**
+         * Job run paused.
+         */
+        job_run_paused,
+        /**
+         * Job run unpaused.
+         */
+        job_run_unpaused,
+        /**
          * Job run ended.
          */
         job_run_ended;
