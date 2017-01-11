@@ -95,16 +95,16 @@ public class GuavaPubsubBusRunTest {
             RunMessage runMessage = (RunMessage) aliceSubs.messages.get(4);
 
             // The domain model object instances should not be on the messages...
-            assertNull(queueMessage.job);
-            assertNull(runMessage.job);
+            assertNull(queueMessage.jobChannelItem);
+            assertNull(runMessage.jobChannelItem);
             assertNull(runMessage.run);
             // But calling the getter methods should result in them being looked up...
-            queueMessage.getJob();
+            queueMessage.getJobChannelItem();
             runMessage.getRun();
-            assertNotNull(queueMessage.job);
-            assertNotNull(runMessage.job);
+            assertNotNull(queueMessage.jobChannelItem);
+            assertNotNull(runMessage.jobChannelItem);
             assertNotNull(runMessage.run);
-            assertEquals(queueMessage.job, runMessage.job);
+            assertEquals(queueMessage.jobChannelItem, runMessage.jobChannelItem);
             
             // And check that the queue Ids match
             assertEquals(queueMessage.get(EventProps.Job.job_run_queueId), runMessage.get(EventProps.Job.job_run_queueId));

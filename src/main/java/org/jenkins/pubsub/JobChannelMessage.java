@@ -23,27 +23,21 @@
  */
 package org.jenkins.pubsub;
 
-import hudson.model.Job;
+import hudson.model.Item;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
-import jenkins.model.ParameterizedJobMixIn;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
- * Jenkins {@link Job} domain model {@link PubsubBus} message instance.
+ * Jenkins Job Channel {@link Item} domain model {@link PubsubBus} message instance.
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public abstract class JobChannelMessage<T extends JobChannelMessage> extends AccessControlledMessage {
     
-    private static final Logger LOGGER = Logger.getLogger(JobChannelMessage.class.getName());
-
-    
-    transient ParameterizedJobMixIn.ParameterizedJob job;
+    transient Item jobChannelItem;
 
     /**
      * Create a Hob message instance.
@@ -53,27 +47,8 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
         setChannelName(Events.JobChannel.NAME);
     }
 
-    /**
-     * @deprecated Use {@link #JobChannelMessage(ParameterizedJobMixIn.ParameterizedJob)} 
-     */
-    @Deprecated
-    public JobChannelMessage(@Nonnull Job job) {
-        if (job instanceof ParameterizedJobMixIn.ParameterizedJob) {
-            setJob((ParameterizedJobMixIn.ParameterizedJob) job);
-        } else {
-            LOGGER.log(Level.SEVERE, String.format("Job type '%s' does not implement '%s'. Unable to construct a valid event.",
-                    job.getClass().getName(),
-                    ParameterizedJobMixIn.ParameterizedJob.class.getName()));
-            // And an exception is likely to be thrown once this Message instance reaches the publisher.
-        }
-    }
-    
-    /**
-     * Create a message instance associated with a Jenkins {@link Job}.
-     * @param job The Jenkins {@link Job} that this message instance is to be associated.
-     */
-    public JobChannelMessage(@Nonnull ParameterizedJobMixIn.ParameterizedJob job) {
-        setJob(job);
+    public JobChannelMessage(@Nonnull Item jobChannelItem) {
+        setJobChannelItem(jobChannelItem);
     }
 
     @Override
@@ -93,38 +68,39 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
     private transient boolean jobLookupComplete = false;
 
     /**
-     * Get the Jenkins {@link Job} associated with this message.
-     * @return The Jenkins {@link Job} associated with this message,
+     * Get the Jenkins {@link Item} associated with this message.
+     * @return The Jenkins {@link Item} associated with this message,
      * or {code null} if the message is not associated with a
-     * Jenkins {@link Job}.
+     * Jenkins {@link Item}.
      */
-    public synchronized @CheckForNull ParameterizedJobMixIn.ParameterizedJob getJob() {
-        if (jobLookupComplete || job != null) {
-            return job;
+    public synchronized @CheckForNull
+    Item getJobChannelItem() {
+        if (jobLookupComplete || jobChannelItem != null) {
+            return jobChannelItem;
         }
         
         try {
             String jobName = get(EventProps.Job.job_name);
             if (jobName != null) {
                 Jenkins jenkins = Jenkins.getInstance();
-                job = (ParameterizedJobMixIn.ParameterizedJob) jenkins.getItemByFullName(jobName);
+                jobChannelItem = (Item) jenkins.getItemByFullName(jobName);
             }
         } finally {
             jobLookupComplete = true;
         }
-        return job;        
+        return jobChannelItem;
     }
     
-    private synchronized void setJob(@Nonnull ParameterizedJobMixIn.ParameterizedJob job) {
-        this.job = job;
+    private synchronized void setJobChannelItem(@Nonnull Item jobChannelItem) {
+        this.jobChannelItem = jobChannelItem;
         super.setChannelName(Events.JobChannel.NAME);
-        set(EventProps.Job.job_name, job.getFullName());
-        setItemProps(job);
+        set(EventProps.Job.job_name, jobChannelItem.getFullName());
+        setItemProps(jobChannelItem);
     }
 
     @Nonnull
     @Override
     protected Permission getRequiredPermission() {
-        return Job.READ;
+        return Item.READ;
     }
 }
