@@ -98,6 +98,14 @@ public interface EventProps {
          */
         job_ismultibranch,
         /**
+         * Multi-branch job indexing status.
+         */
+        job_multibranch_indexing_status,
+        /**
+         * Multi-branch job indexing result.
+         */
+        job_multibranch_indexing_result,
+        /**
          * Job run Queue Id.
          * <p>
          * This is how you correlate between Job Queue tasks and the Runs

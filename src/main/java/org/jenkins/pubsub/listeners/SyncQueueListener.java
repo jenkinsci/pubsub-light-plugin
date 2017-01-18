@@ -27,12 +27,16 @@ import hudson.Extension;
 import hudson.model.Item;
 import hudson.model.Queue;
 import hudson.model.queue.QueueListener;
+import hudson.model.queue.QueueTaskFuture;
 import org.jenkins.pubsub.EventProps;
 import org.jenkins.pubsub.Events;
-import org.jenkins.pubsub.JobMessage;
 import org.jenkins.pubsub.MessageException;
 import org.jenkins.pubsub.PubsubBus;
+import org.jenkins.pubsub.QueueTaskMessage;
 
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,6 +58,58 @@ public class SyncQueueListener extends QueueListener {
     
     private static final Logger LOGGER = Logger.getLogger(SyncQueueListener.class.getName());
 
+    //
+    // Hack for Cliff wrt https://issues.jenkins-ci.org/browse/JENKINS-39794
+    //
+    private static BlockingQueue<Queue.LeftItem> queueTaskLeftPublishQueue = new LinkedBlockingQueue<>();
+    private static BlockingQueue<Queue.LeftItem> tryLaterQueueTaskLeftQueue = new LinkedBlockingQueue<>();
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                queueTaskLeftPublishQueue = null;
+            }
+        });
+        new Thread() {
+            @Override
+            public void run() {
+                BlockingQueue<Queue.LeftItem> blockingQueueRef = queueTaskLeftPublishQueue;
+                while (queueTaskLeftPublishQueue != null) {
+                    try {
+                        // Pull items off the queue and check are they "done". Publish them
+                        // if they are, put them into a "try later" queue if they're not.
+                        Queue.LeftItem leftItem = blockingQueueRef.poll(500, TimeUnit.MILLISECONDS);
+                        if (leftItem != null) {
+                            QueueTaskFuture<Queue.Executable> future = leftItem.getFuture();
+
+                            // Drain the "try later" queue now before we possibly add more to
+                            // it (see below). If the main queue (blockingQueueRef) was empty,
+                            // the above poll on it would have ensured that we waited at least
+                            // the poll timeout period before retrying ones that were not
+                            // "done" on an earlier iteration.
+                            tryLaterQueueTaskLeftQueue.drainTo(blockingQueueRef);
+
+                            if (future.isDone()) {
+                                publish(leftItem, Events.JobChannel.job_run_queue_task_complete, null);
+                            } else  {
+                                // Not done. Put the item back on the queue and test again later.
+                                // However, don't put it back into the queue immediately. Putting it into
+                                // the "try later" queue ensures that it will be left for a little while
+                                // if the main queue is empty i.e. we avoid a tight loop here.
+                                tryLaterQueueTaskLeftQueue.put(leftItem);
+                            }
+                        } else {
+                            tryLaterQueueTaskLeftQueue.drainTo(blockingQueueRef);
+                        }
+                    } catch (InterruptedException e) {
+                        // queue access or thread sleeping error
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }.start();
+    }
+
     @Override
     public void onEnterWaiting(Queue.WaitingItem wi) {
         publish(wi, Events.JobChannel.job_run_queue_enter);
@@ -70,6 +126,18 @@ public class SyncQueueListener extends QueueListener {
             publish(li, Events.JobChannel.job_run_queue_left, "CANCELLED");
         } else {
             publish(li, Events.JobChannel.job_run_queue_left, "ALLOCATED");
+
+            //
+            // Hack for Cliff wrt https://issues.jenkins-ci.org/browse/JENKINS-39794
+            //
+            BlockingQueue<Queue.LeftItem> blockingQueueRef = queueTaskLeftPublishQueue;
+            if (blockingQueueRef != null) {
+                try {
+                    blockingQueueRef.put(li);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -81,11 +149,11 @@ public class SyncQueueListener extends QueueListener {
     private void publish(Queue.Item item, Events.JobChannel event) {
         publish(item, event, "QUEUED");
     }
-    private void publish(Queue.Item item, Events.JobChannel event, String status) {
+    private static void publish(Queue.Item item, Events.JobChannel event, String status) {
         Queue.Task task = item.task;
         if (task instanceof Item) {
             try {
-                PubsubBus.getBus().publish(new JobMessage((Item)task)
+                PubsubBus.getBus().publish(new QueueTaskMessage(item, (Item)task)
                         .setEventName(event)
                         .set(EventProps.Job.job_run_queueId, Long.toString(item.getId()))
                         .set(EventProps.Job.job_run_status, status)

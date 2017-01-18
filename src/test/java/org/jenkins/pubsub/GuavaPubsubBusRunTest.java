@@ -77,7 +77,7 @@ public class GuavaPubsubBusRunTest {
                 }
             });
 
-            aliceSubs.waitForMessageCount(3);
+            aliceSubs.waitForMessageCount(4);
             
             // Security check ...
             // alice should have received the run messages, but not bob.
@@ -90,8 +90,8 @@ public class GuavaPubsubBusRunTest {
             // Check make sure message enrichment happened.
             // https://issues.jenkins-ci.org/browse/JENKINS-36218
             assertEquals("nice one", aliceSubs.messages.get(0).get(NoddyMessageEnricher.NODDY_MESSAGE_ENRICHER_PROP));
-            
-            JobMessage queueMessage = (JobMessage) aliceSubs.messages.get(1);
+
+            QueueTaskMessage queueMessage = (QueueTaskMessage) aliceSubs.messages.get(1);
             RunMessage runMessage = (RunMessage) aliceSubs.messages.get(4);
 
             // The domain model object instances should not be on the messages...

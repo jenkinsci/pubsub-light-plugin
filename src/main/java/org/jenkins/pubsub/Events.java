@@ -117,7 +117,13 @@ public interface Events {
         /**
          * Job run ended.
          */
-        job_run_ended;
+        job_run_ended,
+        /**
+         * Job run queue task complete.
+         * <p>
+         * Fires after the run has ended.
+         */
+        job_run_queue_task_complete;
 
         /**
          * The channel name.

@@ -24,6 +24,7 @@
 package org.jenkins.pubsub;
 
 import hudson.model.Item;
+import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
 
@@ -96,6 +97,14 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
         super.setChannelName(Events.JobChannel.NAME);
         set(EventProps.Job.job_name, jobChannelItem.getFullName());
         setItemProps(jobChannelItem);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected AccessControlled getAccessControlled() {
+        return getJobChannelItem();
     }
 
     @Nonnull
