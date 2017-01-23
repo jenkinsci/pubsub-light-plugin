@@ -59,7 +59,13 @@ public class SyncQueueListener extends QueueListener {
     private static final Logger LOGGER = Logger.getLogger(SyncQueueListener.class.getName());
 
     //
-    // Hack for Cliff wrt https://issues.jenkins-ci.org/browse/JENKINS-39794
+    // The onLeft event does not mean that the queue task is actually "done", so we need to keep
+    // track of queue tasks so that we can fire an event when the task is actually "done".
+    //
+    // Using some blocking queues for this, with a single thread checking the tasks to see if
+    // they're done, firing the job_run_queue_task_complete event when they are.
+    //
+    // Added as a result of https://issues.jenkins-ci.org/browse/JENKINS-39794
     //
     private static BlockingQueue<Queue.LeftItem> queueTaskLeftPublishQueue = new LinkedBlockingQueue<>();
     private static BlockingQueue<Queue.LeftItem> tryLaterQueueTaskLeftQueue = new LinkedBlockingQueue<>();
@@ -67,12 +73,15 @@ public class SyncQueueListener extends QueueListener {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
+                // Null to signal thread exit.
                 queueTaskLeftPublishQueue = null;
             }
         });
         new Thread() {
             @Override
             public void run() {
+                // Get a local ref to queueTaskLeftPublishQueue, in case it is null'd
+                // later in the shutdown hook (see above).
                 BlockingQueue<Queue.LeftItem> blockingQueueRef = queueTaskLeftPublishQueue;
                 while (queueTaskLeftPublishQueue != null) {
                     try {
@@ -102,8 +111,9 @@ public class SyncQueueListener extends QueueListener {
                             tryLaterQueueTaskLeftQueue.drainTo(blockingQueueRef);
                         }
                     } catch (InterruptedException e) {
-                        // queue access or thread sleeping error
-                        e.printStackTrace();
+                        // Queue access (or thread sleeping) error. This event is going to fall on
+                        // the floor ... sorry !!
+                        LOGGER.log(Level.WARNING, "Error publishing job_run_queue_task_complete event.", e);
                     }
                 }
             }
@@ -127,15 +137,16 @@ public class SyncQueueListener extends QueueListener {
         } else {
             publish(li, Events.JobChannel.job_run_queue_left, "ALLOCATED");
 
-            //
-            // Hack for Cliff wrt https://issues.jenkins-ci.org/browse/JENKINS-39794
-            //
+            // Get a local ref to queueTaskLeftPublishQueue, in case it is null'd
+            // later in the shutdown hook (see above).
             BlockingQueue<Queue.LeftItem> blockingQueueRef = queueTaskLeftPublishQueue;
             if (blockingQueueRef != null) {
                 try {
                     blockingQueueRef.put(li);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    // Queue access error. This event is going to fall on
+                    // the floor ... sorry !!
+                    LOGGER.log(Level.WARNING, "Error publishing job_run_queue_task_complete event.", e);
                 }
             }
         }
