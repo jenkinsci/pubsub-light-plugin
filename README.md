@@ -3,6 +3,8 @@ A light-weight [Publish-Subscribe](http://www.enterpriseintegrationpatterns.com/
 Contains the `org.jenkins.pubsub.PubsubBus` abstract class, which is a Jenkins `ExtensionPoint`, with a default
 implementation based on [Google's Guava EventBus](https://github.com/google/guava/wiki/EventBusExplained).
 
+> __Note__: Other implementations can be created for other Messaging Systems e.g. a JMS based implementation for a distributed bus. An alternative to a distributed bus might be a [Messaging Bridge](http://www.enterpriseintegrationpatterns.com/patterns/messaging/MessagingBridge.html), with a Jenkins master instance using the default bus implementation internally, while "sharing" events globally via a bridge that just listens in on the bus and republishes the events.
+
 # API
 
 Please [see the online Javadoc](http://jenkinsci.github.io/pubsub-light-module/) for how to use the API.
