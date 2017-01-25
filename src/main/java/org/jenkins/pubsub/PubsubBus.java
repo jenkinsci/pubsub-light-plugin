@@ -39,6 +39,17 @@ import javax.annotation.Nonnull;
 public abstract class PubsubBus implements ExtensionPoint {
     
     private static PubsubBus pubsubBus;
+
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                if (pubsubBus != null) {
+                    pubsubBus.shutdown();
+                }
+            }
+        });
+    }
     
     /**
      * Get the installed {@link PubsubBus} implementation.
