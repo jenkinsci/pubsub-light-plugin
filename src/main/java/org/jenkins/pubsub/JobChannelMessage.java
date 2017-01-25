@@ -24,12 +24,15 @@
 package org.jenkins.pubsub;
 
 import hudson.model.Item;
+import hudson.model.Job;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
+import jenkins.model.ParameterizedJobMixIn;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import java.util.logging.Logger;
 
 /**
  * Jenkins Job Channel {@link Item} domain model {@link PubsubBus} message instance.
@@ -37,7 +40,9 @@ import javax.annotation.Nonnull;
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public abstract class JobChannelMessage<T extends JobChannelMessage> extends AccessControlledMessage {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(JobChannelMessage.class.getName());
+
     transient Item jobChannelItem;
 
     /**
@@ -74,8 +79,7 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
      * or {code null} if the message is not associated with a
      * Jenkins {@link Item}.
      */
-    public synchronized @CheckForNull
-    Item getJobChannelItem() {
+    public synchronized @CheckForNull Item getJobChannelItem() {
         if (jobLookupComplete || jobChannelItem != null) {
             return jobChannelItem;
         }
@@ -84,14 +88,32 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
             String jobName = get(EventProps.Job.job_name);
             if (jobName != null) {
                 Jenkins jenkins = Jenkins.getInstance();
-                jobChannelItem = (Item) jenkins.getItemByFullName(jobName);
+                jobChannelItem = jenkins.getItemByFullName(jobName);
             }
         } finally {
             jobLookupComplete = true;
         }
         return jobChannelItem;
     }
-    
+
+    /**
+     * Get the Jenkins {@link Job} associated with this message.
+     * @return The Jenkins {@link Job} associated with this message,
+     * or {code null} if the message is not associated with a
+     * Jenkins {@link Job}.
+     * @deprecated Use #getJobChannelItem.
+     */
+    public synchronized @CheckForNull ParameterizedJobMixIn.ParameterizedJob getJob() {
+        LOGGER.warning(String.format("Unexpected call to deprecated method: %s.getJob(). Switch to using getJobChannelItem().", JobChannelMessage.class.getName()));
+        if (jobChannelItem == null) {
+            return null;
+        }
+        if (jobChannelItem instanceof ParameterizedJobMixIn.ParameterizedJob) {
+            return (ParameterizedJobMixIn.ParameterizedJob) jobChannelItem;
+        }
+        return null;
+    }
+
     private synchronized void setJobChannelItem(@Nonnull Item jobChannelItem) {
         this.jobChannelItem = jobChannelItem;
         super.setChannelName(Events.JobChannel.NAME);
