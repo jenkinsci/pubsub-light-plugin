@@ -27,6 +27,7 @@ import hudson.ExtensionList;
 import hudson.ExtensionPoint;
 import hudson.security.AccessControlled;
 import org.acegisecurity.Authentication;
+import org.jenkins.pubsub.listeners.SyncQueueListener;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -39,6 +40,21 @@ import javax.annotation.Nonnull;
 public abstract class PubsubBus implements ExtensionPoint {
     
     private static PubsubBus pubsubBus;
+
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                try {
+                    SyncQueueListener.shutdown();
+                } finally {
+                    if (pubsubBus != null) {
+                        pubsubBus.shutdown();
+                    }
+                }
+            }
+        });
+    }
     
     /**
      * Get the installed {@link PubsubBus} implementation.

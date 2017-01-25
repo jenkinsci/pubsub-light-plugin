@@ -59,12 +59,6 @@ public final class GuavaPubsubBus extends PubsubBus {
     public GuavaPubsubBus() {
         // Might want to make the executor configuration configurable.
         executor = new ThreadPoolExecutor(0, MAX_THREADS, 10L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                shutdown();
-            }
-        });
     }
 
     @Nonnull

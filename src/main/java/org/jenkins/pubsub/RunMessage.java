@@ -23,11 +23,11 @@
  */
 package org.jenkins.pubsub;
 
+import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.security.AccessControlled;
-import jenkins.model.ParameterizedJobMixIn;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -56,7 +56,7 @@ public final class RunMessage extends JobChannelMessage<RunMessage> {
      * @param run The Jenkins {@link Run} with this message instance is to be associated.
      */
     public RunMessage(@Nonnull Run run) {
-        super((ParameterizedJobMixIn.ParameterizedJob) run.getParent());
+        super(run.getParent());
         this.run = run;
         set(EventProps.Jenkins.jenkins_object_name, run.getDisplayName());
         set(EventProps.Jenkins.jenkins_object_id, run.getId());
@@ -102,8 +102,9 @@ public final class RunMessage extends JobChannelMessage<RunMessage> {
         }
         
         try {
-            ParameterizedJobMixIn.ParameterizedJob job = getJob();
-            if (job != null) {
+            Item item = getJobChannelItem();
+            if (item instanceof Job) {
+                Job job = (Job) item;
                 String buildId = getObjectId();
                 if (buildId != null) {
                     Collection<? extends Job> allJobs = job.getAllJobs();

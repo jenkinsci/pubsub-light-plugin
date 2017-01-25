@@ -24,15 +24,19 @@
 package org.jenkins.pubsub.listeners;
 
 import hudson.Extension;
+import hudson.model.Item;
 import hudson.model.Queue;
 import hudson.model.queue.QueueListener;
-import jenkins.model.ParameterizedJobMixIn;
+import hudson.model.queue.QueueTaskFuture;
 import org.jenkins.pubsub.EventProps;
 import org.jenkins.pubsub.Events;
-import org.jenkins.pubsub.JobMessage;
 import org.jenkins.pubsub.MessageException;
 import org.jenkins.pubsub.PubsubBus;
+import org.jenkins.pubsub.QueueTaskMessage;
 
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,6 +58,82 @@ public class SyncQueueListener extends QueueListener {
     
     private static final Logger LOGGER = Logger.getLogger(SyncQueueListener.class.getName());
 
+    //
+    // The onLeft event does not mean that the queue task is actually "done", so we need to keep
+    // track of queue tasks so that we can fire an event when the task is actually "done".
+    //
+    // Using some blocking queues for this, with a single thread checking the tasks to see if
+    // they're done, firing the job_run_queue_task_complete event when they are.
+    //
+    // The tryLaterQueueTaskLeftQueue tries to help ensure that we don't keep checking an incomplete task
+    // when the main queue (queueTaskLeftPublishQueue) is empty. If we just put incomplete tasks directly back into
+    // queueTaskLeftPublishQueue, we would pull it back out again immediately on the next iteration poll.
+    // Putting it into tryLaterQueueTaskLeftQueue (and leaving queueTaskLeftPublishQueue empty) will mean that
+    // we will "typically" wait POLL_TIMEOUT_MILLIS before checking it again. We say "typically" because, of course,
+    // another task put into the queue will trigger processing again and cause tryLaterQueueTaskLeftQueue to get
+    // drained into queueTaskLeftPublishQueue. That should be ok though.
+    //
+    // Added as a result of https://issues.jenkins-ci.org/browse/JENKINS-39794
+    //
+    private static BlockingQueue<Queue.LeftItem> queueTaskLeftPublishQueue = new LinkedBlockingQueue<>();
+    private static BlockingQueue<Queue.LeftItem> tryLaterQueueTaskLeftQueue = new LinkedBlockingQueue<>(); // see comment above
+    private static boolean stopTaskLeftPublishing = false;
+    private static final long POLL_TIMEOUT_MILLIS = 1000;
+
+    static {
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    // Keep going 'til we're signaled to stop.
+                    while (!stopTaskLeftPublishing) {
+                        try {
+                            // Pull items off the queue and check are they "done". Publish them
+                            // if they are, put them into a "try later" queue if they're not.
+                            Queue.LeftItem leftItem = queueTaskLeftPublishQueue.poll(POLL_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+                            if (leftItem != null) {
+                                QueueTaskFuture<Queue.Executable> future = leftItem.getFuture();
+
+                                // Drain the "try later" queue now before we possibly add more to
+                                // it (see below). If the main queue (queueTaskLeftPublishQueue) was empty,
+                                // the above poll on it would have ensured that we waited at least
+                                // the poll timeout period before retrying ones that were not
+                                // "done" on an earlier iteration.
+                                // See top level comments.
+                                tryLaterQueueTaskLeftQueue.drainTo(queueTaskLeftPublishQueue);
+
+                                if (future.isDone()) {
+                                    publish(leftItem, Events.JobChannel.job_run_queue_task_complete, null);
+                                } else  {
+                                    // Not done. Put the item back on the queue and test again later.
+                                    // However, don't put it back into the queue immediately. Putting it into
+                                    // the "try later" queue ensures that it will be left for a little while
+                                    // if the main queue is empty i.e. we avoid a tight loop here.
+                                    // See top level comments.
+                                    tryLaterQueueTaskLeftQueue.put(leftItem);
+                                }
+                            } else {
+                                // See top level comments.
+                                tryLaterQueueTaskLeftQueue.drainTo(queueTaskLeftPublishQueue);
+                            }
+                        } catch (InterruptedException e) {
+                            // Queue access (or thread sleeping) error. This event is going to fall on
+                            // the floor ... sorry !!
+                            LOGGER.log(Level.WARNING, "Error publishing job_run_queue_task_complete event.", e);
+                        }
+                    }
+                } finally {
+                    queueTaskLeftPublishQueue.clear();
+                    tryLaterQueueTaskLeftQueue.clear();
+                }
+            }
+        }.start();
+    }
+
+    public static void shutdown() {
+        stopTaskLeftPublishing = true;
+    }
+
     @Override
     public void onEnterWaiting(Queue.WaitingItem wi) {
         publish(wi, Events.JobChannel.job_run_queue_enter);
@@ -70,6 +150,16 @@ public class SyncQueueListener extends QueueListener {
             publish(li, Events.JobChannel.job_run_queue_left, "CANCELLED");
         } else {
             publish(li, Events.JobChannel.job_run_queue_left, "ALLOCATED");
+
+            if (!stopTaskLeftPublishing) {
+                try {
+                    queueTaskLeftPublishQueue.put(li);
+                } catch (InterruptedException e) {
+                    // Queue access error. This event is going to fall on
+                    // the floor ... sorry !!
+                    LOGGER.log(Level.WARNING, "Error publishing job_run_queue_task_complete event.", e);
+                }
+            }
         }
     }
 
@@ -81,11 +171,11 @@ public class SyncQueueListener extends QueueListener {
     private void publish(Queue.Item item, Events.JobChannel event) {
         publish(item, event, "QUEUED");
     }
-    private void publish(Queue.Item item, Events.JobChannel event, String status) {
+    private static void publish(Queue.Item item, Events.JobChannel event, String status) {
         Queue.Task task = item.task;
-        if (task instanceof ParameterizedJobMixIn.ParameterizedJob) {
+        if (task instanceof Item) {
             try {
-                PubsubBus.getBus().publish(new JobMessage((ParameterizedJobMixIn.ParameterizedJob)task)
+                PubsubBus.getBus().publish(new QueueTaskMessage(item, (Item)task)
                         .setEventName(event)
                         .set(EventProps.Job.job_run_queueId, Long.toString(item.getId()))
                         .set(EventProps.Job.job_run_status, status)

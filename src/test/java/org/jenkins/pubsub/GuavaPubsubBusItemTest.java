@@ -54,7 +54,7 @@ public class GuavaPubsubBusItemTest {
         // Check receipt ...
         subs1.waitForMessageCount(1);
         assertEquals("joba", subs1.messages.get(0).getProperty("joba"));
-        subs1.waitForMessageCount(1);
+        subs2.waitForMessageCount(1);
         assertEquals("slavea", subs2.messages.get(0).getProperty("slavea"));
     }
 

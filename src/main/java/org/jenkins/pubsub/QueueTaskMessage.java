@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016, CloudBees, Inc.
+ * Copyright (c) 2017, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,33 @@
 package org.jenkins.pubsub;
 
 import hudson.model.Item;
-import hudson.security.AccessControlled;
+import hudson.model.Queue;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
- * Basic Job channel event message.
+ * Queue task job channel event message.
  * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public final class JobMessage extends JobChannelMessage<JobMessage> {
+public final class QueueTaskMessage extends JobChannelMessage<QueueTaskMessage> {
 
-    public JobMessage() {
+    private static final long serialVersionUID = -1L;
+
+    transient Queue.Item queueItem;
+
+    public QueueTaskMessage() {
     }
 
-    public JobMessage(@Nonnull Item jobChannelItem) {
+    public QueueTaskMessage(@Nonnull Queue.Item item, @Nonnull Item jobChannelItem) {
         super(jobChannelItem);
+        this.queueItem = item;
+    }
+
+    @CheckForNull
+    public Queue.Item getQueueItem() {
+        return queueItem;
     }
 
     /**
@@ -47,7 +58,7 @@ public final class JobMessage extends JobChannelMessage<JobMessage> {
      */
     @Override
     public Message clone() {
-        Message clone = new JobMessage();
+        Message clone = new QueueTaskMessage();
         clone.putAll(this);
         return clone;
     }
