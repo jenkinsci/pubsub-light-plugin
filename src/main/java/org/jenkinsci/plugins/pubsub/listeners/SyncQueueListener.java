@@ -77,7 +77,7 @@ public class SyncQueueListener extends QueueListener {
     //
     private static BlockingQueue<Queue.LeftItem> queueTaskLeftPublishQueue = new LinkedBlockingQueue<>();
     private static BlockingQueue<Queue.LeftItem> tryLaterQueueTaskLeftQueue = new LinkedBlockingQueue<>(); // see comment above
-    private static boolean stopTaskLeftPublishing = false;
+    private static volatile boolean stopTaskLeftPublishing = false;
     private static final long POLL_TIMEOUT_MILLIS = 1000;
 
     static {
