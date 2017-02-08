@@ -94,15 +94,15 @@ public class SyncQueueListener extends QueueListener {
                             if (leftItem != null) {
                                 QueueTaskFuture<Queue.Executable> future = leftItem.getFuture();
 
-                                // Drain the "try later" queue now before we possibly add more to
-                                // it (see below). If the main queue (queueTaskLeftPublishQueue) was empty,
-                                // the above poll on it would have ensured that we waited at least
-                                // the poll timeout period before retrying ones that were not
-                                // "done" on an earlier iteration.
-                                // See top level comments.
-                                tryLaterQueueTaskLeftQueue.drainTo(queueTaskLeftPublishQueue);
-
                                 if (future.isDone()) {
+                                    // Drain the "try later" queue now before we possibly add more to
+                                    // it (see below). If the main queue (queueTaskLeftPublishQueue) was empty,
+                                    // the above poll on it would have ensured that we waited at least
+                                    // the poll timeout period before retrying ones that were not
+                                    // "done" on an earlier iteration.
+                                    // See top level comments.
+                                    tryLaterQueueTaskLeftQueue.drainTo(queueTaskLeftPublishQueue);
+
                                     publish(leftItem, Events.JobChannel.job_run_queue_task_complete, null);
                                 } else  {
                                     // Not done. Put the item back on the queue and test again later.
