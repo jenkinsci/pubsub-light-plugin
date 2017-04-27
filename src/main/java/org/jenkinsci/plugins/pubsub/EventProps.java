@@ -116,6 +116,10 @@ public interface EventProps {
          * Job run status/result.
          */
         job_run_status,
+        /**
+         * Job run SCM commit Id, if relevant.
+         */
+        job_run_commitId,
     }
     
     /**
