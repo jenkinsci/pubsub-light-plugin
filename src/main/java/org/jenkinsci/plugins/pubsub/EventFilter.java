@@ -30,8 +30,9 @@ package org.jenkinsci.plugins.pubsub;
 public final class EventFilter extends Message<EventFilter> {
     EventFilter() {
         super();
-        // Remove the UUID so as to prevent it from interfeering
+        // Remove the timestamp and UUID so as to prevent it from interfeering
         // with the filter containsAll check.
+        remove(EventProps.Event.event_uuid.name());
         remove(EventProps.Jenkins.jenkins_event_uuid.name());
     }
 }

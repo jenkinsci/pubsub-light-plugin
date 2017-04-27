@@ -42,6 +42,23 @@ package org.jenkinsci.plugins.pubsub;
 public interface EventProps {
 
     /**
+     * Pre-defined general "Event" event property names.
+     */
+    enum Event {
+        /**
+         * The millisecond timestamp for when the event happened.
+         * <p>
+         * Of course, this does not preclude the event message from containing other
+         * timestamp event properties, where appropriate.
+         */
+        event_timestamp,
+        /**
+         * The event UUID.
+         */
+        event_uuid,
+    }
+
+    /**
      * Pre-defined Jenkins/core event property names.
      */
     enum Jenkins {
@@ -59,7 +76,9 @@ public interface EventProps {
         jenkins_event,
         /**
          * The event UUID.
+         * @deprecated Use {@link Event#event_uuid}.
          */
+        @Deprecated
         jenkins_event_uuid,
         /**
          * Jenkins domain object type.
