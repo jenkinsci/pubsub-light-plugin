@@ -32,8 +32,7 @@ public final class EventFilter extends Message<EventFilter> {
         super();
         // Remove the timestamp and UUID so as to prevent it from interfeering
         // with the filter containsAll check.
-        remove(EventProps.Event.event_timestamp.name());
-        remove(EventProps.Event.event_uuid.name());
+        remove(EventProps.Jenkins.jenkins_event_timestamp.name());
         remove(EventProps.Jenkins.jenkins_event_uuid.name());
     }
 }

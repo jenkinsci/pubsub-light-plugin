@@ -74,11 +74,9 @@ public abstract class Message<T extends Message> extends Properties {
      */
     Message() {
         // Add an event message timestamp.
-        this.set(EventProps.Event.event_timestamp, Long.toString(System.currentTimeMillis()));
+        this.set(EventProps.Jenkins.jenkins_event_timestamp, Long.toString(System.currentTimeMillis()));
         // Add a UUID to the event message.
-        String uuid = UUID.randomUUID().toString();
-        this.set(EventProps.Event.event_uuid, uuid);
-        this.set(EventProps.Jenkins.jenkins_event_uuid, uuid); // Remove eventually.
+        this.set(EventProps.Jenkins.jenkins_event_uuid, UUID.randomUUID().toString()); // Remove eventually.
     }
 
     /**
@@ -211,7 +209,7 @@ public abstract class Message<T extends Message> extends Properties {
      * @return The event timestamp for the message, or {@code null} if none set.
      */
     public String getTimestamp() {
-        return get(EventProps.Event.event_timestamp);
+        return get(EventProps.Jenkins.jenkins_event_timestamp);
     }
 
     /**
@@ -231,7 +229,7 @@ public abstract class Message<T extends Message> extends Properties {
      * @return The event UUID for the message, or {@code null} if none set.
      */
     public String getEventUUID() {
-        return get(EventProps.Event.event_uuid);
+        return get(EventProps.Jenkins.jenkins_event_uuid);
     }
     
     /**
