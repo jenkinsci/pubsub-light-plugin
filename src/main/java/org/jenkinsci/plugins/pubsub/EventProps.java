@@ -58,6 +58,13 @@ public interface EventProps {
          */
         jenkins_event,
         /**
+         * The millisecond timestamp for when the event happened.
+         * <p>
+         * Of course, this does not preclude the event message from containing other
+         * timestamp event properties, where appropriate.
+         */
+        jenkins_event_timestamp,
+        /**
          * The event UUID.
          */
         jenkins_event_uuid,
@@ -116,6 +123,10 @@ public interface EventProps {
          * Job run status/result.
          */
         job_run_status,
+        /**
+         * Job run SCM commit Id, if relevant.
+         */
+        job_run_commitId,
     }
     
     /**

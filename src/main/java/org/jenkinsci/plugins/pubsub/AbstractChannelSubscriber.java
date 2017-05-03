@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016, CloudBees, Inc.
+ * Copyright (c) 2017, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +23,44 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
+import hudson.ExtensionPoint;
+import hudson.security.ACL;
+import org.acegisecurity.Authentication;
+
 /**
- * Event filter.
+ * Simple asynchronous {@link ChannelSubscriber} {@link ExtensionPoint} for Jenkins.
+ *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public final class EventFilter extends Message<EventFilter> {
-    EventFilter() {
-        super();
-        // Remove the timestamp and UUID so as to prevent it from interfeering
-        // with the filter containsAll check.
-        remove(EventProps.Jenkins.jenkins_event_timestamp.name());
-        remove(EventProps.Jenkins.jenkins_event_uuid.name());
+public abstract class AbstractChannelSubscriber implements ChannelSubscriber, ExtensionPoint {
+
+    /**
+     * Get the name of the channel on which the subscriber will listen.
+     *
+     * @return The channel name.
+     */
+    public abstract String getChannelName();
+
+    /**
+     * Get the {@link Authentication} used for listening for events on the channel.
+     * <p>
+     * Override to restrict. Default is {@link ACL#SYSTEM}.
+     *
+     * @return The {@link Authentication} used for listening for events on the channel.
+     */
+    public Authentication getAuthentication() {
+        return ACL.SYSTEM;
+    }
+
+    /**
+     * Get the event filter to be used for messages on the channel.
+     * <p>
+     * Override this method to define an {@link EventFilter} instance.
+     * Default is {@code null} i.e. no filtering.
+     *
+     * @return The {@link EventFilter} instance.
+     */
+    public EventFilter getEventFilter() {
+        return null;
     }
 }

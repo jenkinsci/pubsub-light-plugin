@@ -47,6 +47,9 @@ public class MessageTest {
         // so we can do a check on the rest of the content.
         assertTrue(message.getEventUUID() != null);
         message.remove(EventProps.Jenkins.jenkins_event_uuid.name());
+        // Same for timestamp.
+        assertTrue(message.getTimestampMillis() > 0);
+        message.remove(EventProps.Jenkins.jenkins_event_timestamp.name());
 
         assertEquals("{\"a\":\"aVal\"}", message.toJSON());
         assertEquals("{\"a\":\"aVal\"}", message.toString());

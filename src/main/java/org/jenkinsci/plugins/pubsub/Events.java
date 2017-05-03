@@ -107,6 +107,10 @@ public interface Events {
          */
         job_run_started,
         /**
+         * Job run SCM checkout.
+         */
+        job_run_scm_checkout,
+        /**
          * Job run paused.
          */
         job_run_paused,
