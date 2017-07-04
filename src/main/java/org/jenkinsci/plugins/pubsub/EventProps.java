@@ -50,6 +50,14 @@ public interface EventProps {
          */
         jenkins_org,
         /**
+         * The ID of the Jenkins instance that published the message.
+         */
+        jenkins_instance_id,
+        /**
+         * The URL of the Jenkins instance that published the message.
+         */
+        jenkins_instance_url,
+        /**
          * The event channel name on which the message was sent.
          */
         jenkins_channel,
