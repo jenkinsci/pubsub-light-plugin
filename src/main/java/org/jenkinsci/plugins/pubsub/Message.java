@@ -79,11 +79,13 @@ public abstract class Message<T extends Message> extends Properties {
 
     static {
         if (jenkins != null) {
+            // As implemented in PageDecoratorImpl.java in the instance-identity-module.
+            // Would have been nice if there was a utility/toString() for this.
             InstanceIdentity identity = InstanceIdentity.get();
             RSAPublicKey key = identity.getPublic();
             instanceIdentity = new String(Base64.encodeBase64(key.getEncoded()), Charset.forName("UTF-8"));
         } else {
-            instanceIdentity = "UNKNOWN";
+            instanceIdentity = null;
         }
     }
     
@@ -94,7 +96,6 @@ public abstract class Message<T extends Message> extends Properties {
         
         // Some properties to identify the origin of the event.
         if (jenkins != null) {
-            this.set(EventProps.Jenkins.jenkins_instance_id, instanceIdentity);
             this.set(EventProps.Jenkins.jenkins_instance_url, jenkins.getRootUrl());
         }
         
@@ -226,6 +227,44 @@ public abstract class Message<T extends Message> extends Properties {
      */
     public T setEventName(Enum name) {
         set(EventProps.Jenkins.jenkins_event, name.name());
+        return (T) this;
+    }
+
+    /**
+     * Get the Jenkins instance URL of the master from which the event was published.
+     *
+     * @return The Jenkins instance identity.
+     * @see #getJenkinsInstanceId()
+     */
+    public String getJenkinsInstanceUrl() {
+        return get(EventProps.Jenkins.jenkins_instance_url);
+    }
+
+    /**
+     * Get the Jenkins instance identity of the master from which the event was published.
+     * <p>
+     * <strong>Note</strong> that this is not automatically added to every event since the
+     * identity key is quite large, adding a lot of weight to each event. To add the identity
+     * to all messages, simply implement a {@link MessageEnricher} and use it to call
+     * {@link #setJenkinsInstanceId()}.
+     * <p>
+     * Maybe {@link #getJenkinsInstanceUrl()} will do the trick for you
+     * in terms of working out the origin of an event.
+     * 
+     * @return The Jenkins instance identity.
+     * @see #getJenkinsInstanceUrl()
+     */
+    public String getJenkinsInstanceId() {
+        return get(EventProps.Jenkins.jenkins_instance_id);
+    }
+
+    /**
+     * Set the Jenkins instance identity of the master from which the event was published.
+     */
+    public T setJenkinsInstanceId() {
+        if (instanceIdentity != null) {
+            this.set(EventProps.Jenkins.jenkins_instance_id, instanceIdentity);
+        }
         return (T) this;
     }
 
