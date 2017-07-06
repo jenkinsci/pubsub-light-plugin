@@ -24,13 +24,18 @@
 package org.jenkinsci.plugins.pubsub;
 
 import hudson.model.Item;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.apache.commons.codec.binary.Base64;
+import org.jenkinsci.main.modules.instance_identity.InstanceIdentity;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
+import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -69,10 +74,31 @@ import java.util.UUID;
  */
 public abstract class Message<T extends Message> extends Properties {
 
+    private static final Jenkins jenkins = Jenkins.getInstanceOrNull();
+    private static final String instanceIdentity;
+
+    static {
+        if (jenkins != null) {
+            // As implemented in PageDecoratorImpl.java in the instance-identity-module.
+            // Would have been nice if there was a utility/toString() for this.
+            InstanceIdentity identity = InstanceIdentity.get();
+            RSAPublicKey key = identity.getPublic();
+            instanceIdentity = new String(Base64.encodeBase64(key.getEncoded()), Charset.forName("UTF-8"));
+        } else {
+            instanceIdentity = null;
+        }
+    }
+    
     /**
      * Create a plain message instance.
      */
     Message() {
+        
+        // Some properties to identify the origin of the event.
+        if (jenkins != null) {
+            this.set(EventProps.Jenkins.jenkins_instance_url, jenkins.getRootUrl());
+        }
+        
         // Add an event message timestamp.
         this.set(EventProps.Jenkins.jenkins_event_timestamp, Long.toString(System.currentTimeMillis()));
         // Add a UUID to the event message.
@@ -201,6 +227,44 @@ public abstract class Message<T extends Message> extends Properties {
      */
     public T setEventName(Enum name) {
         set(EventProps.Jenkins.jenkins_event, name.name());
+        return (T) this;
+    }
+
+    /**
+     * Get the Jenkins instance URL of the master from which the event was published.
+     *
+     * @return The Jenkins instance identity.
+     * @see #getJenkinsInstanceId()
+     */
+    public String getJenkinsInstanceUrl() {
+        return get(EventProps.Jenkins.jenkins_instance_url);
+    }
+
+    /**
+     * Get the Jenkins instance identity of the master from which the event was published.
+     * <p>
+     * <strong>Note</strong> that this is not automatically added to every event since the
+     * identity key is quite large, adding a lot of weight to each event. To add the identity
+     * to all messages, simply implement a {@link MessageEnricher} and use it to call
+     * {@link #setJenkinsInstanceId()}.
+     * <p>
+     * Maybe {@link #getJenkinsInstanceUrl()} will do the trick for you
+     * in terms of working out the origin of an event.
+     * 
+     * @return The Jenkins instance identity.
+     * @see #getJenkinsInstanceUrl()
+     */
+    public String getJenkinsInstanceId() {
+        return get(EventProps.Jenkins.jenkins_instance_id);
+    }
+
+    /**
+     * Set the Jenkins instance identity of the master from which the event was published.
+     */
+    public T setJenkinsInstanceId() {
+        if (instanceIdentity != null) {
+            this.set(EventProps.Jenkins.jenkins_instance_id, instanceIdentity);
+        }
         return (T) this;
     }
 
