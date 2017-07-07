@@ -123,6 +123,10 @@ public interface Events {
          */
         job_run_ended,
         /**
+         * Job run artifact fingerprinting.
+         */
+        job_run_artifact_fingerprinting,
+        /**
          * Job run queue task complete.
          * <p>
          * Fires after the run has ended.
