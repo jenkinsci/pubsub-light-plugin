@@ -91,11 +91,22 @@ public abstract class Message<T extends Message> extends Properties {
             instanceRootUrl = null;
         }
     }
-    
+
     /**
-     * Create a plain message instance.
+     * Create a plain message instance, with default properties set.
      */
     Message() {
+        this(true);
+    }
+
+    /**
+     * Create a plain message instance.
+     * @param setDefaultProperties Set the default properties.
+     */
+    Message(boolean setDefaultProperties) {
+        if (!setDefaultProperties) {
+            return;
+        }
         
         // Some properties to identify the origin of the event.
         if (instanceRootUrl != null) {
