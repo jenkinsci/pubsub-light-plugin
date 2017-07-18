@@ -76,6 +76,7 @@ public abstract class Message<T extends Message> extends Properties {
 
     private static final Jenkins jenkins = Jenkins.getInstanceOrNull();
     private static final String instanceIdentity;
+    private static final String instanceRootUrl;
 
     static {
         if (jenkins != null) {
@@ -84,19 +85,32 @@ public abstract class Message<T extends Message> extends Properties {
             InstanceIdentity identity = InstanceIdentity.get();
             RSAPublicKey key = identity.getPublic();
             instanceIdentity = new String(Base64.encodeBase64(key.getEncoded()), Charset.forName("UTF-8"));
+            instanceRootUrl = jenkins.getRootUrl();
         } else {
             instanceIdentity = null;
+            instanceRootUrl = null;
         }
     }
-    
+
     /**
-     * Create a plain message instance.
+     * Create a plain message instance, with default properties set.
      */
     Message() {
+        this(true);
+    }
+
+    /**
+     * Create a plain message instance.
+     * @param setDefaultProperties Set the default properties.
+     */
+    Message(boolean setDefaultProperties) {
+        if (!setDefaultProperties) {
+            return;
+        }
         
         // Some properties to identify the origin of the event.
-        if (jenkins != null) {
-            this.set(EventProps.Jenkins.jenkins_instance_url, jenkins.getRootUrl());
+        if (instanceRootUrl != null) {
+            this.set(EventProps.Jenkins.jenkins_instance_url, instanceRootUrl);
         }
         
         // Add an event message timestamp.
