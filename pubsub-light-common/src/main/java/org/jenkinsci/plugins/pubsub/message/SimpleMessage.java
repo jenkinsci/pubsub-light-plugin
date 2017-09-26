@@ -21,19 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.pubsub;
+package org.jenkinsci.plugins.pubsub.message;
 
 /**
- * Message exception.
+ * A simple {@link Message} implementation.
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class MessageException extends Exception {
-    
-    public MessageException(String message) {
-        super(message);
-    }
-    
-    public MessageException(String message, Throwable cause) {
-        super(message, cause);
-    }
+public final class SimpleMessage extends Message<SimpleMessage> {
 }

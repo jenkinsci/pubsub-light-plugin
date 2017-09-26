@@ -21,11 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.pubsub;
+package org.jenkinsci.plugins.pubsub.message;
 
 /**
- * A simple {@link Message} implementation.
+ * Event filter.
+ *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public final class SimpleMessage extends Message<SimpleMessage> {
+public final class EventFilter extends Message<EventFilter> {
+    public EventFilter() {
+        // Don't set any of the "default" properties. The filter should start "clean",
+        // adding the filtering properties after construction.
+        super(false);
+    }
 }

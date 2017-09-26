@@ -21,16 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.pubsub;
+package org.jenkinsci.plugins.pubsub.exception;
 
 /**
- * Event filter.
+ * Message exception.
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public final class EventFilter extends Message<EventFilter> {
-    EventFilter() {
-        // Don't set any of the "default" properties. The filter should start "clean",
-        // adding the filtering properties after construction.
-        super(false);
+public class MessageException extends Exception {
+    
+    public MessageException(String message) {
+        super(message);
+    }
+    
+    public MessageException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

@@ -1,20 +1,18 @@
 package org.jenkinsci.plugins.pubsub;
 
+import org.jenkinsci.plugins.pubsub.message.EventFilter;
+import org.jenkinsci.plugins.pubsub.message.Message;
+import org.jenkinsci.plugins.pubsub.message.SimpleMessage;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public class MessageTest {
-    
-    @Test
-    public void test_item_Message() {
-        Message message = new ItemMessage(new MockItem("a"));
-        assertEquals("a", message.getObjectName());
-    }
-    
     @Test
     public void test_containsAll() {
         Message message = new SimpleMessage();
@@ -46,10 +44,10 @@ public class MessageTest {
         // Check that the message has a UUID. Then remove it
         // so we can do a check on the rest of the content.
         assertTrue(message.getEventUUID() != null);
-        message.remove(EventProps.Jenkins.jenkins_event_uuid.name());
+        message.remove(EventProps.event_uuid.name());
         // Same for timestamp.
         assertTrue(message.getTimestampMillis() > 0);
-        message.remove(EventProps.Jenkins.jenkins_event_timestamp.name());
+        message.remove(EventProps.event_timestamp.name());
 
         assertEquals("{\"a\":\"aVal\"}", message.toJSON());
         assertEquals("{\"a\":\"aVal\"}", message.toString());

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2015, CloudBees, Inc.
+ * Copyright (c) 2016, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,18 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
+import org.jenkinsci.plugins.pubsub.message.Message;
+
 import javax.annotation.Nonnull;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public interface ChannelSubscriber {
+public interface ChannelPublisher {
 
     /**
-     * Consume a message.
-     * 
+     * Publish a message on the channel.
      * @param message The message properties.
      */
-    void onMessage(@Nonnull Message message);
+    void publish(@Nonnull Message message);
 }

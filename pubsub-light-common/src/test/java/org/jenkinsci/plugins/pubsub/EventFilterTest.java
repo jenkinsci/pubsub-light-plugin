@@ -1,8 +1,10 @@
 package org.jenkinsci.plugins.pubsub;
 
+import org.jenkinsci.plugins.pubsub.message.EventFilter;
+import org.jenkinsci.plugins.pubsub.message.SimpleMessage;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 public class EventFilterTest {
 
