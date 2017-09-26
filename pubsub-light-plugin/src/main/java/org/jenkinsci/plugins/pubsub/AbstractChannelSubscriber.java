@@ -26,6 +26,7 @@ package org.jenkinsci.plugins.pubsub;
 import hudson.ExtensionPoint;
 import hudson.security.ACL;
 import org.acegisecurity.Authentication;
+import org.jenkinsci.plugins.pubsub.message.EventFilter;
 
 /**
  * Simple asynchronous {@link ChannelSubscriber} {@link ExtensionPoint} for Jenkins.

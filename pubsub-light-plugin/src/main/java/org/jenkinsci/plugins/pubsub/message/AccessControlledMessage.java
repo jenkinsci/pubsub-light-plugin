@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.pubsub;
+package org.jenkinsci.plugins.pubsub.message;
 
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
@@ -29,6 +29,9 @@ import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
+import org.jenkinsci.plugins.pubsub.ChannelSubscriber;
+import org.jenkinsci.plugins.pubsub.GuavaPubsubBus;
+import org.jenkinsci.plugins.pubsub.PubsubBus;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -54,7 +57,7 @@ import javax.annotation.Nonnull;
  * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-abstract class AccessControlledMessage<T extends AccessControlledMessage> extends Message implements AccessControlled {
+public abstract class AccessControlledMessage<T extends AccessControlledMessage> extends JenkinsMessage implements AccessControlled {
     
     /**
      * Create a plain message instance.
@@ -66,7 +69,7 @@ abstract class AccessControlledMessage<T extends AccessControlledMessage> extend
      * Get the permission required to see the message.
      * @return The permission required to see the message.
      */
-    protected abstract @Nonnull Permission getRequiredPermission();
+    public abstract @Nonnull Permission getRequiredPermission();
     
     /**
      * Get the Jenkins {@link AccessControlled} object associated with this message.
@@ -74,7 +77,7 @@ abstract class AccessControlledMessage<T extends AccessControlledMessage> extend
      * or {code null} if the message is not associated with a
      * Jenkins {@link AccessControlled}.
      */
-    protected abstract @CheckForNull AccessControlled getAccessControlled();
+    public abstract @CheckForNull AccessControlled getAccessControlled();
 
     /**
      * {@inheritDoc}

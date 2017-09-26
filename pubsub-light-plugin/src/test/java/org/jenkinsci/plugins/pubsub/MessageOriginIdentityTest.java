@@ -27,15 +27,16 @@ package org.jenkinsci.plugins.pubsub;
 import hudson.ExtensionList;
 import hudson.model.User;
 import org.jenkinsci.main.modules.instance_identity.PageDecoratorImpl;
+import org.jenkinsci.plugins.pubsub.message.JenkinsMessage;
+import org.jenkinsci.plugins.pubsub.message.SimpleJenkinsMessage;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import java.io.IOException;
-
-import org.junit.Assert;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -61,7 +62,7 @@ public class MessageOriginIdentityTest {
     public void stop() {
         bus.shutdown();
     }
-    
+
     @Test
     public void test() throws IOException {
         User alice = User.get("alice");
@@ -73,12 +74,12 @@ public class MessageOriginIdentityTest {
         bus.subscribe("jenkins.job", subscriber, alice.impersonate(), null);
         
         // Publish ...
-        publisher.publish(new SimpleMessage().set("joba", "joba"));
+        publisher.publish(new SimpleJenkinsMessage().set("joba", "joba"));
         subscriber.waitForMessageCount(1);
         
         // Checks ...
         
-        Message message = subscriber.messages.get(0);
+        JenkinsMessage message = subscriber.messages.get(0);
 
         Assert.assertEquals(jenkins.getURL().toString(), message.getJenkinsInstanceUrl());
         

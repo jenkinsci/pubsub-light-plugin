@@ -27,10 +27,10 @@ import hudson.Extension;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
-import org.jenkinsci.plugins.pubsub.Events;
-import org.jenkinsci.plugins.pubsub.MessageException;
+import org.jenkinsci.plugins.pubsub.JenkinsEvents;
 import org.jenkinsci.plugins.pubsub.PubsubBus;
-import org.jenkinsci.plugins.pubsub.RunMessage;
+import org.jenkinsci.plugins.pubsub.exception.MessageException;
+import org.jenkinsci.plugins.pubsub.message.RunMessage;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,8 +40,8 @@ import java.util.logging.Logger;
  * <p>
  * Publishes:
  * <ul>
- *     <li>{@link Events.JobChannel#job_run_started job_run_started}</li>
- *     <li>{@link Events.JobChannel#job_run_ended job_run_ended}</li>
+ *     <li>{@link JenkinsEvents.JobChannel#job_run_started job_run_started}</li>
+ *     <li>{@link JenkinsEvents.JobChannel#job_run_ended job_run_ended}</li>
  * </ul>
  * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -55,7 +55,7 @@ public class SyncRunListener extends RunListener<Run<?,?>> {
     public void onStarted(Run<?, ?> run, TaskListener listener) {
         try {
             PubsubBus.getBus().publish(new RunMessage(run)
-                    .setEventName(Events.JobChannel.job_run_started)
+                    .setEventName(JenkinsEvents.JobChannel.job_run_started)
             );
         } catch (MessageException e) {
             LOGGER.log(Level.WARNING, "Error publishing Run start event.", e);
@@ -66,7 +66,7 @@ public class SyncRunListener extends RunListener<Run<?,?>> {
     public void onFinalized(Run<?, ?> run) {
         try {
             PubsubBus.getBus().publish(new RunMessage(run)
-                    .setEventName(Events.JobChannel.job_run_ended)
+                    .setEventName(JenkinsEvents.JobChannel.job_run_ended)
             );
         } catch (MessageException e) {
             LOGGER.log(Level.WARNING, "Error publishing Run end event.", e);

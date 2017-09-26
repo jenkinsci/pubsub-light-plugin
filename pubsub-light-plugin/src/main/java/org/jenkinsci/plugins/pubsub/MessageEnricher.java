@@ -23,35 +23,26 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
-import org.jenkinsci.plugins.pubsub.ChannelSubscriber;
-import org.jenkinsci.plugins.pubsub.Message;
-import org.junit.Assert;
+import hudson.ExtensionPoint;
+import org.jenkinsci.plugins.pubsub.message.Message;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
+ * Message enricher extension point.
+ * <p>
+ * This extension point should only be used to add enough additional event data
+ * to allow an event consumer make a decision on whether or not it is interested in
+ * this event i.e. where the default min data on the event was not enough.
+ * Please use sparingly!!
+ * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class MockSubscriber implements ChannelSubscriber {
-    public List<Message> messages = new ArrayList<>();
+public abstract class MessageEnricher implements ExtensionPoint {
 
-    public void onMessage(@Nonnull Message message) {
-        messages.add(message);
-    }
-    
-    public void waitForMessageCount(int count) {
-        long start = System.currentTimeMillis();
-        while(messages.size() < count) {
-            try {
-                Thread.sleep(5);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            if (System.currentTimeMillis() > start + 10000) {
-                Assert.fail("Timed out waiting on message count to reach " + count);
-            }
-        }
-    }
+    /**
+     * Enrich the message with some additional data.
+     * @param message The message instance.
+     */
+    public abstract void enrich(@Nonnull Message message);
 }

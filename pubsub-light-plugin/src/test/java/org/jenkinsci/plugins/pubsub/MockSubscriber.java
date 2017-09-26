@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2017, CloudBees, Inc.
+ * Copyright (c) 2016, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,43 +23,35 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
-import hudson.model.Item;
-import hudson.model.Queue;
+import org.jenkinsci.plugins.pubsub.message.JenkinsMessage;
+import org.jenkinsci.plugins.pubsub.message.Message;
+import org.junit.Assert;
 
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Queue task job channel event message.
- * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public final class QueueTaskMessage extends JobChannelMessage<QueueTaskMessage> {
+public class MockSubscriber implements ChannelSubscriber {
+    public List<JenkinsMessage> messages = new ArrayList<>();
 
-    private static final long serialVersionUID = -1L;
-
-    transient Queue.Item queueItem;
-
-    public QueueTaskMessage() {
+    public void onMessage(@Nonnull Message message) {
+        messages.add((JenkinsMessage) message);
     }
-
-    public QueueTaskMessage(@Nonnull Queue.Item item, @Nonnull Item jobChannelItem) {
-        super(jobChannelItem);
-        this.queueItem = item;
-    }
-
-    @CheckForNull
-    public Queue.Item getQueueItem() {
-        return queueItem;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Message clone() {
-        Message clone = new QueueTaskMessage();
-        clone.putAll(this);
-        return clone;
+    
+    public void waitForMessageCount(int count) {
+        long start = System.currentTimeMillis();
+        while(messages.size() < count) {
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if (System.currentTimeMillis() > start + 10000) {
+                Assert.fail("Timed out waiting on message count to reach " + count);
+            }
+        }
     }
 }

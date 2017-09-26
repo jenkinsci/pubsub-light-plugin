@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016, CloudBees, Inc.
+ * Copyright (c) 2017, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,27 +21,45 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.pubsub;
+package org.jenkinsci.plugins.pubsub.message;
 
-import hudson.ExtensionPoint;
+import hudson.model.Item;
+import hudson.model.Queue;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 
 /**
- * Message enricher extension point.
- * <p>
- * This extension point should only be used to add enough additional event data
- * to allow an event consumer make a decision on whether or not it is interested in
- * this event i.e. where the default min data on the event was not enough.
- * Please use sparingly!!
+ * Queue task job channel event message.
  * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public abstract class MessageEnricher implements ExtensionPoint {
+public final class QueueTaskMessage extends JobChannelMessage<QueueTaskMessage> {
+
+    private static final long serialVersionUID = -1L;
+
+    transient Queue.Item queueItem;
+
+    public QueueTaskMessage() {
+    }
+
+    public QueueTaskMessage(@Nonnull Queue.Item item, @Nonnull Item jobChannelItem) {
+        super(jobChannelItem);
+        this.queueItem = item;
+    }
+
+    @CheckForNull
+    public Queue.Item getQueueItem() {
+        return queueItem;
+    }
 
     /**
-     * Enrich the message with some additional data.
-     * @param message The message instance.
+     * {@inheritDoc}
      */
-    public abstract void enrich(@Nonnull Message message);
+    @Override
+    public Message clone() {
+        Message clone = new QueueTaskMessage();
+        clone.putAll(this);
+        return clone;
+    }
 }

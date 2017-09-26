@@ -21,24 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.pubsub;
+package org.jenkinsci.plugins.pubsub.message;
 
-import hudson.Extension;
-import org.jenkinsci.plugins.pubsub.Message;
-import org.jenkinsci.plugins.pubsub.MessageEnricher;
+import hudson.model.Item;
 
 import javax.annotation.Nonnull;
 
 /**
+ * Basic Job channel event message.
+ * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-@Extension
-public class NoddyMessageEnricher extends MessageEnricher {
+public final class JobMessage extends JobChannelMessage<JobMessage> {
 
-    public static final String NODDY_MESSAGE_ENRICHER_PROP = "NoddyMessageEnricher_prop";
+    public JobMessage() {
+    }
 
+    public JobMessage(@Nonnull Item jobChannelItem) {
+        super(jobChannelItem);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void enrich(@Nonnull Message message) {
-        message.set(NODDY_MESSAGE_ENRICHER_PROP, "nice one");
+    public Message clone() {
+        Message clone = new JobMessage();
+        clone.putAll(this);
+        return clone;
     }
 }

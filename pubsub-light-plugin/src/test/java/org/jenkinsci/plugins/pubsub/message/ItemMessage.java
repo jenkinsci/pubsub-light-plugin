@@ -21,12 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.pubsub;
+package org.jenkinsci.plugins.pubsub.message;
 
 import hudson.model.Item;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
+import org.jenkinsci.plugins.pubsub.JenkinsEventProps;
+import org.jenkinsci.plugins.pubsub.PubsubBus;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -57,8 +59,8 @@ public final class ItemMessage extends AccessControlledMessage<ItemMessage> {
      */
     public ItemMessage(@Nonnull Item messageItem) {
         this.messageItem = messageItem;
-        set(EventProps.Jenkins.jenkins_object_name, messageItem.getFullName());
-        set(EventProps.Jenkins.jenkins_object_url, messageItem.getUrl());
+        set(JenkinsEventProps.Jenkins.jenkins_object_name, messageItem.getFullName());
+        set(JenkinsEventProps.Jenkins.jenkins_object_url, messageItem.getUrl());
     }
 
     /**
@@ -73,7 +75,7 @@ public final class ItemMessage extends AccessControlledMessage<ItemMessage> {
 
     @Nonnull
     @Override
-    protected Permission getRequiredPermission() {
+    public Permission getRequiredPermission() {
         return Item.READ;
     }
 
@@ -83,7 +85,7 @@ public final class ItemMessage extends AccessControlledMessage<ItemMessage> {
      * or {code null} if the message is not associated with a
      * Jenkins {@link Item}.
      */
-    protected synchronized @CheckForNull AccessControlled getAccessControlled() {
+    public synchronized @CheckForNull AccessControlled getAccessControlled() {
         if (messageItemLookupComplete || messageItem != null) {
             return messageItem;
         }
@@ -98,6 +100,10 @@ public final class ItemMessage extends AccessControlledMessage<ItemMessage> {
         } finally {
             messageItemLookupComplete = true;
         }
+        return messageItem;
+    }
+
+    public Item getMessageItem() {
         return messageItem;
     }
 }

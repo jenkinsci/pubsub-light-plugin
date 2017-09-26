@@ -40,14 +40,14 @@ import hudson.model.listeners.ItemListener;
  * <strong>*** SEE the docs on the nested types for more details ***</strong>
  *  
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
- * @see EventProps
+ * @see JenkinsEventProps
  */
-public interface Events {
+public interface JenkinsEvents {
 
     /**
      * Pre-defined "job" channel events.
      * <ul>
-     *     <li>See {@link EventProps.Job} for pre-defined job channel event properties.</li>
+     *     <li>See {@link JenkinsEventProps.Job} for pre-defined job channel event properties.</li>
      * </ul>
      */
     enum JobChannel {
@@ -74,8 +74,8 @@ public interface Events {
         
         /**
          * Job renamed.
-         * @see EventProps.Item#item_rename_before
-         * @see EventProps.Item#item_rename_after
+         * @see JenkinsEventProps.Item#item_rename_before
+         * @see JenkinsEventProps.Item#item_rename_after
          * @see ItemListener#onRenamed(Item, String, String)
          */
         job_crud_renamed,

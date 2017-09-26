@@ -44,11 +44,11 @@ import java.util.Collection;
 public class MockItem implements Item {
 
     private ACL acl;
-    protected MockItem() {
+    public MockItem() {
         this(MockItem.class.getSimpleName());
     }
 
-    protected MockItem(String name) {
+    public MockItem(String name) {
         this.name = name;
     }
 

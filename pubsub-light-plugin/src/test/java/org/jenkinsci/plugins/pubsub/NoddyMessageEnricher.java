@@ -23,31 +23,21 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
-import hudson.model.Item;
+import hudson.Extension;
+import org.jenkinsci.plugins.pubsub.message.Message;
 
 import javax.annotation.Nonnull;
 
 /**
- * Basic Job channel event message.
- * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public final class JobMessage extends JobChannelMessage<JobMessage> {
+@Extension
+public class NoddyMessageEnricher extends MessageEnricher {
 
-    public JobMessage() {
-    }
+    public static final String NODDY_MESSAGE_ENRICHER_PROP = "NoddyMessageEnricher_prop";
 
-    public JobMessage(@Nonnull Item jobChannelItem) {
-        super(jobChannelItem);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public Message clone() {
-        Message clone = new JobMessage();
-        clone.putAll(this);
-        return clone;
+    public void enrich(@Nonnull Message message) {
+        message.set(NODDY_MESSAGE_ENRICHER_PROP, "nice one");
     }
 }

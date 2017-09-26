@@ -28,11 +28,11 @@ import hudson.model.Item;
 import hudson.model.Queue;
 import hudson.model.queue.QueueListener;
 import hudson.model.queue.QueueTaskFuture;
-import org.jenkinsci.plugins.pubsub.EventProps;
-import org.jenkinsci.plugins.pubsub.Events;
-import org.jenkinsci.plugins.pubsub.MessageException;
+import org.jenkinsci.plugins.pubsub.JenkinsEventProps;
+import org.jenkinsci.plugins.pubsub.JenkinsEvents;
 import org.jenkinsci.plugins.pubsub.PubsubBus;
-import org.jenkinsci.plugins.pubsub.QueueTaskMessage;
+import org.jenkinsci.plugins.pubsub.exception.MessageException;
+import org.jenkinsci.plugins.pubsub.message.QueueTaskMessage;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -45,10 +45,10 @@ import java.util.logging.Logger;
  * <p>
  * Publishes:
  * <ul>
- *     <li>{@link Events.JobChannel#job_run_queue_enter}</li>
- *     <li>{@link Events.JobChannel#job_run_queue_buildable}</li>
- *     <li>{@link Events.JobChannel#job_run_queue_left}</li>
- *     <li>{@link Events.JobChannel#job_run_queue_blocked}</li>
+ *     <li>{@link JenkinsEvents.JobChannel#job_run_queue_enter}</li>
+ *     <li>{@link JenkinsEvents.JobChannel#job_run_queue_buildable}</li>
+ *     <li>{@link JenkinsEvents.JobChannel#job_run_queue_left}</li>
+ *     <li>{@link JenkinsEvents.JobChannel#job_run_queue_blocked}</li>
  * </ul>
  *  
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -103,7 +103,7 @@ public class SyncQueueListener extends QueueListener {
                                     // See top level comments.
                                     tryLaterQueueTaskLeftQueue.drainTo(queueTaskLeftPublishQueue);
 
-                                    publish(leftItem, Events.JobChannel.job_run_queue_task_complete, null);
+                                    publish(leftItem, JenkinsEvents.JobChannel.job_run_queue_task_complete, null);
                                 } else  {
                                     // Not done. Put the item back on the queue and test again later.
                                     // However, don't put it back into the queue immediately. Putting it into
@@ -136,20 +136,20 @@ public class SyncQueueListener extends QueueListener {
 
     @Override
     public void onEnterWaiting(Queue.WaitingItem wi) {
-        publish(wi, Events.JobChannel.job_run_queue_enter);
+        publish(wi, JenkinsEvents.JobChannel.job_run_queue_enter);
     }
 
     @Override
     public void onEnterBuildable(Queue.BuildableItem bi) {
-        publish(bi, Events.JobChannel.job_run_queue_buildable);
+        publish(bi, JenkinsEvents.JobChannel.job_run_queue_buildable);
     }
 
     @Override
     public void onLeft(Queue.LeftItem li) {
         if (li.isCancelled()) {
-            publish(li, Events.JobChannel.job_run_queue_left, "CANCELLED");
+            publish(li, JenkinsEvents.JobChannel.job_run_queue_left, "CANCELLED");
         } else {
-            publish(li, Events.JobChannel.job_run_queue_left, "ALLOCATED");
+            publish(li, JenkinsEvents.JobChannel.job_run_queue_left, "ALLOCATED");
 
             if (!stopTaskLeftPublishing) {
                 try {
@@ -165,20 +165,20 @@ public class SyncQueueListener extends QueueListener {
 
     @Override
     public void onEnterBlocked(Queue.BlockedItem bi) {
-        publish(bi, Events.JobChannel.job_run_queue_blocked);
+        publish(bi, JenkinsEvents.JobChannel.job_run_queue_blocked);
     }
 
-    private void publish(Queue.Item item, Events.JobChannel event) {
+    private void publish(Queue.Item item, JenkinsEvents.JobChannel event) {
         publish(item, event, "QUEUED");
     }
-    private static void publish(Queue.Item item, Events.JobChannel event, String status) {
+    private static void publish(Queue.Item item, JenkinsEvents.JobChannel event, String status) {
         Queue.Task task = item.task;
         if (task instanceof Item) {
             try {
                 PubsubBus.getBus().publish(new QueueTaskMessage(item, (Item)task)
                         .setEventName(event)
-                        .set(EventProps.Job.job_run_queueId, Long.toString(item.getId()))
-                        .set(EventProps.Job.job_run_status, status)
+                        .set(JenkinsEventProps.Job.job_run_queueId, Long.toString(item.getId()))
+                        .set(JenkinsEventProps.Job.job_run_status, status)
                 );
             } catch (MessageException e) {
                 LOGGER.log(Level.WARNING, "Error publishing Run queued event.", e);
