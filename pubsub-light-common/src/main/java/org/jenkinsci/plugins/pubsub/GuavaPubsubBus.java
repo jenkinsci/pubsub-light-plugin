@@ -26,14 +26,14 @@ package org.jenkinsci.plugins.pubsub;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
-import hudson.security.ACL;
-import hudson.util.CopyOnWriteMap;
-import jenkins.model.Jenkins;
-import org.acegisecurity.Authentication;
+import org.jenkinsci.plugins.pubsub.message.EventFilter;
+import org.jenkinsci.plugins.pubsub.message.Message;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import java.security.Principal;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -44,15 +44,15 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * An in-memory implementation based on <a href="https://github.com/google/guava/wiki/EventBusExplained">Google's Guava EventBus</a>.
  * <p>
- * Use system property <strong><code>org.jenkins.pubsub.GuavaPubsubBus.MAX_THREADS</code></strong> to configure the 
+ * Use system property <strong><code>org.jenkins.pubsub.GuavaPubsubBus.MAX_THREADS</code></strong> to configure the
  * thread pool size used by the bus. The default value is 5 threads (falling back to 0 when idle).
- * 
+ *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public final class GuavaPubsubBus extends PubsubBus {
-    
-    private final Map<String, EventBus> channels = new CopyOnWriteMap.Hash<String, EventBus>();
-    private final Map<ChannelSubscriber, GuavaSubscriber> subscribers = new CopyOnWriteMap.Hash<ChannelSubscriber, GuavaSubscriber>();
+public class GuavaPubsubBus extends PubsubBus {
+
+    private final Map<String, EventBus> channels = new ConcurrentHashMap<>();
+    private final Map<ChannelSubscriber, GuavaSubscriber> subscribers = new ConcurrentHashMap<>();
     private final ExecutorService executor;
     private final int MAX_THREADS = Integer.getInteger(GuavaPubsubBus.class.getName() + ".MAX_THREADS", 5);
 
@@ -73,8 +73,8 @@ public final class GuavaPubsubBus extends PubsubBus {
     }
 
     @Override
-    public void subscribe(@Nonnull String channelName, @Nonnull ChannelSubscriber subscriber, @Nonnull Authentication authentication, @CheckForNull EventFilter eventFilter) {
-        GuavaSubscriber guavaSubscriber = new GuavaSubscriber(subscriber, authentication, eventFilter);
+    public void subscribe(@Nonnull String channelName, @Nonnull ChannelSubscriber subscriber, @Nonnull Principal principal, @CheckForNull EventFilter eventFilter) {
+        GuavaSubscriber guavaSubscriber = new GuavaSubscriber(subscriber, principal, eventFilter);
         EventBus channelBus = getChannelBus(channelName);
         channelBus.register(guavaSubscriber);
         subscribers.put(subscriber, guavaSubscriber);
@@ -97,7 +97,7 @@ public final class GuavaPubsubBus extends PubsubBus {
         }
     }
 
-    private EventBus getChannelBus(String channelName) {
+    protected EventBus getChannelBus(String channelName) {
         EventBus channelBus = channels.get(channelName);
         if (channelBus == null) {
             channelBus = new AsyncEventBus(channelName, executor);
@@ -105,43 +105,56 @@ public final class GuavaPubsubBus extends PubsubBus {
         }
         return channelBus;
     }
-    
-    private static class GuavaSubscriber {
+
+    protected static class GuavaSubscriber {
         private ChannelSubscriber subscriber;
-        private Authentication authentication;
+        private Principal principal;
         private final EventFilter eventFilter;
 
-        public GuavaSubscriber(@Nonnull ChannelSubscriber subscriber, Authentication authentication, EventFilter eventFilter) {
+        public GuavaSubscriber(@Nonnull ChannelSubscriber subscriber, Principal principal, EventFilter eventFilter) {
             this.subscriber = subscriber;
-            if (authentication != null) {
-                this.authentication = authentication;
-            } else {
-                this.authentication = Jenkins.ANONYMOUS;
-            }
+            this.principal = principal;
             this.eventFilter = eventFilter;
         }
 
         @Subscribe
         public void onMessage(@Nonnull final Message message) {
+            handleMessage(message);
+        }
+
+        /**
+         * Extra method needed since @Subscribe annotation is not inherited.
+         */
+        protected void handleMessage(final Message message) {
             if (eventFilter != null && !message.containsAll(eventFilter)) {
                 // Don't deliver the message.
                 return;
             }
-            if (message instanceof AccessControlledMessage) {
-                if (authentication != null) {
-                    final AccessControlledMessage accMessage = (AccessControlledMessage) message;
-                    ACL.impersonate(authentication, new Runnable() {
-                        @Override
-                        public void run() {
-                            if (accMessage.hasPermission(accMessage.getRequiredPermission())) {
-                                subscriber.onMessage(message.clone());
-                            }
-                        }
-                    });
-                }
-            } else {
-                subscriber.onMessage(message.clone());
-            }
+            subscriber.onMessage(message.clone());
         }
+
+        public ChannelSubscriber getSubscriber() {
+            return subscriber;
+        }
+
+        public Principal getPrincipal() {
+            return principal;
+        }
+
+        public EventFilter getEventFilter() {
+            return eventFilter;
+        }
+    }
+
+    public Map<String, EventBus> getChannels() {
+        return channels;
+    }
+
+    public Map<ChannelSubscriber, GuavaSubscriber> getSubscribers() {
+        return subscribers;
+    }
+
+    public ExecutorService getExecutor() {
+        return executor;
     }
 }

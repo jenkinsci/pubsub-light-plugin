@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.pubsub;
+package org.jenkinsci.plugins.pubsub.message;
 
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
@@ -9,6 +9,12 @@ import hudson.security.ACL;
 import hudson.security.AuthorizationMatrixProperty;
 import hudson.security.Permission;
 import hudson.security.ProjectMatrixAuthorizationStrategy;
+import org.jenkinsci.plugins.pubsub.JenkinsEventProps;
+import org.jenkinsci.plugins.pubsub.JenkinsEvents;
+import org.jenkinsci.plugins.pubsub.MockSubscriber;
+import org.jenkinsci.plugins.pubsub.NoddyMessageEnricher;
+import org.jenkinsci.plugins.pubsub.PubsubBus;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,10 +26,10 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 /**
@@ -54,8 +60,8 @@ public class GuavaPubsubBusRunTest {
             MockSubscriber bobSubs = new MockSubscriber();
 
             // alice and bob both subscribe to job event messages ...
-            bus.subscribe(Events.JobChannel.NAME, aliceSubs, alice.impersonate(), null);
-            bus.subscribe(Events.JobChannel.NAME, bobSubs, bob.impersonate(), null);
+            bus.subscribe(JenkinsEvents.JobChannel.NAME, aliceSubs, alice.impersonate(), null);
+            bus.subscribe(JenkinsEvents.JobChannel.NAME, bobSubs, bob.impersonate(), null);
 
             // Create a job as Alice and restrict it to her
             // bob etc should not be able to see it.
@@ -84,12 +90,12 @@ public class GuavaPubsubBusRunTest {
             assertFalse(aliceSubs.messages.isEmpty());
             assertTrue(bobSubs.messages.isEmpty());
 
-            assertEquals(Events.JobChannel.job_crud_created.name(), aliceSubs.messages.get(0).getEventName());
-            assertEquals(Events.JobChannel.job_run_queue_enter.name(), aliceSubs.messages.get(1).getEventName());
+            assertEquals(JenkinsEvents.JobChannel.job_crud_created.name(), aliceSubs.messages.get(0).getEventName());
+            assertEquals(JenkinsEvents.JobChannel.job_run_queue_enter.name(), aliceSubs.messages.get(1).getEventName());
             
             // Check make sure message enrichment happened.
             // https://issues.jenkins-ci.org/browse/JENKINS-36218
-            assertEquals("nice one", aliceSubs.messages.get(0).get(NoddyMessageEnricher.NODDY_MESSAGE_ENRICHER_PROP));
+            Assert.assertEquals("nice one", aliceSubs.messages.get(0).get(NoddyMessageEnricher.NODDY_MESSAGE_ENRICHER_PROP));
 
             QueueTaskMessage queueMessage = (QueueTaskMessage) aliceSubs.messages.get(1);
             RunMessage runMessage = (RunMessage) aliceSubs.messages.get(4);
@@ -107,7 +113,7 @@ public class GuavaPubsubBusRunTest {
             assertEquals(queueMessage.jobChannelItem, runMessage.jobChannelItem);
             
             // And check that the queue Ids match
-            assertEquals(queueMessage.get(EventProps.Job.job_run_queueId), runMessage.get(EventProps.Job.job_run_queueId));
+            Assert.assertEquals(queueMessage.get(JenkinsEventProps.Job.job_run_queueId), runMessage.get(JenkinsEventProps.Job.job_run_queueId));
                     
         } finally {
             bus.shutdown();

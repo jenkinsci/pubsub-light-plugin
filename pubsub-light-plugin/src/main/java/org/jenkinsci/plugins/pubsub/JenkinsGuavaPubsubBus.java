@@ -23,30 +23,38 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
+import com.google.common.eventbus.EventBus;
 import hudson.ExtensionList;
 import hudson.ExtensionListListener;
-import hudson.ExtensionPoint;
+import hudson.security.ACL;
 import hudson.security.AccessControlled;
+import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
+import org.jenkinsci.plugins.pubsub.exception.MessageException;
 import org.jenkinsci.plugins.pubsub.listeners.SyncQueueListener;
+import org.jenkinsci.plugins.pubsub.message.AccessControlledMessage;
+import org.jenkinsci.plugins.pubsub.message.EventFilter;
+import org.jenkinsci.plugins.pubsub.message.Message;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import java.security.Principal;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Abstract Pub-sub bus.
- * 
+ * {@link PubsubBus} implementation utilizing {@link EventBus} for Jenkins plugins.
+ * <p>
+ * Use system property <strong><code>org.jenkins.pubsub.GuavaPubsubBus.MAX_THREADS</code></strong> to configure the
+ * thread pool size used by the bus. The default value is 5 threads (falling back to 0 when idle).
+ *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public abstract class PubsubBus implements ExtensionPoint {
+public final class JenkinsGuavaPubsubBus extends GuavaPubsubBus {
+    private static final Logger LOGGER = Logger.getLogger(JenkinsGuavaPubsubBus.class.getName());
 
-    private static final Logger LOGGER = Logger.getLogger(PubsubBus.class.getName());
-
-    private static PubsubBus pubsubBus;
     private static List<AbstractChannelSubscriber> autoSubscribers = new CopyOnWriteArrayList<>();
 
     static {
@@ -67,19 +75,22 @@ public abstract class PubsubBus implements ExtensionPoint {
             }
         });
     }
-    
+
     /**
-     * Get the installed {@link PubsubBus} implementation.
+     * Get the installed {@link PubsubBus} implementation or build a new one.
+     * <p>
+     * Use {@link PubsubBus#getBus()} to obtain a PubsubBus instance, not this method.
+     *
      * @return The installed {@link PubsubBus} implementation, or default
      * implementation if none are found.
      */
-    public synchronized static @Nonnull PubsubBus getBus() {
+    private synchronized static @Nonnull PubsubBus getJenkinsBus() {
         if (pubsubBus == null) {
             ExtensionList<PubsubBus> installedBusImpls = ExtensionList.lookup(PubsubBus.class);
             if (!installedBusImpls.isEmpty()) {
                 pubsubBus = installedBusImpls.get(0);
             } else {
-                pubsubBus = new GuavaPubsubBus();
+                pubsubBus = new JenkinsGuavaPubsubBus();
             }
 
             // Register the auto-subscribers.
@@ -95,33 +106,12 @@ public abstract class PubsubBus implements ExtensionPoint {
         return pubsubBus;
     }
 
-    /**
-     * Publish a message on a channel.
-     * <p>
-     * The message instance must have the {@link Message#setChannelName(String) channel}
-     * and {@link Message#setEventName(String) event} name properties set on it.
-     *
-     * @param message The message properties.
-     */
-    public void publish(@Nonnull Message message) throws MessageException {
-        String channelName = message.getChannelName();
-        String eventName = message.getEventName();
-
-        if (channelName == null || channelName.length() == 0) {
-            throw new MessageException(String.format("Channel name property '%s' not set on the Message instance.", EventProps.Jenkins.jenkins_channel));
-        }
-        if (eventName == null || eventName.length() == 0) {
-            throw new MessageException(String.format("Event name property '%s' not set on the Message instance.", EventProps.Jenkins.jenkins_event));
-        }
-
-        // Make sure the channel name is set on the message.
-        // In case getChannelName is overridden.
-        message.setChannelName(channelName);
-
+    @Override
+    public void publish(@Nonnull final Message message) throws MessageException {
         if (message instanceof AccessControlledMessage) {
             AccessControlled accessControlled = ((AccessControlledMessage) message).getAccessControlled();
             if (accessControlled != null) {
-                message.set(EventProps.Jenkins.jenkins_object_type, accessControlled.getClass().getName());
+                message.set(JenkinsEventProps.Jenkins.jenkins_object_type, accessControlled.getClass().getName());
             }
         }
 
@@ -137,48 +127,57 @@ public abstract class PubsubBus implements ExtensionPoint {
             }
         }
 
-        // No publish it...
-        publisher(channelName).publish(message);
+        super.publish(message);
     }
 
-    /**
-     * Get/create a new {@link ChannelPublisher} instance for the specified
-     * channel name.
-     * @param channelName       The channel name.
-     * @return The {@link ChannelPublisher} instance.
-     */
-    protected abstract @Nonnull ChannelPublisher publisher(@Nonnull String channelName);
+    @Override
+    public void subscribe(@Nonnull String channelName, @Nonnull ChannelSubscriber subscriber, @Nonnull Principal principal, @CheckForNull EventFilter eventFilter) {
+        GuavaSubscriber jenkinsGuavaSubscriber = new JenkinsGuavaSubscriber(subscriber, principal, eventFilter);
+        EventBus channelBus = getChannelBus(channelName);
+        channelBus.register(jenkinsGuavaSubscriber);
+        getSubscribers().put(subscriber, jenkinsGuavaSubscriber);
+    }
 
-    /**
-     * Subscribe to events on the specified event channel.
-     * @param channelName The channel name.
-     * @param subscriber  The subscriber instance that will receive the events.
-     * @param authentication The authentication to which the subscription is associated.
-     * @param eventFilter A message filter, or {@code null} if no filtering is to be applied.
-     *                    This tells the bus to only forward messages that match the properties
-     *                    (names and values) specified in the filter.
-     */
-    public abstract void subscribe(@Nonnull String channelName,
-                                       @Nonnull ChannelSubscriber subscriber,
-                                       @Nonnull Authentication authentication,
-                                       @CheckForNull EventFilter eventFilter);
+    protected static class JenkinsGuavaSubscriber extends GuavaSubscriber {
+        private Authentication authentication;
 
-    /**
-     * Unsubscribe from events on the specified event channel.
-     * @param channelName The channel name.
-     * @param subscriber  The subscriber instance that was used to receive events.
-     */
-    public abstract void unsubscribe(@Nonnull String channelName,
-                                       @Nonnull ChannelSubscriber subscriber);
+        public JenkinsGuavaSubscriber(@Nonnull ChannelSubscriber subscriber, Principal principal, EventFilter eventFilter) {
+            super(subscriber, principal, eventFilter);
+            if (principal != null) {
+                this.authentication = (Authentication) principal;
+            } else {
+                this.authentication = Jenkins.ANONYMOUS;
+            }
+        }
 
-    /**
-     * Shutdown the bus.
-     */
-    public abstract void shutdown();
+        @Override
+        protected void handleMessage(final Message message) {
+            if (getEventFilter() != null && !message.containsAll(getEventFilter())) {
+                // Don't deliver the message.
+                return;
+            }
+            if (message instanceof AccessControlledMessage) {
+                if (authentication != null) {
+                    final AccessControlledMessage accMessage = (AccessControlledMessage) message;
+                    ACL.impersonate(authentication, new Runnable() {
+                        @Override
+                        public void run() {
+                            if (accMessage.hasPermission(accMessage.getRequiredPermission())) {
+                                getSubscriber().onMessage(message.clone());
+                            }
+                        }
+                    });
+                }
+            } else {
+                getSubscriber().onMessage(message.clone());
+            }
+        }
+    }
 
     /**
      * Channel subscription can be managed by another ExtensionPoint impl, or can
      * be triggered automatically by implementing {@link AbstractChannelSubscriber}.
+     *
      * @param pubsubBus The bus instance.
      */
     private synchronized static void registerAutoChannelSubscribers(PubsubBus pubsubBus) {

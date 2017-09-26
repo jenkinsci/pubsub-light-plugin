@@ -1,13 +1,18 @@
 package org.jenkinsci.plugins.pubsub;
 
 import hudson.model.User;
+import org.jenkinsci.plugins.pubsub.message.EventFilter;
+import org.jenkinsci.plugins.pubsub.message.ItemMessage;
+import org.jenkinsci.plugins.pubsub.message.Message;
+import org.jenkinsci.plugins.pubsub.message.SimpleJenkinsMessage;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -26,7 +31,7 @@ public class GuavaPubsubBusItemTest {
 
     @Before
     public void startBus() {
-        bus = new GuavaPubsubBus();
+        bus = new JenkinsGuavaPubsubBus();
     }
 
     @After
@@ -48,8 +53,8 @@ public class GuavaPubsubBusItemTest {
         bus.subscribe("jenkins.slave", subs2, alice.impersonate(), null);
         
         // Publish ...
-        jobPublisher.publish(new SimpleMessage().set("joba", "joba"));
-        slavePublisher.publish(new SimpleMessage().set("slavea", "slavea"));
+        jobPublisher.publish(new SimpleJenkinsMessage().set("joba", "joba"));
+        slavePublisher.publish(new SimpleJenkinsMessage().set("slavea", "slavea"));
         
         // Check receipt ...
         subs1.waitForMessageCount(1);
@@ -69,8 +74,8 @@ public class GuavaPubsubBusItemTest {
         bus.subscribe("jenkins.job", subs, alice.impersonate(), new EventFilter().set("joba", "joba"));
         
         // Publish ...
-        jobPublisher.publish(new SimpleMessage().set("joba", "joba")); // Should get delivered
-        jobPublisher.publish(new SimpleMessage().set("joba", "----")); // Should get filtered out
+        jobPublisher.publish(new SimpleJenkinsMessage().set("joba", "joba")); // Should get delivered
+        jobPublisher.publish(new SimpleJenkinsMessage().set("joba", "----")); // Should get filtered out
         
         // Check receipt ...
         subs.waitForMessageCount(1);
@@ -100,7 +105,7 @@ public class GuavaPubsubBusItemTest {
         // Check and make sure all the messages are clones i.e. do not have a copy of
         // the MockItem used to create the original
         for (Message message : subs.messages) {
-            assertNull(((ItemMessage)message).messageItem);
+            assertNull(((ItemMessage) message).getMessageItem());
         }
     }
 }
