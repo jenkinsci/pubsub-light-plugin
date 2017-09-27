@@ -14,6 +14,7 @@ import org.jenkinsci.plugins.pubsub.JenkinsEvents;
 import org.jenkinsci.plugins.pubsub.MockSubscriber;
 import org.jenkinsci.plugins.pubsub.NoddyMessageEnricher;
 import org.jenkinsci.plugins.pubsub.PubsubBus;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -47,8 +48,14 @@ public class GuavaPubsubBusRunTest {
         auth.add(Job.READ, "alice");
         auth.add(Job.CREATE, "alice");
         jenkins.jenkins.setAuthorizationStrategy(auth);
+        System.setProperty("org.jenkinsci.plugins.pubsub.in.jenkins", "true");
     }
-    
+
+    @After
+    public void tearDown() throws Exception {
+        System.clearProperty("org.jenkinsci.plugins.pubsub.in.jenkins");
+    }
+
     @Test
     public void test_Run() throws Exception {
         final PubsubBus bus = PubsubBus.getBus();

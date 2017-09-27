@@ -80,9 +80,11 @@ public abstract class PubsubBus {
 
     /**
      * Determine if this module is being run in a Jenkins environment.
+     * <p>
+     * The environment variable {@code IN_JENKINS} needs to be set somewhere in Jenkins.  System property provided for testing purposes.
      */
     private static boolean inJenkins() {
-        return true;
+        return Boolean.valueOf(System.getenv("IN_JENKINS")) || Boolean.getBoolean("org.jenkinsci.plugins.pubsub.in.jenkins");
     }
 
     /**
