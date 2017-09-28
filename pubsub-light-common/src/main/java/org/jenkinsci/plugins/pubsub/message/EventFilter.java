@@ -28,7 +28,7 @@ package org.jenkinsci.plugins.pubsub.message;
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public final class EventFilter extends Message<EventFilter> {
+public class EventFilter extends Message<EventFilter> {
     public EventFilter() {
         // Don't set any of the "default" properties. The filter should start "clean",
         // adding the filtering properties after construction.

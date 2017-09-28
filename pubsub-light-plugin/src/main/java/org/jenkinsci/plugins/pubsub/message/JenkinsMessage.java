@@ -103,6 +103,9 @@ public abstract class JenkinsMessage<T extends JenkinsMessage> extends Message {
      * @param setDefaultProperties Set the default properties.
      */
     protected JenkinsMessage(boolean setDefaultProperties) {
+        // do not set the parent class default props
+        super(false);
+
         if (!setDefaultProperties) {
             return;
         }
