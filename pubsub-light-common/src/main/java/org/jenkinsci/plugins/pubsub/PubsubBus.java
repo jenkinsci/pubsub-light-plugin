@@ -31,6 +31,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
 import java.security.Principal;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -39,7 +40,6 @@ import java.util.logging.Logger;
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public abstract class PubsubBus {
-
     private static final Logger LOGGER = Logger.getLogger(PubsubBus.class.getName());
 
     protected static PubsubBus pubsubBus;
@@ -48,9 +48,9 @@ public abstract class PubsubBus {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                if (pubsubBus != null) {
-                    pubsubBus.shutdown();
-                }
+            if (pubsubBus != null) {
+                pubsubBus.shutdown();
+            }
             }
         });
     }
@@ -96,6 +96,8 @@ public abstract class PubsubBus {
      * @param message The message properties.
      */
     public void publish(@Nonnull Message message) throws MessageException {
+        LOGGER.log(Level.FINER, "publish() - message={0}", message.toString());
+
         String channelName = message.getChannelName();
         String eventName = message.getEventName();
 

@@ -53,6 +53,8 @@ public class SyncRunListener extends RunListener<Run<?,?>> {
 
     @Override
     public void onStarted(Run<?, ?> run, TaskListener listener) {
+        LOGGER.log(Level.FINER, "onStarted() - run={0}, listener={1}", new Object[]{ run.toString(), listener.toString() });
+
         try {
             PubsubBus.getBus().publish(new RunMessage(run)
                     .setEventName(JenkinsEvents.JobChannel.job_run_started)
@@ -64,6 +66,8 @@ public class SyncRunListener extends RunListener<Run<?,?>> {
 
     @Override
     public void onFinalized(Run<?, ?> run) {
+        LOGGER.log(Level.FINER, "onStarted() - run={0}", run.toString());
+
         try {
             PubsubBus.getBus().publish(new RunMessage(run)
                     .setEventName(JenkinsEvents.JobChannel.job_run_ended)

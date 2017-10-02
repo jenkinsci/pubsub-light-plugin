@@ -172,6 +172,8 @@ public class SyncQueueListener extends QueueListener {
         publish(item, event, "QUEUED");
     }
     private static void publish(Queue.Item item, JenkinsEvents.JobChannel event, String status) {
+        LOGGER.log(Level.FINER, "publish() - item={0}, event={1}, status={2}", new Object[]{ item.toString(), event.toString(), status });
+
         Queue.Task task = item.task;
         if (task instanceof Item) {
             try {

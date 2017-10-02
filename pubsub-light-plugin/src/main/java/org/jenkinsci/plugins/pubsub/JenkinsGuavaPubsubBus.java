@@ -66,7 +66,7 @@ public final class JenkinsGuavaPubsubBus extends GuavaPubsubBus {
                 } finally {
                     if (pubsubBus != null) {
                         try {
-                            unregisterAutoChannelSubscribers(pubsubBus);
+                            unregisterAutoChannelSubscribers((JenkinsGuavaPubsubBus) pubsubBus);
                         } finally {
                             pubsubBus.shutdown();
                         }
@@ -85,11 +85,13 @@ public final class JenkinsGuavaPubsubBus extends GuavaPubsubBus {
      * implementation if none are found.
      */
     private synchronized static @Nonnull PubsubBus getJenkinsBus() {
+        LOGGER.finest("getJenkinsBus() - called");
         if (pubsubBus == null) {
             ExtensionList<PubsubBus> installedBusImpls = ExtensionList.lookup(PubsubBus.class);
             if (!installedBusImpls.isEmpty()) {
                 pubsubBus = installedBusImpls.get(0);
             } else {
+                LOGGER.finest("instantiating new JenkinsGuavaPubsubBus");
                 pubsubBus = new JenkinsGuavaPubsubBus();
             }
 
@@ -108,6 +110,7 @@ public final class JenkinsGuavaPubsubBus extends GuavaPubsubBus {
 
     @Override
     public void publish(@Nonnull final Message message) throws MessageException {
+        LOGGER.log(Level.FINER, "publish() - message={0}", message.toString());
         if (message instanceof AccessControlledMessage) {
             AccessControlled accessControlled = ((AccessControlledMessage) message).getAccessControlled();
             if (accessControlled != null) {

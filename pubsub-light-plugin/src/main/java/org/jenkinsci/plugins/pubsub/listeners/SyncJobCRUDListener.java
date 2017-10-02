@@ -81,6 +81,8 @@ public class SyncJobCRUDListener extends ItemListener {
     }
 
     private void publish(Item item, JenkinsEvents.JobChannel event, Properties properties) {
+        LOGGER.log(Level.FINER, "publish() - item={0}, event={1}, properties={2}", new Object[]{ item.toString(), event.toString(), properties.toString() });
+
         if (item instanceof Job) {
             try {
                 JenkinsMessage message = new JobMessage(item).setEventName(event);

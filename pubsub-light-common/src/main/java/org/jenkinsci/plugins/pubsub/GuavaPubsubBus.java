@@ -38,6 +38,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Default {@link PubsubBus} implementation.
@@ -50,6 +52,7 @@ import java.util.concurrent.TimeUnit;
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public class GuavaPubsubBus extends PubsubBus {
+    private static final Logger LOGGER = Logger.getLogger(GuavaPubsubBus.class.getName());
 
     private final Map<String, EventBus> channels = new ConcurrentHashMap<>();
     private final Map<ChannelSubscriber, GuavaSubscriber> subscribers = new ConcurrentHashMap<>();
@@ -67,6 +70,7 @@ public class GuavaPubsubBus extends PubsubBus {
         final EventBus channelBus = getChannelBus(channelName);
         return new ChannelPublisher() {
             public void publish(@Nonnull Message message) {
+                LOGGER.log(Level.FINER, "publish() - message={0}", message.toString());
                 channelBus.post(message);
             }
         };
