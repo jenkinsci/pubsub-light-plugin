@@ -52,6 +52,26 @@
                 <artifactId>json-lib</artifactId>
                 <version>2.4-jenkins-2</version>
             </dependency>
+            <dependency>
+                <groupId>org.acegisecurity</groupId>
+                <artifactId>acegi-security</artifactId>
+                <version>1.0.7</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.springframework</groupId>
+                        <artifactId>spring-remoting</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.springframework</groupId>
+                        <artifactId>spring-support</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>redis.clients</groupId>
+                <artifactId>jedis</artifactId>
+                <version>2.9.0</version>
+            </dependency>
 
             <!-- Test dependencies. -->
             <dependency>
@@ -71,7 +91,9 @@
 
 
     <modules>
+        <module>pubsub-light-guava-provider</module>
         <module>pubsub-light-common</module>
+        <module>pubsub-light-jenkins-guava-provider</module>
         <module>pubsub-light-plugin</module>
     </modules>
 
