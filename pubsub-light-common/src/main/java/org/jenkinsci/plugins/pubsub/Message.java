@@ -24,6 +24,7 @@
 package org.jenkinsci.plugins.pubsub;
 
 import net.sf.json.JSONObject;
+import net.sf.json.JSONSerializer;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -248,6 +249,21 @@ public abstract class Message<T extends Message> extends Properties {
         JSONObject json = JSONObject.fromObject(this);
         json.write(writer);
         writer.flush();
+    }
+
+    /**
+     * Constructs and returns a {@link Message} from the given JSON string.
+     * @param string
+     * @return
+     */
+    public static Message fromString(@Nonnull String string) {
+        final Message message = new BasicMessage();
+        final JSONObject jsonObject = (JSONObject) JSONSerializer.toJSON(string);
+        final Set<Map.Entry<Object, Object>> entries = jsonObject.entrySet();
+        for(final Map.Entry<Object, Object> entry : entries) {
+            message.set((String) entry.getKey(), (String) entry.getValue());
+        }
+        return message;
     }
 
     /**
