@@ -1,0 +1,13 @@
+package org.jenkinsci.plugins.pubsub;
+
+import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
+
+public class JenkinsPubsubBusTest {
+    @Test
+    public void getBus() throws Exception {
+        System.out.println(PubsubBus.getBus().getClass());
+        assertTrue(PubsubBus.getBus() instanceof JenkinsGuavaPubsubBus);
+    }
+}

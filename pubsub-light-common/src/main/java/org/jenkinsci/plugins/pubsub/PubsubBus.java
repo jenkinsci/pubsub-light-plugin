@@ -23,14 +23,11 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
-import org.jenkinsci.plugins.pubsub.exception.MessageException;
-import org.jenkinsci.plugins.pubsub.message.EventFilter;
-import org.jenkinsci.plugins.pubsub.message.Message;
+import org.acegisecurity.Authentication;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import java.lang.reflect.Method;
-import java.security.Principal;
+import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -57,34 +54,24 @@ public abstract class PubsubBus {
 
     /**
      * Build if necessary and return default {@link PubsubBus} implementation.
+     * <p>
+     * PubsubBus clients need to add a ServiceLoader spi configuration file to indicate which implementation to use.  For example,
+     * clients of the default {@link GuavaPubsubBus} need to include the pubsub-light-guava-provider module.
      *
      * @return a singleton instance of the default {@link PubsubBus} implementation.
      */
-    public synchronized static @Nonnull PubsubBus getBus() {
+    public synchronized static @Nonnull
+    PubsubBus getBus() {
         if (pubsubBus == null) {
-            if(inJenkins()) {
-                try {
-                    Class<?> jenkinsPubSubImpl = Class.forName("org.jenkinsci.plugins.pubsub.JenkinsGuavaPubsubBus");
-                    final Method getBusStaticMethod = jenkinsPubSubImpl.getDeclaredMethod("getJenkinsBus");
-                    getBusStaticMethod.setAccessible(true);
-                    pubsubBus = (PubsubBus) getBusStaticMethod.invoke(null);
-                } catch (ReflectiveOperationException e) {
-                    throw new IllegalStateException("unable to find or instantiate Jenkins PubsubBus implementation");
-                }
+            final ServiceLoader<PubsubBus> busLoader = ServiceLoader.load(PubsubBus.class, PubsubBus.class.getClassLoader());
+            if (busLoader.iterator().hasNext()) {
+                pubsubBus = busLoader.iterator().next();
+                LOGGER.log(Level.FINER, "getBus() - instantiated pubsubBus={0} impl", pubsubBus.getClass().getSimpleName());
             } else {
-                pubsubBus = new GuavaPubsubBus();
+                throw new IllegalStateException("unable to find any PubsubBus implementations");
             }
         }
         return pubsubBus;
-    }
-
-    /**
-     * Determine if this module is being run in a Jenkins environment.
-     * <p>
-     * The environment variable {@code IN_JENKINS} needs to be set somewhere in Jenkins.  System property provided for testing purposes.
-     */
-    private static boolean inJenkins() {
-        return Boolean.valueOf(System.getenv("IN_JENKINS")) || Boolean.getBoolean("org.jenkinsci.plugins.pubsub.in.jenkins");
     }
 
     /**
@@ -102,10 +89,10 @@ public abstract class PubsubBus {
         String eventName = message.getEventName();
 
         if (channelName == null || channelName.length() == 0) {
-            throw new MessageException(String.format("Channel name property '%s' not set on the Message instance.", EventProps.channel_name));
+            throw new MessageException(String.format("Channel name property '%s' not set on the Message instance.", CommonEventProps.channel_name));
         }
         if (eventName == null || eventName.length() == 0) {
-            throw new MessageException(String.format("Event name property '%s' not set on the Message instance.", EventProps.event_name));
+            throw new MessageException(String.format("Event name property '%s' not set on the Message instance.", CommonEventProps.event_name));
         }
 
         // Make sure the channel name is set on the message.
@@ -131,14 +118,14 @@ public abstract class PubsubBus {
      *
      * @param channelName    The channel name.
      * @param subscriber     The subscriber instance that will receive the events.
-     * @param principal      The principal with which the subscription is associated.
+     * @param authentication The authentication to which the subscription is associated.
      * @param eventFilter    A message filter, or {@code null} if no filtering is to be applied.
      *                       This tells the bus to only forward messages that match the properties
      *                       (names and values) specified in the filter.
      */
     public abstract void subscribe(@Nonnull String channelName,
                                    @Nonnull ChannelSubscriber subscriber,
-                                   @Nonnull Principal principal,
+                                   @Nonnull Authentication authentication,
                                    @CheckForNull EventFilter eventFilter);
 
     /**
