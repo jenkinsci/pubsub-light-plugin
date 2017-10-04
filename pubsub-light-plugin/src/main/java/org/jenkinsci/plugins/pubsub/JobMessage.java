@@ -21,17 +21,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.pubsub.message;
+package org.jenkinsci.plugins.pubsub;
+
+import hudson.model.Item;
+
+import javax.annotation.Nonnull;
 
 /**
- * Event filter.
- *
+ * Basic Job channel event message.
+ * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class EventFilter extends Message<EventFilter> {
-    public EventFilter() {
-        // Don't set any of the "default" properties. The filter should start "clean",
-        // adding the filtering properties after construction.
-        super(false);
+public final class JobMessage extends JobChannelMessage<JobMessage> {
+
+    public JobMessage() {
+    }
+
+    public JobMessage(@Nonnull Item jobChannelItem) {
+        super(jobChannelItem);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Message clone() {
+        Message clone = new JobMessage();
+        clone.putAll(this);
+        return clone;
     }
 }

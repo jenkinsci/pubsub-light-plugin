@@ -27,13 +27,13 @@ import hudson.Extension;
 import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.listeners.ItemListener;
-import org.jenkinsci.plugins.pubsub.JenkinsEventProps;
-import org.jenkinsci.plugins.pubsub.JenkinsEvents;
+import org.jenkinsci.plugins.pubsub.EventProps;
+import org.jenkinsci.plugins.pubsub.Events;
+import org.jenkinsci.plugins.pubsub.JobMessage;
+import org.jenkinsci.plugins.pubsub.Message;
+import org.jenkinsci.plugins.pubsub.MessageException;
 import org.jenkinsci.plugins.pubsub.PubsubBus;
-import org.jenkinsci.plugins.pubsub.exception.MessageException;
-import org.jenkinsci.plugins.pubsub.message.JenkinsMessage;
-import org.jenkinsci.plugins.pubsub.message.JobMessage;
-import org.jenkinsci.plugins.pubsub.message.SimpleMessage;
+import org.jenkinsci.plugins.pubsub.SimpleMessage;
 
 import java.util.Properties;
 import java.util.logging.Level;
@@ -44,10 +44,10 @@ import java.util.logging.Logger;
  * <p>
  * Publishes:
  * <ul>
- *     <li>{@link JenkinsEvents.JobChannel#job_crud_created}</li>
- *     <li>{@link JenkinsEvents.JobChannel#job_crud_deleted}</li>
- *     <li>{@link JenkinsEvents.JobChannel#job_crud_renamed}</li>
- *     <li>{@link JenkinsEvents.JobChannel#job_crud_updated}</li>
+ *     <li>{@link Events.JobChannel#job_crud_created}</li>
+ *     <li>{@link Events.JobChannel#job_crud_deleted}</li>
+ *     <li>{@link Events.JobChannel#job_crud_renamed}</li>
+ *     <li>{@link Events.JobChannel#job_crud_updated}</li>
  * </ul>
  *  
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -59,33 +59,33 @@ public class SyncJobCRUDListener extends ItemListener {
     
     @Override
     public void onCreated(Item item) {
-        publish(item, JenkinsEvents.JobChannel.job_crud_created, null);
+        publish(item, Events.JobChannel.job_crud_created, null);
     }
 
     @Override
     public void onDeleted(Item item) {
-        publish(item, JenkinsEvents.JobChannel.job_crud_deleted, null);
+        publish(item, Events.JobChannel.job_crud_deleted, null);
     }
 
     @Override
     public void onRenamed(Item item, String oldName, String newName) {
-        publish(item, JenkinsEvents.JobChannel.job_crud_renamed,  new SimpleMessage()
-                .set(JenkinsEventProps.Item.item_rename_before, oldName)
-                .set(JenkinsEventProps.Item.item_rename_after, newName)
+        publish(item, Events.JobChannel.job_crud_renamed,  new SimpleMessage()
+                .set(EventProps.Item.item_rename_before, oldName)
+                .set(EventProps.Item.item_rename_after, newName)
         );
     }
 
     @Override
     public void onUpdated(Item item) {
-        publish(item, JenkinsEvents.JobChannel.job_crud_updated, null);
+        publish(item, Events.JobChannel.job_crud_updated, null);
     }
 
-    private void publish(Item item, JenkinsEvents.JobChannel event, Properties properties) {
-        LOGGER.log(Level.FINER, "publish() - item={0}, event={1}, properties={2}", new Object[]{ item.toString(), event.toString(), properties.toString() });
+    private void publish(Item item, Events.JobChannel event, Properties properties) {
+        LOGGER.log(Level.FINER, "publish() - item={0}, event={1}, properties={2}", new Object[]{ item.toString(), event.toString(), properties != null ? properties.toString() : "null" });
 
         if (item instanceof Job) {
             try {
-                JenkinsMessage message = new JobMessage(item).setEventName(event);
+                Message message = new JobMessage(item).setEventName(event);
                 
                 if (properties != null) {
                     message.putAll(properties);

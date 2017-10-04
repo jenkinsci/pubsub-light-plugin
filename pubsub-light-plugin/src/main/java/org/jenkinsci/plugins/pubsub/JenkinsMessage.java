@@ -21,17 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.pubsub.message;
+package org.jenkinsci.plugins.pubsub;
 
 import hudson.model.Item;
 import jenkins.model.Jenkins;
 import org.apache.commons.codec.binary.Base64;
 import org.jenkinsci.main.modules.instance_identity.InstanceIdentity;
-import org.jenkinsci.plugins.pubsub.ChannelSubscriber;
-import org.jenkinsci.plugins.pubsub.GuavaPubsubBus;
-import org.jenkinsci.plugins.pubsub.JenkinsEventProps;
-import org.jenkinsci.plugins.pubsub.MessageEnricher;
-import org.jenkinsci.plugins.pubsub.PubsubBus;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -71,7 +66,7 @@ import java.util.UUID;
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public abstract class JenkinsMessage<T extends JenkinsMessage> extends Message {
+public abstract class JenkinsMessage<T extends Message> extends Message {
 
     private static final Jenkins jenkins = Jenkins.getInstanceOrNull();
     private static final String instanceIdentity;
@@ -112,13 +107,13 @@ public abstract class JenkinsMessage<T extends JenkinsMessage> extends Message {
         
         // Some properties to identify the origin of the event.
         if (instanceRootUrl != null) {
-            this.set(JenkinsEventProps.Jenkins.jenkins_instance_url, instanceRootUrl);
+            this.set(EventProps.Jenkins.jenkins_instance_url, instanceRootUrl);
         }
         
         // Add an event message timestamp.
-        this.set(JenkinsEventProps.Jenkins.jenkins_event_timestamp, Long.toString(System.currentTimeMillis()));
+        this.set(EventProps.Jenkins.jenkins_event_timestamp, Long.toString(System.currentTimeMillis()));
         // Add a UUID to the event message.
-        this.set(JenkinsEventProps.Jenkins.jenkins_event_uuid, UUID.randomUUID().toString()); // Remove eventually.
+        this.set(EventProps.Jenkins.jenkins_event_uuid, UUID.randomUUID().toString()); // Remove eventually.
     }
 
     /**
@@ -127,11 +122,11 @@ public abstract class JenkinsMessage<T extends JenkinsMessage> extends Message {
      *
      * @return The Jenkins domain model object name (full name) that this message instance is
      * associated with.
-     * @see JenkinsEventProps.Jenkins#jenkins_object_name
+     * @see EventProps.Jenkins#jenkins_object_name
      */
     @CheckForNull
     public String getObjectName() {
-        return get(JenkinsEventProps.Jenkins.jenkins_object_name);
+        return get(EventProps.Jenkins.jenkins_object_name);
     }
 
     /**
@@ -140,11 +135,11 @@ public abstract class JenkinsMessage<T extends JenkinsMessage> extends Message {
      *
      * @return The Jenkins domain model object type that this message instance is
      * associated with.
-     * @see JenkinsEventProps.Jenkins#jenkins_object_type
+     * @see EventProps.Jenkins#jenkins_object_type
      */
     @CheckForNull
     public String getObjectType() {
-        return get(JenkinsEventProps.Jenkins.jenkins_object_type);
+        return get(EventProps.Jenkins.jenkins_object_type);
     }
 
     /**
@@ -153,11 +148,11 @@ public abstract class JenkinsMessage<T extends JenkinsMessage> extends Message {
      *
      * @return The Jenkins domain model object Id that this message instance is
      * associated with, or {@code null} if no id was set on this message instance.
-     * @see JenkinsEventProps.Jenkins#jenkins_object_id
+     * @see EventProps.Jenkins#jenkins_object_id
      */
     @CheckForNull
     public String getObjectId() {
-        return get(JenkinsEventProps.Jenkins.jenkins_object_id);
+        return get(EventProps.Jenkins.jenkins_object_id);
     }
     
     /**
@@ -165,7 +160,7 @@ public abstract class JenkinsMessage<T extends JenkinsMessage> extends Message {
      * @return The channel name for the message, or {@code null} if none set.
      */
     public String getChannelName() {
-        return get(JenkinsEventProps.Jenkins.jenkins_channel);
+        return get(EventProps.Jenkins.jenkins_channel);
     }
     
     /**
@@ -173,7 +168,7 @@ public abstract class JenkinsMessage<T extends JenkinsMessage> extends Message {
      * @param name The channel name for the message.
      */
     public T setChannelName(String name) {
-        set(JenkinsEventProps.Jenkins.jenkins_channel, name);
+        set(EventProps.Jenkins.jenkins_channel, name);
         return (T) this;
     }
     
@@ -182,7 +177,7 @@ public abstract class JenkinsMessage<T extends JenkinsMessage> extends Message {
      * @return The event name for the message, or {@code null} if none set.
      */
     public String getEventName() {
-        return get(JenkinsEventProps.Jenkins.jenkins_event);
+        return get(EventProps.Jenkins.jenkins_event);
     }
     
     /**
@@ -190,7 +185,7 @@ public abstract class JenkinsMessage<T extends JenkinsMessage> extends Message {
      * @param name The event name for the message.
      */
     public T setEventName(String name) {
-        set(JenkinsEventProps.Jenkins.jenkins_event, name);
+        set(EventProps.Jenkins.jenkins_event, name);
         return (T) this;
     }
     
@@ -199,7 +194,7 @@ public abstract class JenkinsMessage<T extends JenkinsMessage> extends Message {
      * @param name The event name for the message.
      */
     public T setEventName(Enum name) {
-        set(JenkinsEventProps.Jenkins.jenkins_event, name.name());
+        set(EventProps.Jenkins.jenkins_event, name.name());
         return (T) this;
     }
 
@@ -210,7 +205,7 @@ public abstract class JenkinsMessage<T extends JenkinsMessage> extends Message {
      * @see #getJenkinsInstanceId()
      */
     public String getJenkinsInstanceUrl() {
-        return get(JenkinsEventProps.Jenkins.jenkins_instance_url);
+        return get(EventProps.Jenkins.jenkins_instance_url);
     }
 
     /**
@@ -228,7 +223,7 @@ public abstract class JenkinsMessage<T extends JenkinsMessage> extends Message {
      * @see #getJenkinsInstanceUrl()
      */
     public String getJenkinsInstanceId() {
-        return get(JenkinsEventProps.Jenkins.jenkins_instance_id);
+        return get(EventProps.Jenkins.jenkins_instance_id);
     }
 
     /**
@@ -236,7 +231,7 @@ public abstract class JenkinsMessage<T extends JenkinsMessage> extends Message {
      */
     public T setJenkinsInstanceId() {
         if (instanceIdentity != null) {
-            this.set(JenkinsEventProps.Jenkins.jenkins_instance_id, instanceIdentity);
+            this.set(EventProps.Jenkins.jenkins_instance_id, instanceIdentity);
         }
         return (T) this;
     }
@@ -246,7 +241,7 @@ public abstract class JenkinsMessage<T extends JenkinsMessage> extends Message {
      * @return The event UUID for the message, or {@code null} if none set.
      */
     public String getEventUUID() {
-        return get(JenkinsEventProps.Jenkins.jenkins_event_uuid);
+        return get(EventProps.Jenkins.jenkins_event_uuid);
     }
     
     /**
@@ -254,8 +249,8 @@ public abstract class JenkinsMessage<T extends JenkinsMessage> extends Message {
      * @param item The Jenkins {@link Item}.
      */
     protected T setItemProps(@Nonnull Item item) {
-        set(JenkinsEventProps.Jenkins.jenkins_object_name, item.getFullName());
-        set(JenkinsEventProps.Jenkins.jenkins_object_url, item.getUrl());
+        set(EventProps.Jenkins.jenkins_object_name, item.getFullName());
+        set(EventProps.Jenkins.jenkins_object_url, item.getUrl());
         return (T) this;
     }
 }

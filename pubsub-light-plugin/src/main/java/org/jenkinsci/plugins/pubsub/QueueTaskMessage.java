@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016, CloudBees, Inc.
+ * Copyright (c) 2017, CloudBees, Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,19 +21,45 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.pubsub.exception;
+package org.jenkinsci.plugins.pubsub;
+
+import hudson.model.Item;
+import hudson.model.Queue;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 
 /**
- * Message exception.
+ * Queue task job channel event message.
+ * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class MessageException extends Exception {
-    
-    public MessageException(String message) {
-        super(message);
+public final class QueueTaskMessage extends JobChannelMessage<QueueTaskMessage> {
+
+    private static final long serialVersionUID = -1L;
+
+    transient Queue.Item queueItem;
+
+    public QueueTaskMessage() {
     }
-    
-    public MessageException(String message, Throwable cause) {
-        super(message, cause);
+
+    public QueueTaskMessage(@Nonnull Queue.Item item, @Nonnull Item jobChannelItem) {
+        super(jobChannelItem);
+        this.queueItem = item;
+    }
+
+    @CheckForNull
+    public Queue.Item getQueueItem() {
+        return queueItem;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Message clone() {
+        Message clone = new QueueTaskMessage();
+        clone.putAll(this);
+        return clone;
     }
 }

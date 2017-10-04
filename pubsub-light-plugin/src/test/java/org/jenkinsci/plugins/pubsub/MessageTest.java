@@ -1,7 +1,5 @@
 package org.jenkinsci.plugins.pubsub;
 
-import org.jenkinsci.plugins.pubsub.message.ItemMessage;
-import org.jenkinsci.plugins.pubsub.message.Message;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

@@ -30,15 +30,10 @@ import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
-import org.jenkinsci.plugins.pubsub.exception.MessageException;
 import org.jenkinsci.plugins.pubsub.listeners.SyncQueueListener;
-import org.jenkinsci.plugins.pubsub.message.AccessControlledMessage;
-import org.jenkinsci.plugins.pubsub.message.EventFilter;
-import org.jenkinsci.plugins.pubsub.message.Message;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import java.security.Principal;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
@@ -114,7 +109,7 @@ public final class JenkinsGuavaPubsubBus extends GuavaPubsubBus {
         if (message instanceof AccessControlledMessage) {
             AccessControlled accessControlled = ((AccessControlledMessage) message).getAccessControlled();
             if (accessControlled != null) {
-                message.set(JenkinsEventProps.Jenkins.jenkins_object_type, accessControlled.getClass().getName());
+                message.set(EventProps.Jenkins.jenkins_object_type, accessControlled.getClass().getName());
             }
         }
 
@@ -134,8 +129,8 @@ public final class JenkinsGuavaPubsubBus extends GuavaPubsubBus {
     }
 
     @Override
-    public void subscribe(@Nonnull String channelName, @Nonnull ChannelSubscriber subscriber, @Nonnull Principal principal, @CheckForNull EventFilter eventFilter) {
-        GuavaSubscriber jenkinsGuavaSubscriber = new JenkinsGuavaSubscriber(subscriber, principal, eventFilter);
+    public void subscribe(@Nonnull String channelName, @Nonnull ChannelSubscriber subscriber, @Nonnull Authentication authentication, @CheckForNull EventFilter eventFilter) {
+        GuavaSubscriber jenkinsGuavaSubscriber = new JenkinsGuavaSubscriber(subscriber, authentication, eventFilter);
         EventBus channelBus = getChannelBus(channelName);
         channelBus.register(jenkinsGuavaSubscriber);
         getSubscribers().put(subscriber, jenkinsGuavaSubscriber);
@@ -144,10 +139,10 @@ public final class JenkinsGuavaPubsubBus extends GuavaPubsubBus {
     protected static class JenkinsGuavaSubscriber extends GuavaSubscriber {
         private Authentication authentication;
 
-        public JenkinsGuavaSubscriber(@Nonnull ChannelSubscriber subscriber, Principal principal, EventFilter eventFilter) {
-            super(subscriber, principal, eventFilter);
-            if (principal != null) {
-                this.authentication = (Authentication) principal;
+        public JenkinsGuavaSubscriber(@Nonnull ChannelSubscriber subscriber, Authentication authentication, EventFilter eventFilter) {
+            super(subscriber, authentication, eventFilter);
+            if (authentication != null) {
+                this.authentication = authentication;
             } else {
                 this.authentication = Jenkins.ANONYMOUS;
             }

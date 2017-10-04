@@ -1,7 +1,5 @@
 package org.jenkinsci.plugins.pubsub;
 
-import org.jenkinsci.plugins.pubsub.message.EventFilter;
-import org.jenkinsci.plugins.pubsub.message.SimpleMessage;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
@@ -11,7 +9,7 @@ public class EventFilterTest {
     @Test
     public void test_no_default_props() {
         // A Message should have default props set on it.
-        assertTrue(new SimpleMessage().size() > 0);
+        assertTrue(new BasicMessage().size() > 0);
         // But an EventFilter should not.
         assertTrue(new EventFilter().size() == 0);
     }

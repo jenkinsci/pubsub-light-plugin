@@ -1,10 +1,6 @@
 package org.jenkinsci.plugins.pubsub;
 
 import hudson.model.User;
-import org.jenkinsci.plugins.pubsub.message.EventFilter;
-import org.jenkinsci.plugins.pubsub.message.ItemMessage;
-import org.jenkinsci.plugins.pubsub.message.Message;
-import org.jenkinsci.plugins.pubsub.message.SimpleJenkinsMessage;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -53,8 +49,8 @@ public class GuavaPubsubBusItemTest {
         bus.subscribe("jenkins.slave", subs2, alice.impersonate(), null);
         
         // Publish ...
-        jobPublisher.publish(new SimpleJenkinsMessage().set("joba", "joba"));
-        slavePublisher.publish(new SimpleJenkinsMessage().set("slavea", "slavea"));
+        jobPublisher.publish(new SimpleMessage().set("joba", "joba"));
+        slavePublisher.publish(new SimpleMessage().set("slavea", "slavea"));
         
         // Check receipt ...
         subs1.waitForMessageCount(1);
@@ -74,8 +70,8 @@ public class GuavaPubsubBusItemTest {
         bus.subscribe("jenkins.job", subs, alice.impersonate(), new EventFilter().set("joba", "joba"));
         
         // Publish ...
-        jobPublisher.publish(new SimpleJenkinsMessage().set("joba", "joba")); // Should get delivered
-        jobPublisher.publish(new SimpleJenkinsMessage().set("joba", "----")); // Should get filtered out
+        jobPublisher.publish(new SimpleMessage().set("joba", "joba")); // Should get delivered
+        jobPublisher.publish(new SimpleMessage().set("joba", "----")); // Should get filtered out
         
         // Check receipt ...
         subs.waitForMessageCount(1);

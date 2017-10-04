@@ -21,14 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.pubsub.message;
+package org.jenkinsci.plugins.pubsub;
 
 import hudson.model.Item;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
-import org.jenkinsci.plugins.pubsub.JenkinsEventProps;
-import org.jenkinsci.plugins.pubsub.PubsubBus;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -59,8 +57,8 @@ public final class ItemMessage extends AccessControlledMessage<ItemMessage> {
      */
     public ItemMessage(@Nonnull Item messageItem) {
         this.messageItem = messageItem;
-        set(JenkinsEventProps.Jenkins.jenkins_object_name, messageItem.getFullName());
-        set(JenkinsEventProps.Jenkins.jenkins_object_url, messageItem.getUrl());
+        set(EventProps.Jenkins.jenkins_object_name, messageItem.getFullName());
+        set(EventProps.Jenkins.jenkins_object_url, messageItem.getUrl());
     }
 
     /**

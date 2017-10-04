@@ -21,32 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.pubsub.message;
+package org.jenkinsci.plugins.pubsub;
 
-import hudson.model.Item;
-
-import javax.annotation.Nonnull;
-
-/**
- * Basic Job channel event message.
- * 
- * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
- */
-public final class JobMessage extends JobChannelMessage<JobMessage> {
-
-    public JobMessage() {
-    }
-
-    public JobMessage(@Nonnull Item jobChannelItem) {
-        super(jobChannelItem);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
+public final class SimpleMessage extends JenkinsMessage<SimpleMessage> {
     @Override
     public Message clone() {
-        Message clone = new JobMessage();
+        Message clone = new SimpleMessage();
         clone.putAll(this);
         return clone;
     }

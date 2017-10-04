@@ -24,7 +24,6 @@
 package org.jenkinsci.plugins.pubsub;
 
 import hudson.Extension;
-import org.jenkinsci.plugins.pubsub.message.Message;
 
 import javax.annotation.Nonnull;
 

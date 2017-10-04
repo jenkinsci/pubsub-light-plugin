@@ -23,9 +23,6 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
-import org.jenkinsci.plugins.pubsub.message.Message;
-import org.jenkinsci.plugins.pubsub.message.SimpleMessage;
-
 import javax.annotation.Nonnull;
 import java.io.FileWriter;
 import java.io.IOException;

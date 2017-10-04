@@ -1,8 +1,5 @@
 package org.jenkinsci.plugins.pubsub;
 
-import org.jenkinsci.plugins.pubsub.message.EventFilter;
-import org.jenkinsci.plugins.pubsub.message.Message;
-import org.jenkinsci.plugins.pubsub.message.SimpleMessage;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -15,7 +12,7 @@ import static org.junit.Assert.assertTrue;
 public class MessageTest {
     @Test
     public void test_containsAll() {
-        Message message = new SimpleMessage();
+        Message message = new BasicMessage();
         
         message.setProperty("a", "a");
         message.setProperty("b", "b");
@@ -39,15 +36,15 @@ public class MessageTest {
     
     @Test
     public void test_toJSON() {
-        Message message = new SimpleMessage().set("a", "aVal");
+        Message message = new BasicMessage().set("a", "aVal");
 
         // Check that the message has a UUID. Then remove it
         // so we can do a check on the rest of the content.
         assertTrue(message.getEventUUID() != null);
-        message.remove(EventProps.event_uuid.name());
+        message.remove(CommonEventProps.event_uuid.name());
         // Same for timestamp.
         assertTrue(message.getTimestampMillis() > 0);
-        message.remove(EventProps.event_timestamp.name());
+        message.remove(CommonEventProps.event_timestamp.name());
 
         assertEquals("{\"a\":\"aVal\"}", message.toJSON());
         assertEquals("{\"a\":\"aVal\"}", message.toString());

@@ -21,11 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.pubsub.message;
+package org.jenkinsci.plugins.pubsub;
 
 /**
- * A simple {@link Message} implementation.
+ * Pre-defined event property name enumerations.
+ * <p>
+ * Of course new event property names (not pre-defined here) can be created/used.
+ * The idea of types pre-defined here is to try help standardise on the event
+ * property names used.
+ * <p>
+ * If you find yourself needing a new event property names, consider
+ * creating a Pull Request on this repo, adding it as one of the pre-defined
+ * event property names.
+ * <p>
+ * <strong>*** SEE the docs on the nested types for more details ***</strong>
+ *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public final class SimpleMessage extends Message<SimpleMessage> {
+public enum CommonEventProps {
+    channel_name,
+    event_name,
+    event_timestamp,
+    event_uuid,
+    object_type,
+    object_name,
+    object_id,
+    object_url
 }

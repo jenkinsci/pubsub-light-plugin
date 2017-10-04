@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.pubsub.message;
+package org.jenkinsci.plugins.pubsub;
 
 import hudson.model.Item;
 import hudson.model.Job;
@@ -29,9 +29,6 @@ import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
-import org.jenkinsci.plugins.pubsub.JenkinsEventProps;
-import org.jenkinsci.plugins.pubsub.JenkinsEvents;
-import org.jenkinsci.plugins.pubsub.PubsubBus;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -53,7 +50,7 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
      */
     JobChannelMessage() {
         super();
-        setChannelName(JenkinsEvents.JobChannel.NAME);
+        setChannelName(Events.JobChannel.NAME);
     }
 
     public JobChannelMessage(@Nonnull Item jobChannelItem) {
@@ -62,16 +59,16 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
 
     @Override
     public final String getChannelName() {
-        return JenkinsEvents.JobChannel.NAME;
+        return Events.JobChannel.NAME;
     }
 
     @Override
-    public final JenkinsMessage setChannelName(String name) {
-        return super.setChannelName(JenkinsEvents.JobChannel.NAME);
+    public final Message setChannelName(String name) {
+        return super.setChannelName(Events.JobChannel.NAME);
     }
 
     public String getJobName() {
-        return get(JenkinsEventProps.Job.job_name);
+        return get(EventProps.Job.job_name);
     }
 
     private transient boolean jobLookupComplete = false;
@@ -88,7 +85,7 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
         }
         
         try {
-            String jobName = get(JenkinsEventProps.Job.job_name);
+            String jobName = get(EventProps.Job.job_name);
             if (jobName != null) {
                 Jenkins jenkins = Jenkins.getInstance();
                 jobChannelItem = jenkins.getItemByFullName(jobName);
@@ -119,8 +116,8 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
 
     private synchronized void setJobChannelItem(@Nonnull Item jobChannelItem) {
         this.jobChannelItem = jobChannelItem;
-        super.setChannelName(JenkinsEvents.JobChannel.NAME);
-        set(JenkinsEventProps.Job.job_name, jobChannelItem.getFullName());
+        super.setChannelName(Events.JobChannel.NAME);
+        set(EventProps.Job.job_name, jobChannelItem.getFullName());
         setItemProps(jobChannelItem);
     }
 

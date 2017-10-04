@@ -37,9 +37,9 @@ package org.jenkinsci.plugins.pubsub;
  * <strong>*** SEE the docs on the nested types for more details ***</strong>
  *  
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
- * @see JenkinsEvents
+ * @see Events
  */
-public interface JenkinsEventProps {
+public interface EventProps {
 
     /**
      * Pre-defined Jenkins/core event property names.
@@ -62,7 +62,7 @@ public interface JenkinsEventProps {
          */
         jenkins_channel,
         /**
-         * The event name. See {@link JenkinsEvents} for pre-defined types.
+         * The event name. See {@link Events} for pre-defined types.
          */
         jenkins_event,
         /**
@@ -97,7 +97,7 @@ public interface JenkinsEventProps {
     /**
      * Pre-defined Job channel event property names.
      * <ul>
-     *     <li>See {@link JenkinsEvents.JobChannel} for Job channel events.</li>
+     *     <li>See {@link Events.JobChannel} for Job channel events.</li>
      *     <li>See {@link Jenkins} for core properties common to most/all messages.</li>
      * </ul>
      */

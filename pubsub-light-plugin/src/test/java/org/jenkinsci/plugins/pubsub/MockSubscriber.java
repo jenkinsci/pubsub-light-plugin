@@ -23,8 +23,6 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
-import org.jenkinsci.plugins.pubsub.message.JenkinsMessage;
-import org.jenkinsci.plugins.pubsub.message.Message;
 import org.junit.Assert;
 
 import javax.annotation.Nonnull;

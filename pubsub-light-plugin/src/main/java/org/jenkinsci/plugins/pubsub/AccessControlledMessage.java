@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.pubsub.message;
+package org.jenkinsci.plugins.pubsub;
 
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
@@ -29,9 +29,6 @@ import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import org.acegisecurity.AccessDeniedException;
 import org.acegisecurity.Authentication;
-import org.jenkinsci.plugins.pubsub.ChannelSubscriber;
-import org.jenkinsci.plugins.pubsub.GuavaPubsubBus;
-import org.jenkinsci.plugins.pubsub.PubsubBus;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;

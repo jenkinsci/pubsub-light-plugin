@@ -21,12 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.pubsub.message;
+package org.jenkinsci.plugins.pubsub;
 
 import net.sf.json.JSONObject;
-import org.jenkinsci.plugins.pubsub.ChannelSubscriber;
-import org.jenkinsci.plugins.pubsub.EventProps;
-import org.jenkinsci.plugins.pubsub.PubsubBus;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -79,8 +76,8 @@ public abstract class Message<T extends Message> extends Properties {
             return;
         }
 
-        this.set(EventProps.event_timestamp, Long.toString(System.currentTimeMillis()));
-        this.set(EventProps.event_uuid, UUID.randomUUID().toString());
+        this.set(CommonEventProps.event_timestamp, Long.toString(System.currentTimeMillis()));
+        this.set(CommonEventProps.event_uuid, UUID.randomUUID().toString());
     }
 
     /**
@@ -132,42 +129,42 @@ public abstract class Message<T extends Message> extends Properties {
     }
 
     public String getChannelName() {
-        return get(EventProps.channel_name);
+        return get(CommonEventProps.channel_name);
     }
 
     public T setChannelName(String name) {
-        set(EventProps.channel_name, name);
+        set(CommonEventProps.channel_name, name);
         return (T) this;
     }
 
     public String getObjectName() {
-        return get(EventProps.object_name);
+        return get(CommonEventProps.object_name);
     }
 
     public String getObjectType() {
-        return get(EventProps.object_type);
+        return get(CommonEventProps.object_type);
     }
 
     public String getObjectId() {
-        return get(EventProps.object_id);
+        return get(CommonEventProps.object_id);
     }
 
     public String getEventName() {
-        return get(EventProps.event_name);
+        return get(CommonEventProps.event_name);
     }
 
     public T setEventName(String name) {
-        set(EventProps.event_name, name);
+        set(CommonEventProps.event_name, name);
         return (T) this;
     }
 
     public T setEventName(Enum name) {
-        set(EventProps.event_name, name.name());
+        set(CommonEventProps.event_name, name.name());
         return (T) this;
     }
 
     public String getTimestamp() {
-        return get(EventProps.event_timestamp);
+        return get(CommonEventProps.event_timestamp);
     }
 
     /**
@@ -184,18 +181,18 @@ public abstract class Message<T extends Message> extends Properties {
     }
 
     public String getEventUUID() {
-        return get(EventProps.event_uuid);
+        return get(CommonEventProps.event_uuid);
     }
 
     /**
      * Clone this {@link Message} instance.
      * <p>
-     * Base implementation creates a {@link SimpleMessage} instance.
+     * Base implementation creates a {@link BasicMessage} instance.
      *
      * @return The clone.
      */
     public Message clone() {
-        Message clone = new SimpleMessage();
+        Message clone = new BasicMessage();
         clone.putAll(this);
         return clone;
     }

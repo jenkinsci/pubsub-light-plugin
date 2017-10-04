@@ -26,12 +26,10 @@ package org.jenkinsci.plugins.pubsub;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
-import org.jenkinsci.plugins.pubsub.message.EventFilter;
-import org.jenkinsci.plugins.pubsub.message.Message;
+import org.acegisecurity.Authentication;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import java.security.Principal;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -77,8 +75,8 @@ public class GuavaPubsubBus extends PubsubBus {
     }
 
     @Override
-    public void subscribe(@Nonnull String channelName, @Nonnull ChannelSubscriber subscriber, @Nonnull Principal principal, @CheckForNull EventFilter eventFilter) {
-        GuavaSubscriber guavaSubscriber = new GuavaSubscriber(subscriber, principal, eventFilter);
+    public void subscribe(@Nonnull String channelName, @Nonnull ChannelSubscriber subscriber, @Nonnull Authentication authentication, @CheckForNull EventFilter eventFilter) {
+        GuavaSubscriber guavaSubscriber = new GuavaSubscriber(subscriber, authentication, eventFilter);
         EventBus channelBus = getChannelBus(channelName);
         channelBus.register(guavaSubscriber);
         subscribers.put(subscriber, guavaSubscriber);
@@ -112,12 +110,12 @@ public class GuavaPubsubBus extends PubsubBus {
 
     protected static class GuavaSubscriber {
         private ChannelSubscriber subscriber;
-        private Principal principal;
+        private Authentication authentication;
         private final EventFilter eventFilter;
 
-        public GuavaSubscriber(@Nonnull ChannelSubscriber subscriber, Principal principal, EventFilter eventFilter) {
+        public GuavaSubscriber(@Nonnull ChannelSubscriber subscriber, Authentication authentication, EventFilter eventFilter) {
             this.subscriber = subscriber;
-            this.principal = principal;
+            this.authentication = authentication;
             this.eventFilter = eventFilter;
         }
 
@@ -141,8 +139,8 @@ public class GuavaPubsubBus extends PubsubBus {
             return subscriber;
         }
 
-        public Principal getPrincipal() {
-            return principal;
+        public Authentication getAuthentication() {
+            return authentication;
         }
 
         public EventFilter getEventFilter() {

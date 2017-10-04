@@ -27,8 +27,6 @@ package org.jenkinsci.plugins.pubsub;
 import hudson.ExtensionList;
 import hudson.model.User;
 import org.jenkinsci.main.modules.instance_identity.PageDecoratorImpl;
-import org.jenkinsci.plugins.pubsub.message.JenkinsMessage;
-import org.jenkinsci.plugins.pubsub.message.SimpleJenkinsMessage;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -74,12 +72,12 @@ public class MessageOriginIdentityTest {
         bus.subscribe("jenkins.job", subscriber, alice.impersonate(), null);
         
         // Publish ...
-        publisher.publish(new SimpleJenkinsMessage().set("joba", "joba"));
+        publisher.publish(new SimpleMessage().set("joba", "joba"));
         subscriber.waitForMessageCount(1);
         
         // Checks ...
         
-        JenkinsMessage message = subscriber.messages.get(0);
+        SimpleMessage message = (SimpleMessage) subscriber.messages.get(0);
 
         Assert.assertEquals(jenkins.getURL().toString(), message.getJenkinsInstanceUrl());
         

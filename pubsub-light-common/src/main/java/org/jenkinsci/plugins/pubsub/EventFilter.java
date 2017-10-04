@@ -24,27 +24,14 @@
 package org.jenkinsci.plugins.pubsub;
 
 /**
- * Pre-defined event property name enumerations.
- * <p>
- * Of course new event property names (not pre-defined here) can be created/used.
- * The idea of types pre-defined here is to try help standardise on the event
- * property names used.
- * <p>
- * If you find yourself needing a new event property names, consider
- * creating a Pull Request on this repo, adding it as one of the pre-defined
- * event property names.
- * <p>
- * <strong>*** SEE the docs on the nested types for more details ***</strong>
+ * Event filter.
  *
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public enum EventProps {
-    channel_name,
-    event_name,
-    event_timestamp,
-    event_uuid,
-    object_type,
-    object_name,
-    object_id,
-    object_url
+public class EventFilter extends Message<EventFilter> {
+    public EventFilter() {
+        // Don't set any of the "default" properties. The filter should start "clean",
+        // adding the filtering properties after construction.
+        super(false);
+    }
 }

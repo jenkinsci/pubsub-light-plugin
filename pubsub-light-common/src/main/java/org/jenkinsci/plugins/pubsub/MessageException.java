@@ -23,16 +23,17 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
-import javax.annotation.Nonnull;
-
 /**
+ * Message exception.
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public interface ChannelPublisher {
-
-    /**
-     * Publish a message on the channel.
-     * @param message The message properties.
-     */
-    void publish(@Nonnull Message message);
+public class MessageException extends Exception {
+    
+    public MessageException(String message) {
+        super(message);
+    }
+    
+    public MessageException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

@@ -21,15 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.jenkinsci.plugins.pubsub.message;
+package org.jenkinsci.plugins.pubsub;
 
 import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.security.AccessControlled;
-import org.jenkinsci.plugins.pubsub.JenkinsEventProps;
-import org.jenkinsci.plugins.pubsub.PubsubBus;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -60,16 +58,16 @@ public final class RunMessage extends JobChannelMessage<RunMessage> {
     public RunMessage(@Nonnull Run run) {
         super(run.getParent());
         this.run = run;
-        set(JenkinsEventProps.Jenkins.jenkins_object_name, run.getDisplayName());
-        set(JenkinsEventProps.Jenkins.jenkins_object_id, run.getId());
-        set(JenkinsEventProps.Jenkins.jenkins_object_url, run.getUrl());
-        set(JenkinsEventProps.Job.job_run_queueId, Long.toString(run.getQueueId()));
+        set(EventProps.Jenkins.jenkins_object_name, run.getDisplayName());
+        set(EventProps.Jenkins.jenkins_object_id, run.getId());
+        set(EventProps.Jenkins.jenkins_object_url, run.getUrl());
+        set(EventProps.Job.job_run_queueId, Long.toString(run.getQueueId()));
 
         Result result = run.getResult();
         if (result != null) {
-            set(JenkinsEventProps.Job.job_run_status, result.toString());
+            set(EventProps.Job.job_run_status, result.toString());
         } else {
-            set(JenkinsEventProps.Job.job_run_status, "RUNNING");
+            set(EventProps.Job.job_run_status, "RUNNING");
         }
     }
 
