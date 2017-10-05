@@ -9,4 +9,9 @@ public class GuavaPubsubBusTest {
     public void getBus() throws Exception {
         assertTrue(PubsubBus.getBus() instanceof GuavaPubsubBus);
     }
+
+    @Test
+    public void getBus_specify() throws Exception {
+        assertTrue(PubsubBus.getBus("GuavaPubsubBus") instanceof GuavaPubsubBus);
+    }
 }
