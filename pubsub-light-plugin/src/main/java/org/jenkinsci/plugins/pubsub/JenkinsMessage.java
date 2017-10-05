@@ -25,6 +25,8 @@ package org.jenkinsci.plugins.pubsub;
 
 import hudson.model.Item;
 import jenkins.model.Jenkins;
+import net.sf.json.JSONObject;
+import net.sf.json.JSONSerializer;
 import org.apache.commons.codec.binary.Base64;
 import org.jenkinsci.main.modules.instance_identity.InstanceIdentity;
 
@@ -32,7 +34,9 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.nio.charset.Charset;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -252,5 +256,20 @@ public abstract class JenkinsMessage<T extends Message> extends Message {
         set(EventProps.Jenkins.jenkins_object_name, item.getFullName());
         set(EventProps.Jenkins.jenkins_object_url, item.getUrl());
         return (T) this;
+    }
+
+    /**
+     * Constructs and returns a {@link JenkinsMessage} from the given JSON string.
+     * @param string
+     * @return
+     */
+    public static JenkinsMessage fromString(@Nonnull String string) {
+        final JenkinsMessage message = new SimpleMessage();
+        final JSONObject jsonObject = (JSONObject) JSONSerializer.toJSON(string);
+        final Set<Map.Entry<Object, Object>> entries = jsonObject.entrySet();
+        for(final Map.Entry<Object, Object> entry : entries) {
+            message.set((String) entry.getKey(), (String) entry.getValue());
+        }
+        return message;
     }
 }
