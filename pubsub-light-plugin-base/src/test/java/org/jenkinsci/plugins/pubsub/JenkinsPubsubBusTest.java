@@ -9,9 +9,4 @@ public class JenkinsPubsubBusTest {
     public void getBus() throws Exception {
         assertTrue(PubsubBus.getBus() instanceof JenkinsGuavaPubsubBus);
     }
-
-    @Test
-    public void getBus_specify() throws Exception {
-        assertTrue(PubsubBus.getBus("JenkinsGuavaPubsubBus") instanceof GuavaPubsubBus);
-    }
 }
