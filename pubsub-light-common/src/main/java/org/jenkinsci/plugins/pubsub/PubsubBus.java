@@ -23,6 +23,7 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
+import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 
 import javax.annotation.CheckForNull;
@@ -62,39 +63,23 @@ public abstract class PubsubBus {
      */
     public synchronized static @Nonnull
     PubsubBus getBus() {
+        ClassLoader loader;
         if (pubsubBus == null) {
-            final ServiceLoader<PubsubBus> busLoader = ServiceLoader.load(PubsubBus.class, PubsubBus.class.getClassLoader());
+            // use the Jenkins plugins uber class loader if available to ensure that the needed provider is visible to this plugin
+            try {
+                Class.forName("jenkins.model.Jenkins", false, PubsubBus.class.getClassLoader());
+                loader = Jenkins.getInstanceOrNull() != null ? Jenkins.getInstance().getPluginManager().uberClassLoader : PubsubBus.class.getClassLoader();
+            } catch (ClassNotFoundException e) {
+                loader = PubsubBus.class.getClassLoader();
+            }
+
+            final ServiceLoader<PubsubBus> busLoader = ServiceLoader.load(PubsubBus.class, loader);
             if (busLoader.iterator().hasNext()) {
                 pubsubBus = busLoader.iterator().next();
                 LOGGER.log(Level.FINER, "getBus() - instantiated pubsubBus={0} impl", pubsubBus.getClass().getSimpleName());
             } else {
                 throw new IllegalStateException("unable to find any PubsubBus implementations");
             }
-        }
-        return pubsubBus;
-    }
-
-    /**
-     * Build if necessary and return the specified {@link PubsubBus} implementation.
-     * <p>
-     * PubsubBus clients need to add a ServiceLoader spi configuration file to indicate which implementation to use.  For example,
-     * clients of the default {@link GuavaPubsubBus} need to include the pubsub-light-guava-provider module.
-     *
-     * @param provider the simple class name of the desired Pubsub impl
-     * @return a singleton instance of the default {@link PubsubBus} implementation.
-     */
-    public synchronized static @Nonnull
-    PubsubBus getBus(final String provider) {
-        if (pubsubBus == null) {
-            final ServiceLoader<PubsubBus> busLoader = ServiceLoader.load(PubsubBus.class, PubsubBus.class.getClassLoader());
-            for (final PubsubBus bus : busLoader) {
-                pubsubBus = bus;
-                if (pubsubBus.getClass().getSimpleName().equals(provider)) {
-                    LOGGER.log(Level.FINER, "getBus() - instantiated pubsubBus={0} impl", pubsubBus.getClass().getSimpleName());
-                    return pubsubBus;
-                }
-            }
-            throw new IllegalStateException("unable to find any PubsubBus implementations");
         }
         return pubsubBus;
     }
