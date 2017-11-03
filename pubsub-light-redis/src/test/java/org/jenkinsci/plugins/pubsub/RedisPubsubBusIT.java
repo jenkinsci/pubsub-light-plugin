@@ -1,16 +1,14 @@
 package org.jenkinsci.plugins.pubsub;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.*;
 import org.acegisecurity.providers.TestingAuthenticationToken;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.commons.lang.RandomStringUtils;
+import org.junit.*;
 
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class RedisPubsubBusIT {
     private static final String CHANNEL_NAME = "job";
@@ -116,6 +114,100 @@ public class RedisPubsubBusIT {
         // now channel 2 sub should be closed
         waitForRedisSubscriptionCount(1);
         assertTrue(testBus.getSubscriptions().containsAll(Lists.newArrayList("channel1")));
+    }
+
+    @Test
+    public void testChaos() throws Exception {
+        final int CHAOS_LEVEL = 10;
+
+        final ExecutorService executorService = Executors.newFixedThreadPool(CHAOS_LEVEL);
+
+        final Random random = new Random();
+        final Map<String, Set<ChannelSubscriber>> subscriptionIndex = new ConcurrentHashMap<>();
+
+        final List<ChannelSubscriber> subscribers = new ArrayList<>();
+        for (int i = 0; i < CHAOS_LEVEL; i++) {
+            subscribers.add(new MockSubscriber());
+        }
+
+        final List<String> channelNames = new ArrayList<>();
+        for (int i = 0; i < CHAOS_LEVEL; i++) {
+            final String channelName = RandomStringUtils.randomAlphabetic(20);
+            channelNames.add(channelName);
+            subscriptionIndex.put(channelName, Collections.newSetFromMap(new ConcurrentHashMap<ChannelSubscriber, Boolean>()));
+        }
+
+        // randomly subscribe each channel name at least once
+        for (int i = 0; i < CHAOS_LEVEL; i++) {
+            for (final String channelName : channelNames) {
+                final ChannelSubscriber subscriber = subscribers.get(random.nextInt(CHAOS_LEVEL));
+                testBus.subscribe(channelName, subscriber, AUTHENTICATION, null);
+                subscriptionIndex.get(channelName).add(subscriber);
+            }
+        }
+        final List<Callable<Void>> threads = new ArrayList<>();
+
+        for (int i = 0; i < CHAOS_LEVEL; i++) {
+            final Callable<Void> chaosThread = new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
+                    for (int i = 0; i < CHAOS_LEVEL; i++) {
+                        // randomly subscribe a channel/subscriber
+                        if (random.nextBoolean()) {
+                            final String channelName = channelNames.get(random.nextInt(CHAOS_LEVEL));
+                            final ChannelSubscriber subscriber = subscribers.get(random.nextInt(CHAOS_LEVEL));
+                            testBus.subscribe(channelName, subscriber, AUTHENTICATION, null);
+                            subscriptionIndex.get(channelName).add(subscriber);
+
+                            waitForRedisSubscriptionCount(subscriptionIndex.size());
+                            assertTrue(testBus.getSubscriptions().toString() + " " + subscriptionIndex.keySet().toString(), testBus.getSubscriptions().containsAll(subscriptionIndex.keySet()));
+                        }
+
+                        // randomly unsubscribe a channel/subscriber
+                        if (random.nextBoolean()) {
+                            final List<String> names = new ArrayList<>(subscriptionIndex.keySet());
+                            Collections.shuffle(names);
+                            final String randomName = names.get(0);
+
+                            if (subscriptionIndex.get(randomName).size() > 0) {
+                                final List<ChannelSubscriber> channelSubscribers = new ArrayList<>(subscriptionIndex.get(randomName));
+                                Collections.shuffle(channelSubscribers);
+                                final ChannelSubscriber randomSubscriber = channelSubscribers.get(0);
+
+                                testBus.unsubscribe(randomName, randomSubscriber);
+                                subscriptionIndex.get(randomName).remove(randomSubscriber);
+
+                                waitForRedisSubscriptionCount(subscriptionIndex.size());
+                                assertTrue(testBus.getSubscriptions().toString() + " " + subscriptionIndex.keySet().toString(), testBus.getSubscriptions().containsAll(subscriptionIndex.keySet()));
+                            }
+                        }
+
+                        // randomly send some messages
+                        if (random.nextBoolean()) {
+                            final List<String> names = new ArrayList<>(subscriptionIndex.keySet());
+                            Collections.shuffle(names);
+                            final String randomName = names.get(0);
+
+                            for (int j = 0; j < 3; j++) {
+                                testBus.publisher(randomName).publish(new SimpleMessage());
+                            }
+
+                            final Set<ChannelSubscriber> channelSubscribers = subscriptionIndex.get(randomName);
+                            for (final ChannelSubscriber channelSubscriber : channelSubscribers) {
+                                ((MockSubscriber) channelSubscriber).waitForMessageCount(3);
+                            }
+                        }
+                    }
+                    return null;
+                }
+            };
+            threads.add(chaosThread);
+        }
+
+        final List<Future<Void>> futures = executorService.invokeAll(threads);
+        for (final Future<Void> future : futures) {
+            future.get();
+        }
     }
 
     private void waitForRedisSubscriptionCount(final int expectedCount) throws InterruptedException {
