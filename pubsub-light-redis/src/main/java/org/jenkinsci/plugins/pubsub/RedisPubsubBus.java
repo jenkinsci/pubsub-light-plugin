@@ -26,22 +26,17 @@ package org.jenkinsci.plugins.pubsub;
 
 import com.google.common.base.Throwables;
 import org.acegisecurity.Authentication;
-import org.apache.commons.lang.StringUtils;
 import redis.clients.jedis.*;
 
 import javax.annotation.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.*;
-import java.util.regex.*;
 
 public class RedisPubsubBus extends PubsubBus {
     private static final Logger LOGGER = Logger.getLogger(RedisPubsubBus.class.getName());
 
-    private static final Pattern CLIENT_INFO_SUB_PATTERN = Pattern.compile("^.* sub=(?<sub>\\d+) .*$");
-
     private final JedisPool jedisPool;
-
     private final RedisPubSubListener redisPubSubListener;
 
     /**
@@ -49,8 +44,6 @@ public class RedisPubsubBus extends PubsubBus {
      */
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private Future<Void> subscribeFuture;
-
-    private final Set<String> subscriptions = Collections.synchronizedSet(new HashSet<String>());
 
     public RedisPubsubBus() {
         RedisConfig redisConfig;
@@ -91,7 +84,6 @@ public class RedisPubsubBus extends PubsubBus {
      * Jedis abstraction for handling redis pub/sub events.
      */
     static class RedisPubSubListener extends JedisPubSub {
-
         private static final Logger LOGGER = Logger.getLogger(RedisPubSubListener.class.getName());
 
         /**
@@ -121,6 +113,8 @@ public class RedisPubsubBus extends PubsubBus {
         void subscribe(final String channel, final FilteredChannelSubscriber subscriber) {
             if (channelSubscribers.get(channel) == null) {
                 channelSubscribers.put(channel, new HashSet<FilteredChannelSubscriber>());
+                subscribe(channelSubscribers.keySet().toArray(new String[0]));
+                waitForSubscriptionNChange(channelSubscribers.keySet().size());
             }
             channelSubscribers.get(channel).add(subscriber);
         }
@@ -133,18 +127,46 @@ public class RedisPubsubBus extends PubsubBus {
                         subscribers.remove();
                     }
                 }
+
+                if (channelSubscribers.get(channel).isEmpty()) {
+                    channelSubscribers.remove(channel);
+                    unsubscribe(channel);
+                    waitForSubscriptionNChange(channelSubscribers.keySet().size());
+                }
             }
         }
 
-        List<? extends ChannelSubscriber> getSubscribers(final String channel) {
-            final Set<FilteredChannelSubscriber> filteredChannelSubscribers = channelSubscribers.get(channel);
-            final List<ChannelSubscriber> subscribers = new ArrayList<>();
-            for (final FilteredChannelSubscriber filteredSubscriber : filteredChannelSubscribers) {
-                subscribers.add(filteredSubscriber.getChannelSubscriber());
-            }
-            return channelSubscribers.get(channel) != null ? subscribers : new ArrayList<FilteredChannelSubscriber>();
+        void unsubscribeAll() {
+            unsubscribe(channelSubscribers.keySet().toArray(new String[0]));
+            channelSubscribers.clear();
+            waitForSubscriptionNChange(0);
         }
 
+        /**
+         * Blocking wait for the number of channel subscriptions reported by the listener to become expected.
+         */
+        private void waitForSubscriptionNChange(final int expectedN) {
+            Callable<Void> waitForSubscription = new Callable<Void>() {
+                @Override
+                public Void call() throws Exception {
+                    int actualN;
+                    do {
+                        actualN = getSubscribedChannels();
+                        LOGGER.log(Level.FINEST, "call() - waiting for nSubs to change, actualN={0}, expectedN={1}", new Object[]{actualN, expectedN});
+                    } while (actualN != expectedN);
+                    return null;
+                }
+            };
+
+            try {
+                Executors.newSingleThreadExecutor().submit(waitForSubscription).get(5, TimeUnit.SECONDS);
+            } catch (final TimeoutException e) {
+                LOGGER.log(Level.SEVERE, "timeout waiting for client un/subscription");
+                Throwables.propagate(e);
+            } catch (final Exception e) {
+                LOGGER.log(Level.WARNING, "unexpected exception waiting for client un/subscription");
+            }
+        }
     }
 
     /**
@@ -191,37 +213,33 @@ public class RedisPubsubBus extends PubsubBus {
     }
 
     @Override
-    public void subscribe(@Nonnull final String channelName, @Nonnull final ChannelSubscriber channelSubscriber, @Nonnull final Authentication authentication, @CheckForNull final EventFilter eventFilter) {
-        LOGGER.log(Level.FINER, "subscribe() - channelName={0}, subscriber={1}, authentication={2}, eventFilter={3}", new Object[]{channelName, channelSubscriber.toString(), authentication.getDetails(), eventFilter != null ? eventFilter.toJSON() : "null"});
+    public void subscribe(@Nonnull final String channelName, @Nonnull final ChannelSubscriber channelSubscriber,
+                          @Nonnull final Authentication authentication, @CheckForNull final EventFilter eventFilter) {
 
-        // start the subscribe thread for this instance if not already running and add the given (single) channel subscription
-        if (subscriptions.add(channelName)) {
-            if (subscribeFuture == null) {
-                initSubscribeThread(channelName);
-            } else {
-                synchronized (redisPubSubListener) {
-                    LOGGER.log(Level.FINER, "subscribe() - adding subscription to channelName={0} to existing redis pubsub client", channelName);
-                    redisPubSubListener.subscribe(subscriptions.toArray(new String[0]));
-                }
-            }
-        }
+        LOGGER.log(Level.FINER, "subscribe() - channelName={0}, subscriber={1}, authentication={2}, eventFilter={3}",
+                new Object[]{channelName, channelSubscriber.toString(), authentication.getDetails(), eventFilter != null ? eventFilter.toJSON() : "null"});
 
         synchronized (redisPubSubListener) {
-            // add the given ChannelSubscriber to the given channel's callback list
+            // start the subscribe thread for this instance if not already running and add the given (single) channel subscription
+            if (subscribeFuture == null) {
+                LOGGER.log(Level.FINER, "subscribe() - initializing subscription thread and subscribing to channelName={0}", channelName);
+                initSubscribeThread(channelName);
+                redisPubSubListener.waitForSubscriptionNChange(1);
+            } else {
+                LOGGER.log(Level.FINER, "subscribe() - adding subscription to channelName={0} to existing redis pubsub client", channelName);
+            }
+
             redisPubSubListener.subscribe(channelName, new FilteredChannelSubscriber(channelSubscriber, eventFilter));
         }
     }
 
     private void initSubscribeThread(@Nonnull final String channelName) {
-        final String clientName = UUID.randomUUID().toString();
-
-        final Integer nSubscriptions = getNSubscriptionsForClient(clientName);
-
         @SuppressWarnings("unchecked") final Callable<Void> callable = new Callable<Void>() {
             @Override
             public Void call() throws Exception {
                 // the subscribe call blocks and stays open for the duration of the PubsubBus
                 try (Jedis jedis = jedisPool.getResource()) {
+                    final String clientName = UUID.randomUUID().toString();
                     jedis.clientSetname(clientName);
                     LOGGER.log(Level.FINER, "call() - opening blocking pubsub connection to redis, initial " +
                             "channelName={0}, clientName={1}", new Object[]{channelName, clientName});
@@ -231,45 +249,7 @@ public class RedisPubsubBus extends PubsubBus {
             }
         };
 
-        synchronized (redisPubSubListener) {
-            subscribeFuture = executorService.submit(callable);
-            // wait here until the client reports the number of subs has increased, for at most ~1 second
-            for (int i = 0; i < 100; i++) {
-                if (getNSubscriptionsForClient(clientName) == nSubscriptions + 1) {
-                    return;
-                }
-                try {
-                    Thread.sleep(10);
-                } catch (final InterruptedException e) {
-                    LOGGER.log(Level.SEVERE, "unexpected exception waiting for client subscription, channelName={0}, " +
-                            "clientName={1}", new Object[]{channelName, clientName});
-                    Throwables.propagate(e);
-                }
-            }
-            LOGGER.log(Level.WARNING, "missing indication that client subscription was successful, channelName={}, clientName={}", new Object[]{channelName, clientName});
-        }
-    }
-
-    /**
-     * Returns the number of channel subscriptions owned by the client with the given name.
-     */
-    private int getNSubscriptionsForClient(final String clientName) {
-        try (Jedis jedis = jedisPool.getResource()) {
-            final String clientList = jedis.clientList();
-            final String[] clientInfos = StringUtils.split(clientList, System.getProperty("line.separator"));
-            for (final String info : clientInfos) {
-                if (info.contains(clientName)) {
-                    final Matcher matcher = CLIENT_INFO_SUB_PATTERN.matcher(info);
-                    if (matcher.matches()) {
-                        final Integer n = Integer.valueOf(matcher.group("sub"));
-                        LOGGER.log(Level.FINER, "clientName={0}, nSubscriptions={1}", new Object[]{clientName, n});
-                        return n;
-                    }
-                    LOGGER.log(Level.WARNING, "unable to find number of subscriptions for channelName={0}, clientInfo={1}", new Object[]{clientName, info});
-                }
-            }
-            return 0;
-        }
+        subscribeFuture = executorService.submit(callable);
     }
 
     @Override
@@ -277,24 +257,16 @@ public class RedisPubsubBus extends PubsubBus {
         LOGGER.log(Level.FINER, "unsubscribe() - channelName={0}, subscriber={1}", new Object[]{channelName, channelSubscriber.toString()});
 
         synchronized (redisPubSubListener) {
-            // remove the given ChannelSubscriber to the given channel's callback list
+            // remove the given ChannelSubscriber to the given channel's callback list and if no ChannelSubscribers remain, unsub from redis
             redisPubSubListener.unsubscribe(channelName, channelSubscriber);
-        }
-
-        synchronized (redisPubSubListener) {
-            // if no ChannelSubscribers remain, unsub from redis
-            if (redisPubSubListener.getSubscribers(channelName).size() == 0) {
-                subscriptions.remove(channelName);
-                redisPubSubListener.unsubscribe(channelName);
-            }
         }
     }
 
     @Override
     public void shutdown() {
         if (redisPubSubListener != null) {
-            if(redisPubSubListener.isSubscribed()) {
-                redisPubSubListener.unsubscribe(subscriptions.toArray(new String[0]));
+            if (redisPubSubListener.isSubscribed()) {
+                redisPubSubListener.unsubscribeAll();
             }
         }
         if (!executorService.isShutdown()) {

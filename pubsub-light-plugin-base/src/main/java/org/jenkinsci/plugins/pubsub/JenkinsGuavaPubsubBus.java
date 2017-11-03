@@ -61,7 +61,7 @@ public final class JenkinsGuavaPubsubBus extends GuavaPubsubBus {
                 } finally {
                     if (pubsubBus != null) {
                         try {
-                            unregisterAutoChannelSubscribers((JenkinsGuavaPubsubBus) pubsubBus);
+                            unregisterAutoChannelSubscribers(pubsubBus);
                         } finally {
                             pubsubBus.shutdown();
                         }
@@ -71,36 +71,17 @@ public final class JenkinsGuavaPubsubBus extends GuavaPubsubBus {
         });
     }
 
-    /**
-     * Get the installed {@link PubsubBus} implementation or build a new one.
-     * <p>
-     * Use {@link PubsubBus#getBus()} to obtain a PubsubBus instance, not this method.
-     *
-     * @return The installed {@link PubsubBus} implementation, or default
-     * implementation if none are found.
-     */
-    private synchronized static @Nonnull PubsubBus getJenkinsBus() {
-        LOGGER.finest("getJenkinsBus() - called");
-        if (pubsubBus == null) {
-            ExtensionList<PubsubBus> installedBusImpls = ExtensionList.lookup(PubsubBus.class);
-            if (!installedBusImpls.isEmpty()) {
-                pubsubBus = installedBusImpls.get(0);
-            } else {
-                LOGGER.finest("instantiating new JenkinsGuavaPubsubBus");
-                pubsubBus = new JenkinsGuavaPubsubBus();
+    JenkinsGuavaPubsubBus() {
+        LOGGER.finest("JenkinsGuavaPubsubBus() - called");
+        // Register the auto-subscribers.
+        registerAutoChannelSubscribers(pubsubBus);
+        // And listen for new ones being installed e.g. after a plugin is installed.
+        ExtensionList.lookup(AbstractChannelSubscriber.class).addListener(new ExtensionListListener() {
+            @Override
+            public void onChange() {
+                registerAutoChannelSubscribers(pubsubBus);
             }
-
-            // Register the auto-subscribers.
-            registerAutoChannelSubscribers(pubsubBus);
-            // And listen for new ones being installed e.g. after a plugin is installed.
-            ExtensionList.lookup(AbstractChannelSubscriber.class).addListener(new ExtensionListListener() {
-                @Override
-                public void onChange() {
-                    registerAutoChannelSubscribers(pubsubBus);
-                }
-            });
-        }
-        return pubsubBus;
+        });
     }
 
     @Override
@@ -140,7 +121,7 @@ public final class JenkinsGuavaPubsubBus extends GuavaPubsubBus {
         private Authentication authentication;
 
         public JenkinsGuavaSubscriber(@Nonnull ChannelSubscriber subscriber, Authentication authentication, EventFilter eventFilter) {
-            super(subscriber, authentication, eventFilter);
+            super(subscriber, eventFilter);
             if (authentication != null) {
                 this.authentication = authentication;
             } else {

@@ -51,6 +51,7 @@ public class MockSubscriber implements ChannelSubscriber {
                 Assert.fail("Timed out waiting on message count to reach " + count);
             }
         }
+        messages.clear();
     }
 
     public List<Message> getMessages() {

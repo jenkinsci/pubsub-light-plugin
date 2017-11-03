@@ -23,6 +23,7 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
+import hudson.ExtensionList;
 import jenkins.model.Jenkins;
 import org.acegisecurity.Authentication;
 
@@ -46,9 +47,9 @@ public abstract class PubsubBus {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-            if (pubsubBus != null) {
-                pubsubBus.shutdown();
-            }
+                if (pubsubBus != null) {
+                    pubsubBus.shutdown();
+                }
             }
         });
     }
@@ -58,16 +59,24 @@ public abstract class PubsubBus {
      * <p>
      * PubsubBus clients need to add a ServiceLoader spi configuration file to indicate which implementation to use.  For example,
      * clients of the default {@link GuavaPubsubBus} need to include the pubsub-light-guava-provider module.
+     * <p>
+     * If Jenkins is on the classpath, this method looks for installed impls as well as searching for SPI's using Jenkin's
+     * uber-classloader.
      *
      * @return a singleton instance of the default {@link PubsubBus} implementation.
      */
-    public synchronized static @Nonnull
-    PubsubBus getBus() {
+    public synchronized static @Nonnull PubsubBus getBus() {
         ClassLoader loader;
         if (pubsubBus == null) {
-            // use the Jenkins plugins uber class loader if available to ensure that the needed provider is visible to this plugin
             try {
+                // if Jenkins is available, look for installed instances of PubsubBus to use
                 Class.forName("jenkins.model.Jenkins", false, PubsubBus.class.getClassLoader());
+                ExtensionList<PubsubBus> installedBusImpls = ExtensionList.lookup(PubsubBus.class);
+                if (!installedBusImpls.isEmpty()) {
+                    pubsubBus = installedBusImpls.get(0);
+                    return pubsubBus;
+                }
+                // use the Jenkins plugins uber class loader if available to ensure that the needed provider is visible to this plugin
                 loader = Jenkins.getInstanceOrNull() != null ? Jenkins.getInstance().getPluginManager().uberClassLoader : PubsubBus.class.getClassLoader();
             } catch (ClassNotFoundException e) {
                 loader = PubsubBus.class.getClassLoader();

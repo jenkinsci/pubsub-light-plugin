@@ -76,7 +76,7 @@ public class GuavaPubsubBus extends PubsubBus {
 
     @Override
     public void subscribe(@Nonnull String channelName, @Nonnull ChannelSubscriber subscriber, @Nonnull Authentication authentication, @CheckForNull EventFilter eventFilter) {
-        GuavaSubscriber guavaSubscriber = new GuavaSubscriber(subscriber, authentication, eventFilter);
+        GuavaSubscriber guavaSubscriber = new GuavaSubscriber(subscriber, eventFilter);
         EventBus channelBus = getChannelBus(channelName);
         channelBus.register(guavaSubscriber);
         subscribers.put(subscriber, guavaSubscriber);
@@ -110,12 +110,10 @@ public class GuavaPubsubBus extends PubsubBus {
 
     protected static class GuavaSubscriber {
         private ChannelSubscriber subscriber;
-        private Authentication authentication;
         private final EventFilter eventFilter;
 
-        public GuavaSubscriber(@Nonnull ChannelSubscriber subscriber, Authentication authentication, EventFilter eventFilter) {
+        public GuavaSubscriber(@Nonnull ChannelSubscriber subscriber, EventFilter eventFilter) {
             this.subscriber = subscriber;
-            this.authentication = authentication;
             this.eventFilter = eventFilter;
         }
 
@@ -137,10 +135,6 @@ public class GuavaPubsubBus extends PubsubBus {
 
         public ChannelSubscriber getSubscriber() {
             return subscriber;
-        }
-
-        public Authentication getAuthentication() {
-            return authentication;
         }
 
         public EventFilter getEventFilter() {
