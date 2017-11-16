@@ -110,33 +110,43 @@ public class RedisPubsubBus extends PubsubBus {
             LOGGER.log(Level.FINER, "onUnsubscribe() - channel={0}, subscribedChannels={1}", new Object[]{channel, subscribedChannels});
         }
 
-        void subscribe(final String channel, final FilteredChannelSubscriber subscriber) {
+        synchronized void subscribe(final String channel, final FilteredChannelSubscriber subscriber) {
+            LOGGER.info("subscribe() - redisPubSubListener=" + String.valueOf(this.hashCode()));
             if (channelSubscribers.get(channel) == null) {
                 channelSubscribers.put(channel, new HashSet<FilteredChannelSubscriber>());
-                subscribe(channelSubscribers.keySet().toArray(new String[0]));
+                subscribe(channel);
                 waitForSubscriptionNChange(channelSubscribers.keySet().size());
+            } else {
+                LOGGER.info("subscribe() - one or more subscriptions to this channel already exist, adding subscriber");
             }
             channelSubscribers.get(channel).add(subscriber);
         }
 
-        void unsubscribe(final String channel, final ChannelSubscriber channelSubscriber) {
+        synchronized void unsubscribe(final String channel, final ChannelSubscriber channelSubscriber) {
+            LOGGER.info("unsubscribe() - redisPubSubListener=" + String.valueOf(this.hashCode()));
             if (channelSubscribers.get(channel) != null) {
-                final Iterator<FilteredChannelSubscriber> subscribers = channelSubscribers.get(channel).iterator();
-                while (subscribers.hasNext()) {
-                    if (subscribers.next().getChannelSubscriber().equals(channelSubscriber)) {
-                        subscribers.remove();
-                    }
+                LOGGER.log(Level.FINER, "unsubscribe() - channel={0} has n={1} subscribers", new Object[]{ channel, channelSubscribers.get(channel).size() });
+                final Set<FilteredChannelSubscriber> subscribers = channelSubscribers.get(channel);
+                LOGGER.log(Level.FINER, "unsubscribe() - subscribers={0}", new Object[]{ subscribers });
+                if (subscribers.remove(channelSubscriber)) {
+                    LOGGER.log(Level.FINER, "unsubscribe() - removing subscriber={0} from channel={1}", new Object[]{ channelSubscriber, channel });
+                } else {
+                    LOGGER.log(Level.FINER, "unsubscribe() - could not remove subscriber={0} from channel={1}", new Object[]{ channelSubscriber, channel });
                 }
 
                 if (channelSubscribers.get(channel).isEmpty()) {
+                    LOGGER.log(Level.FINER, "unsubscribe() - no more subscribers for channel={0}, unsubscribing from redis", new Object[]{ channel });
                     channelSubscribers.remove(channel);
                     unsubscribe(channel);
                     waitForSubscriptionNChange(channelSubscribers.keySet().size());
+                } else {
+                    LOGGER.log(Level.FINER, "unsubscribe() - channel={0} still has n={1} subscribers", new Object[]{ channel, channelSubscribers.get(channel).size() });
                 }
             }
         }
 
-        void unsubscribeAll() {
+        synchronized void unsubscribeAll() {
+            LOGGER.log(Level.FINER, "unsubscribing from all channels={0}, subscribers={1}", new Object[] { channelSubscribers.keySet(), channelSubscribers.values() });
             unsubscribe(channelSubscribers.keySet().toArray(new String[0]));
             channelSubscribers.clear();
             waitForSubscriptionNChange(0);
@@ -153,6 +163,7 @@ public class RedisPubsubBus extends PubsubBus {
                     do {
                         actualN = getSubscribedChannels();
                         LOGGER.log(Level.FINEST, "call() - waiting for nSubs to change, actualN={0}, expectedN={1}", new Object[]{actualN, expectedN});
+                        Thread.sleep(50);
                     } while (actualN != expectedN);
                     return null;
                 }
@@ -161,7 +172,7 @@ public class RedisPubsubBus extends PubsubBus {
             try {
                 Executors.newSingleThreadExecutor().submit(waitForSubscription).get(5, TimeUnit.SECONDS);
             } catch (final TimeoutException e) {
-                LOGGER.log(Level.SEVERE, "timeout waiting for client un/subscription");
+                LOGGER.log(Level.SEVERE, "timeout waiting for client un/subscription, actualN={0}, expectedN={1}", new Object[]{getSubscribedChannels(), expectedN});
                 Throwables.propagate(e);
             } catch (final Exception e) {
                 LOGGER.log(Level.WARNING, "unexpected exception waiting for client un/subscription");
@@ -174,12 +185,15 @@ public class RedisPubsubBus extends PubsubBus {
      */
     static class FilteredChannelSubscriber implements ChannelSubscriber {
         private final ChannelSubscriber channelSubscriber;
-
-        private final EventFilter eventFilter;
+        private EventFilter eventFilter;
 
         FilteredChannelSubscriber(final ChannelSubscriber channelSubscriber, final EventFilter eventFilter) {
             this.channelSubscriber = channelSubscriber;
             this.eventFilter = eventFilter;
+        }
+
+        public FilteredChannelSubscriber(final ChannelSubscriber channelSubscriber) {
+            this.channelSubscriber = channelSubscriber;
         }
 
         @Override
@@ -195,6 +209,15 @@ public class RedisPubsubBus extends PubsubBus {
             return channelSubscriber;
         }
 
+        @Override
+        public int hashCode() {
+            return this.channelSubscriber.hashCode();
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            return this.channelSubscriber == ((FilteredChannelSubscriber) obj).channelSubscriber;
+        }
     }
 
     @Nonnull
@@ -221,7 +244,7 @@ public class RedisPubsubBus extends PubsubBus {
 
         synchronized (redisPubSubListener) {
             // start the subscribe thread for this instance if not already running and add the given (single) channel subscription
-            if (subscribeFuture == null) {
+            if (subscribeFuture == null || subscribeFuture.isDone()) {
                 LOGGER.log(Level.FINER, "subscribe() - initializing subscription thread and subscribing to channelName={0}", channelName);
                 initSubscribeThread(channelName);
                 redisPubSubListener.waitForSubscriptionNChange(1);
@@ -244,6 +267,7 @@ public class RedisPubsubBus extends PubsubBus {
                     LOGGER.log(Level.FINER, "call() - opening blocking pubsub connection to redis, initial " +
                             "channelName={0}, clientName={1}", new Object[]{channelName, clientName});
                     jedis.subscribe(redisPubSubListener, channelName);
+                    LOGGER.log(Level.FINER, "call() - closing pubsub connection to redis, clientName={0}", new Object[]{clientName});
                     return null;
                 }
             }
@@ -258,7 +282,7 @@ public class RedisPubsubBus extends PubsubBus {
 
         synchronized (redisPubSubListener) {
             // remove the given ChannelSubscriber to the given channel's callback list and if no ChannelSubscribers remain, unsub from redis
-            redisPubSubListener.unsubscribe(channelName, channelSubscriber);
+            redisPubSubListener.unsubscribe(channelName, new FilteredChannelSubscriber(channelSubscriber));
         }
     }
 
