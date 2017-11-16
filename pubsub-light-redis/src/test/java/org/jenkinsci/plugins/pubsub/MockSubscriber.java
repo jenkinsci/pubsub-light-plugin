@@ -28,14 +28,18 @@ import org.junit.Assert;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.*;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public class MockSubscriber implements ChannelSubscriber {
+    private static final Logger LOGGER = Logger.getLogger(MockSubscriber.class.getName());
+
     public List<Message> messages = new ArrayList<>();
 
     public void onMessage(@Nonnull Message message) {
+        LOGGER.log(Level.FINEST, "onMessage() - message={0}", message);
         messages.add(message);
     }
 
@@ -43,7 +47,7 @@ public class MockSubscriber implements ChannelSubscriber {
         long start = System.currentTimeMillis();
         while(messages.size() < count) {
             try {
-                Thread.sleep(5);
+                Thread.sleep(50);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -51,7 +55,6 @@ public class MockSubscriber implements ChannelSubscriber {
                 Assert.fail("Timed out waiting on message count to reach " + count);
             }
         }
-        messages.clear();
     }
 
     public List<Message> getMessages() {

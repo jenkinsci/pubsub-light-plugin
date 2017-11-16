@@ -1,16 +1,21 @@
 package org.jenkinsci.plugins.pubsub;
 
-import com.google.common.collect.*;
+import com.google.common.collect.Lists;
 import org.acegisecurity.providers.TestingAuthenticationToken;
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.logging.log4j.spi.LoggerRegistry;
 import org.junit.*;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.logging.Logger;
 
+import static java.util.logging.Level.INFO;
 import static org.junit.Assert.*;
 
 public class RedisPubsubBusIT {
+    private static final Logger LOGGER = Logger.getLogger(RedisPubsubBusIT.class.getName());
+
     private static final String CHANNEL_NAME = "job";
     private static final TestingAuthenticationToken AUTHENTICATION = new TestingAuthenticationToken(null, null, null);
 
@@ -117,8 +122,23 @@ public class RedisPubsubBusIT {
     }
 
     @Test
+    public void subscribeImmediatelyUnsubscribe() throws Exception {
+        final MockSubscriber subscriber = new MockSubscriber();
+
+        // method under test
+        testBus.subscribe(CHANNEL_NAME, subscriber, AUTHENTICATION, null);
+        testBus.unsubscribe(CHANNEL_NAME, subscriber);
+
+        waitForRedisSubscriptionCount(0);
+
+        assertFalse(testBus.getSubscriptions().containsAll(Lists.newArrayList(CHANNEL_NAME)));
+
+        testBus.subscribe("otherChannel", new MockSubscriber(), AUTHENTICATION, null);
+    }
+
+    @Test
     public void testChaos() throws Exception {
-        final int CHAOS_LEVEL = 10;
+        final int CHAOS_LEVEL = 5;
 
         final ExecutorService executorService = Executors.newFixedThreadPool(CHAOS_LEVEL);
 
@@ -154,47 +174,69 @@ public class RedisPubsubBusIT {
                     for (int i = 0; i < CHAOS_LEVEL; i++) {
                         // randomly subscribe a channel/subscriber
                         if (random.nextBoolean()) {
-                            final String channelName = channelNames.get(random.nextInt(CHAOS_LEVEL));
-                            final ChannelSubscriber subscriber = subscribers.get(random.nextInt(CHAOS_LEVEL));
-                            testBus.subscribe(channelName, subscriber, AUTHENTICATION, null);
-                            subscriptionIndex.get(channelName).add(subscriber);
+                            synchronized (subscriptionIndex) {
+                                final String channelName = channelNames.get(random.nextInt(CHAOS_LEVEL));
+                                final ChannelSubscriber subscriber = subscribers.get(random.nextInt(CHAOS_LEVEL));
 
-                            waitForRedisSubscriptionCount(subscriptionIndex.size());
-                            assertTrue(testBus.getSubscriptions().toString() + " " + subscriptionIndex.keySet().toString(), testBus.getSubscriptions().containsAll(subscriptionIndex.keySet()));
+                                testBus.subscribe(channelName, subscriber, AUTHENTICATION, null);
+                                subscriptionIndex.get(channelName).add(subscriber);
+                                int expectedCount = 0;
+                                for (Set<ChannelSubscriber> subscribersSet : subscriptionIndex.values()) {
+                                    if (subscribersSet.size() > 0) expectedCount++;
+                                }
+                                assertEquals(testBus.getSubscriptions().size(), expectedCount);
+                                for (final Map.Entry<String, Set<ChannelSubscriber>> subscriptionMap : subscriptionIndex.entrySet()) {
+                                    if (subscriptionMap.getValue().size() > 0) {
+                                        assertTrue(testBus.getSubscriptions().contains(subscriptionMap.getKey()));
+                                    }
+                                }
+                            }
                         }
 
                         // randomly unsubscribe a channel/subscriber
                         if (random.nextBoolean()) {
-                            final List<String> names = new ArrayList<>(subscriptionIndex.keySet());
-                            Collections.shuffle(names);
-                            final String randomName = names.get(0);
+                            synchronized (subscriptionIndex) {
+                                final List<String> names = new ArrayList<>(subscriptionIndex.keySet());
+                                Collections.shuffle(names);
+                                final String randomName = names.get(0);
 
-                            if (subscriptionIndex.get(randomName).size() > 0) {
-                                final List<ChannelSubscriber> channelSubscribers = new ArrayList<>(subscriptionIndex.get(randomName));
-                                Collections.shuffle(channelSubscribers);
-                                final ChannelSubscriber randomSubscriber = channelSubscribers.get(0);
+                                if (subscriptionIndex.get(randomName).size() > 0) {
+                                    final List<ChannelSubscriber> channelSubscribers = new ArrayList<>(subscriptionIndex.get(randomName));
+                                    Collections.shuffle(channelSubscribers);
+                                    final ChannelSubscriber randomSubscriber = channelSubscribers.get(0);
 
-                                testBus.unsubscribe(randomName, randomSubscriber);
-                                subscriptionIndex.get(randomName).remove(randomSubscriber);
-
-                                waitForRedisSubscriptionCount(subscriptionIndex.size());
-                                assertTrue(testBus.getSubscriptions().toString() + " " + subscriptionIndex.keySet().toString(), testBus.getSubscriptions().containsAll(subscriptionIndex.keySet()));
+                                    testBus.unsubscribe(randomName, randomSubscriber);
+                                    subscriptionIndex.get(randomName).remove(randomSubscriber);
+                                    int expectedCount = 0;
+                                    for (Set<ChannelSubscriber> subscribersSet : subscriptionIndex.values()) {
+                                        if (subscribersSet.size() > 0) expectedCount++;
+                                    }
+                                    assertEquals(testBus.getSubscriptions().size(), expectedCount);
+                                    for (final Map.Entry<String, Set<ChannelSubscriber>> subscriptionMap : subscriptionIndex.entrySet()) {
+                                        if (subscriptionMap.getValue().size() > 0) {
+                                            assertTrue(testBus.getSubscriptions().contains(subscriptionMap.getKey()));
+                                        }
+                                    }
+                                }
                             }
                         }
 
                         // randomly send some messages
                         if (random.nextBoolean()) {
-                            final List<String> names = new ArrayList<>(subscriptionIndex.keySet());
-                            Collections.shuffle(names);
-                            final String randomName = names.get(0);
+                            synchronized (subscriptionIndex) {
+                                final List<String> names = new ArrayList<>(subscriptionIndex.keySet());
+                                Collections.shuffle(names);
+                                final String randomName = names.get(0);
 
-                            for (int j = 0; j < 3; j++) {
-                                testBus.publisher(randomName).publish(new SimpleMessage());
-                            }
 
-                            final Set<ChannelSubscriber> channelSubscribers = subscriptionIndex.get(randomName);
-                            for (final ChannelSubscriber channelSubscriber : channelSubscribers) {
-                                ((MockSubscriber) channelSubscriber).waitForMessageCount(3);
+                                for (int j = 0; j < 3; j++) {
+                                    testBus.publisher(randomName).publish(new SimpleMessage());
+                                }
+
+                                final Set<ChannelSubscriber> channelSubscribers = subscriptionIndex.get(randomName);
+                                for (final ChannelSubscriber channelSubscriber : channelSubscribers) {
+                                    ((MockSubscriber) channelSubscriber).waitForMessageCount(3);
+                                }
                             }
                         }
                     }
@@ -214,7 +256,8 @@ public class RedisPubsubBusIT {
         long start = System.currentTimeMillis();
         while (testBus.getSubscriptions().size() != expectedCount) {
             Thread.sleep(1000);
-            if (System.currentTimeMillis() > start + 100000) {
+            LOGGER.log(INFO, "currentSubs={0}, expectedSubs={1}", new Object[]{testBus.getSubscriptions().size(), expectedCount});
+            if (System.currentTimeMillis() > start + 10000) {
                 fail("Timed out waiting on subscription count to reach " + expectedCount);
             }
         }
