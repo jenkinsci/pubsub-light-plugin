@@ -71,7 +71,7 @@ public final class JenkinsGuavaPubsubBus extends GuavaPubsubBus {
         });
     }
 
-    JenkinsGuavaPubsubBus() {
+    public JenkinsGuavaPubsubBus() {
         LOGGER.finest("JenkinsGuavaPubsubBus() - called");
         // Register the auto-subscribers.
         registerAutoChannelSubscribers(pubsubBus);
