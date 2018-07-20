@@ -1,0 +1,4 @@
+<?jelly escape-by-default='true'?>
+<div>
+  A simple Publish-Subscribe light-weight event bus for Jenkins
+</div>

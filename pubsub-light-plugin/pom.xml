@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>plugin</artifactId>
+        <version>2.6</version>
+    </parent>
+
+    <artifactId>pubsub-light-plugin</artifactId>
+    <version>1.13-SNAPSHOT</version>
+    <packaging>hpi</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>pubsub-light-plugin-base</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>pubsub-light-jenkins-guava-provider</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+    <!--
+  TODO: remove this after https://github.com/jenkinsci/maven-hpi-plugin/pull/32 is merged, released and updated in the parent pom.
+-->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.jenkins-ci.tools</groupId>
+                <artifactId>maven-hpi-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <contextPath>/jenkins</contextPath>
+                    <!-- TODO specify ${java.level} when JENKINS-20679 implemented -->
+                    <disabledTestInjection>true</disabledTestInjection>
+                    <!-- this project contains no generated classes, so set to target/ -->
+                    <classesDirectory>${project.build.directory}</classesDirectory>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
