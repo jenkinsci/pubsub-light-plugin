@@ -135,6 +135,10 @@ public interface EventProps {
          * Job run SCM commit Id, if relevant.
          */
         job_run_commitId,
+        /**
+         * Causes of this run.
+         */
+        job_run_causes
     }
     
     /**
