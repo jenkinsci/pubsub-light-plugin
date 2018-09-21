@@ -46,7 +46,6 @@ public abstract class PubsubBus implements ExtensionPoint {
 
     private static final Logger LOGGER = Logger.getLogger(PubsubBus.class.getName());
 
-    private static PubsubBus pubsubBus;
     private static List<AbstractChannelSubscriber> autoSubscribers = new CopyOnWriteArrayList<>();
 
     static {
@@ -56,25 +55,22 @@ public abstract class PubsubBus implements ExtensionPoint {
                 try {
                     SyncQueueListener.shutdown();
                 } finally {
-                    if (pubsubBus != null) {
+                    if (Holder.pubsubBus != null) {
                         try {
-                            unregisterAutoChannelSubscribers(pubsubBus);
+                            unregisterAutoChannelSubscribers(Holder.pubsubBus);
                         } finally {
-                            pubsubBus.shutdown();
+                            Holder.pubsubBus.shutdown();
                         }
                     }
                 }
             }
         });
     }
-    
-    /**
-     * Get the installed {@link PubsubBus} implementation.
-     * @return The installed {@link PubsubBus} implementation, or default
-     * implementation if none are found.
-     */
-    public synchronized static @Nonnull PubsubBus getBus() {
-        if (pubsubBus == null) {
+
+    private static final class Holder {
+        static final PubsubBus pubsubBus;
+
+        static {
             ExtensionList<PubsubBus> installedBusImpls = ExtensionList.lookup(PubsubBus.class);
             if (!installedBusImpls.isEmpty()) {
                 pubsubBus = installedBusImpls.get(0);
@@ -92,7 +88,16 @@ public abstract class PubsubBus implements ExtensionPoint {
                 }
             });
         }
-        return pubsubBus;
+    }
+
+    
+    /**
+     * Get the installed {@link PubsubBus} implementation.
+     * @return The installed {@link PubsubBus} implementation, or default
+     * implementation if none are found.
+     */
+    public synchronized static @Nonnull PubsubBus getBus() {
+        return Holder.pubsubBus;
     }
 
     /**
