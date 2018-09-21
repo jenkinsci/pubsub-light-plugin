@@ -81,9 +81,7 @@ public class SyncQueueListener extends QueueListener {
     private static final long POLL_TIMEOUT_MILLIS = 1000;
 
     static {
-        new Thread() {
-            @Override
-            public void run() {
+        new Thread(()->{
                 try {
                     // Keep going 'til we're signaled to stop.
                     while (!stopTaskLeftPublishing) {
@@ -126,8 +124,7 @@ public class SyncQueueListener extends QueueListener {
                     queueTaskLeftPublishQueue.clear();
                     tryLaterQueueTaskLeftQueue.clear();
                 }
-            }
-        }.start();
+            }).start();
     }
 
     public static void shutdown() {
