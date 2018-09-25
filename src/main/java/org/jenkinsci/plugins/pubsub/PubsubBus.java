@@ -96,7 +96,7 @@ public abstract class PubsubBus implements ExtensionPoint {
      * @return The installed {@link PubsubBus} implementation, or default
      * implementation if none are found.
      */
-    public synchronized static @Nonnull PubsubBus getBus() {
+    public static @Nonnull PubsubBus getBus() {
         return Holder.pubsubBus;
     }
 
