@@ -67,13 +67,6 @@ public final class RunMessage extends JobChannelMessage<RunMessage> {
         set(EventProps.Jenkins.jenkins_object_url, run.getUrl());
         set(EventProps.Job.job_run_queueId, Long.toString(run.getQueueId()));
 
-        // CSV list of the accumulated causes of this run
-        final List<String> causes = new ArrayList<>();
-        for (Cause cause : (List<Cause>) run.getCauses()) {
-            causes.add(cause.getClass().getSimpleName());
-        }
-        set(EventProps.Job.job_run_causes, StringUtils.join(causes, ","));
-
         Result result = run.getResult();
         if (result != null) {
             set(EventProps.Job.job_run_status, result.toString());
@@ -128,5 +121,15 @@ public final class RunMessage extends JobChannelMessage<RunMessage> {
             runLookupComplete = true;
         }
         return run;
+    }
+
+    public RunMessage withCauses(@Nonnull Run run) {
+        // CSV list of the accumulated causes of this run
+        final List<String> causes = new ArrayList<>();
+        for (Cause cause : (List<Cause>) run.getCauses()) {
+            causes.add(cause.getClass().getSimpleName());
+        }
+        set(EventProps.Job.job_run_causes, StringUtils.join(causes, ","));
+        return this;
     }
 }

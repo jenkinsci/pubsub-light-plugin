@@ -54,8 +54,10 @@ public class SyncRunListener extends RunListener<Run<?,?>> {
     @Override
     public void onStarted(Run<?, ?> run, TaskListener listener) {
         try {
-            PubsubBus.getBus().publish(new RunMessage(run)
-                    .setEventName(Events.JobChannel.job_run_started)
+            PubsubBus.getBus().publish(
+                    new RunMessage(run)
+                        .withCauses(run)
+                        .setEventName(Events.JobChannel.job_run_started)
             );
         } catch (MessageException e) {
             LOGGER.log(Level.WARNING, "Error publishing Run start event.", e);
