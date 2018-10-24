@@ -124,7 +124,7 @@ public final class RunMessage extends JobChannelMessage<RunMessage> {
     }
 
     public RunMessage withCauses(@Nonnull Run run) {
-        // CSV list of the accumulated causes of this run
+        // csv list of the accumulated causes of this run
         final List<String> causes = new ArrayList<>();
         for (Cause cause : (List<Cause>) run.getCauses()) {
             causes.add(cause.getClass().getSimpleName());
