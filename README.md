@@ -7,7 +7,7 @@ implementation based on [Google's Guava EventBus](https://github.com/google/guav
 
 # API
 
-Please [see the online Javadoc](http://jenkinsci.github.io/pubsub-light-module/) for how to use the API.
+Please [see the online Javadoc](http://jenkinsci.github.io/pubsub-light-plugin/) for how to use the API.
 
 # This is not a full-blown Event Bus
  
@@ -30,4 +30,4 @@ We feel that there's no "right" answer to the question of whether we should go w
 
 If we had gone with heavier events, it is guaranteed that at some point in time, people would encounter situations where heavy events are being published and only one or two fields from those events are being used. Guess what the obvious question from these people would be? So in reality, there's no "right" answer to this question, but on balance, we feel that the lightweight message approach will work out to be better.
 
-> Note, your application can also implement [`MessageEnricher`](http://jenkinsci.github.io/pubsub-light-module/org/jenkinsci/plugins/pubsub/MessageEnricher.html) extension points to add data to the default payloads. This could be used as a way to "bulk up" events with more data that you know will be used, saving follow-up REST calls etc. Please use with a clear head !! 
+> Note, your application can also implement [`MessageEnricher`](http://jenkinsci.github.io/pubsub-light-plugin/org/jenkinsci/plugins/pubsub/MessageEnricher.html) extension points to add data to the default payloads. This could be used as a way to "bulk up" events with more data that you know will be used, saving follow-up REST calls etc. Please use with a clear head !! 
