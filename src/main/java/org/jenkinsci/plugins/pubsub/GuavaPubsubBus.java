@@ -65,11 +65,7 @@ public final class GuavaPubsubBus extends PubsubBus {
     @Override
     protected ChannelPublisher publisher(@Nonnull String channelName) {
         final EventBus channelBus = getChannelBus(channelName);
-        return new ChannelPublisher() {
-            public void publish(@Nonnull Message message) {
-                channelBus.post(message);
-            }
-        };
+        return message -> channelBus.post(message);
     }
 
     @Override
@@ -130,14 +126,12 @@ public final class GuavaPubsubBus extends PubsubBus {
             if (message instanceof AccessControlledMessage) {
                 if (authentication != null) {
                     final AccessControlledMessage accMessage = (AccessControlledMessage) message;
-                    ACL.impersonate(authentication, new Runnable() {
-                        @Override
-                        public void run() {
+                    ACL.impersonate(authentication,
+                        () -> {
                             if (accMessage.hasPermission(accMessage.getRequiredPermission())) {
                                 subscriber.onMessage(message.clone());
                             }
-                        }
-                    });
+                        });
                 }
             } else {
                 subscriber.onMessage(message.clone());
