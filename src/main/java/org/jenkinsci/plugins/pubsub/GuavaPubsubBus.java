@@ -53,12 +53,11 @@ public final class GuavaPubsubBus extends PubsubBus {
     
     private final Map<String, EventBus> channels = new CopyOnWriteMap.Hash<>();
     private final Map<ChannelSubscriber, GuavaSubscriber> subscribers = new CopyOnWriteMap.Hash<>();
-    private final ExecutorService executor;
+    private ExecutorService executor;
     private final int MAX_THREADS = Integer.getInteger(GuavaPubsubBus.class.getName() + ".MAX_THREADS", 5);
 
     public GuavaPubsubBus() {
-        // Might want to make the executor configuration configurable.
-        executor = new ThreadPoolExecutor(0, MAX_THREADS, 10L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+        start();
     }
 
     @Nonnull
@@ -84,6 +83,15 @@ public final class GuavaPubsubBus extends PubsubBus {
             channelBus.register(guavaSubscriber);
             channelBus.unregister(guavaSubscriber);
         }
+    }
+
+    @Override
+    public void start(){
+        if(executor!=null&&!executor.isShutdown()){
+            return;
+        }
+        // Might want to make the executor configuration configurable.
+        executor = new ThreadPoolExecutor(0, MAX_THREADS, 10L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
     }
 
     @Override

@@ -179,6 +179,13 @@ public abstract class PubsubBus implements ExtensionPoint {
     public abstract void shutdown();
 
     /**
+     * will start the bus if it has been shutdown <b>do not restart if already started</b>
+     */
+    public void start(){
+        // doing nothing as it's new method
+    }
+
+    /**
      * Channel subscription can be managed by another ExtensionPoint impl, or can
      * be triggered automatically by implementing {@link AbstractChannelSubscriber}.
      * @param pubsubBus The bus instance.
