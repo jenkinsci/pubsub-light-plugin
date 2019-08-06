@@ -124,7 +124,7 @@ public class SyncQueueListener extends QueueListener {
                     queueTaskLeftPublishQueue.clear();
                     tryLaterQueueTaskLeftQueue.clear();
                 }
-            }).start();
+            }, "SyncQueueListener").start();
     }
 
     public static void shutdown() {

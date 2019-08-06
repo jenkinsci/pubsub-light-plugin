@@ -49,9 +49,7 @@ public abstract class PubsubBus implements ExtensionPoint {
     private static List<AbstractChannelSubscriber> autoSubscribers = new CopyOnWriteArrayList<>();
 
     static {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
+        Runtime.getRuntime().addShutdownHook( new Thread(() -> {
                 try {
                     SyncQueueListener.shutdown();
                 } finally {
@@ -63,8 +61,7 @@ public abstract class PubsubBus implements ExtensionPoint {
                         }
                     }
                 }
-            }
-        });
+        }));
     }
 
     private static final class Holder {

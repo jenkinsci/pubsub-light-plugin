@@ -51,14 +51,14 @@ import java.util.concurrent.TimeUnit;
  */
 public final class GuavaPubsubBus extends PubsubBus {
     
-    private final Map<String, EventBus> channels = new CopyOnWriteMap.Hash<String, EventBus>();
-    private final Map<ChannelSubscriber, GuavaSubscriber> subscribers = new CopyOnWriteMap.Hash<ChannelSubscriber, GuavaSubscriber>();
+    private final Map<String, EventBus> channels = new CopyOnWriteMap.Hash<>();
+    private final Map<ChannelSubscriber, GuavaSubscriber> subscribers = new CopyOnWriteMap.Hash<>();
     private final ExecutorService executor;
     private final int MAX_THREADS = Integer.getInteger(GuavaPubsubBus.class.getName() + ".MAX_THREADS", 5);
 
     public GuavaPubsubBus() {
         // Might want to make the executor configuration configurable.
-        executor = new ThreadPoolExecutor(0, MAX_THREADS, 10L, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+        executor = new ThreadPoolExecutor(0, MAX_THREADS, 10L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
     }
 
     @Nonnull

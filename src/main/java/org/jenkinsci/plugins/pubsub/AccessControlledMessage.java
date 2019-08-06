@@ -86,7 +86,7 @@ abstract class AccessControlledMessage<T extends AccessControlledMessage> extend
             return eventItem.getACL();
         } else {
             // TODO: Is the right thing to do?
-            return Jenkins.getInstance().getAuthorizationStrategy().getRootACL();
+            return Jenkins.get().getAuthorizationStrategy().getRootACL();
         }
     }
 
