@@ -35,6 +35,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -91,7 +92,9 @@ public final class GuavaPubsubBus extends PubsubBus {
             return;
         }
         // Might want to make the executor configuration configurable.
-        executor = new ThreadPoolExecutor(0, MAX_THREADS, 10L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+        executor = new ThreadPoolExecutor( 0, MAX_THREADS, 10L, TimeUnit.SECONDS,
+                                           new LinkedBlockingQueue<>(),
+                                           r -> new Thread( r, "GuavaPubsubBus.ThreadPoolExecutor" ));
     }
 
     @Override
