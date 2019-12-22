@@ -95,7 +95,7 @@ public abstract class Message<T extends Message> extends Properties {
     /**
      * Create a plain message instance, with default properties set.
      */
-    Message() {
+    public Message() {
         this(true);
     }
 
@@ -103,7 +103,7 @@ public abstract class Message<T extends Message> extends Properties {
      * Create a plain message instance.
      * @param setDefaultProperties Set the default properties.
      */
-    Message(boolean setDefaultProperties) {
+    public Message(boolean setDefaultProperties) {
         if (!setDefaultProperties) {
             return;
         }

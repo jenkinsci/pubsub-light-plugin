@@ -54,12 +54,13 @@ import javax.annotation.Nonnull;
  * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-abstract class AccessControlledMessage<T extends AccessControlledMessage> extends Message implements AccessControlled {
+abstract public class AccessControlledMessage<T extends AccessControlledMessage> extends Message implements AccessControlled {
     
     /**
      * Create a plain message instance.
      */
-    AccessControlledMessage() {
+    public AccessControlledMessage() {
+      super();
     }
 
     /**
