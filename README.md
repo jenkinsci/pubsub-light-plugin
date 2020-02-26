@@ -1,3 +1,6 @@
+Pub-Sub "light" Bus plugin for Jenkins
+======================================
+
 A light-weight [Publish-Subscribe](http://www.enterpriseintegrationpatterns.com/patterns/messaging/PublishSubscribeChannel.html) (async) event notification module for Jenkins.
 
 Contains the `org.jenkins.pubsub.PubsubBus` abstract class, which is a Jenkins `ExtensionPoint`, with a default
@@ -8,6 +11,10 @@ implementation based on [Google's Guava EventBus](https://github.com/google/guav
 # API
 
 Please [see the online Javadoc](http://jenkinsci.github.io/pubsub-light-plugin/) for how to use the API.
+
+# Release notes
+
+See [CHANELOG.md](./CHANGELOG.md)
 
 # This is not a full-blown Event Bus
  
