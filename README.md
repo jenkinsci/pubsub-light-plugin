@@ -14,7 +14,7 @@ Please [see the online Javadoc](http://jenkinsci.github.io/pubsub-light-plugin/)
 
 # Release notes
 
-See [CHANELOG.md](./CHANGELOG.md)
+See [CHANGELOG.md](./CHANGELOG.md)
 
 # This is not a full-blown Event Bus
  
