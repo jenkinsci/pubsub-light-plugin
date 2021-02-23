@@ -1,0 +1,2 @@
+_extends: .github
+tag-template: pubsub-light-$NEXT_MINOR_VERSION
