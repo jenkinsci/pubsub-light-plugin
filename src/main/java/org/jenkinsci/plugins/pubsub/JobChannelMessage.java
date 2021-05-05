@@ -87,7 +87,7 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
         try {
             String jobName = get(EventProps.Job.job_name);
             if (jobName != null) {
-                Jenkins jenkins = Jenkins.getInstance();
+                Jenkins jenkins = Jenkins.get();
                 jobChannelItem = jenkins.getItemByFullName(jobName);
             }
         } finally {

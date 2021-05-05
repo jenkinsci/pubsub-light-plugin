@@ -34,7 +34,7 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
 import java.util.Properties;
@@ -84,7 +84,7 @@ public abstract class Message<T extends Message> extends Properties {
             // Would have been nice if there was a utility/toString() for this.
             InstanceIdentity identity = InstanceIdentity.get();
             RSAPublicKey key = identity.getPublic();
-            instanceIdentity = new String(Base64.encodeBase64(key.getEncoded()), Charset.forName("UTF-8"));
+            instanceIdentity = new String(Base64.encodeBase64(key.getEncoded()), StandardCharsets.UTF_8);
             instanceRootUrl = jenkins.getRootUrl();
         } else {
             instanceIdentity = null;

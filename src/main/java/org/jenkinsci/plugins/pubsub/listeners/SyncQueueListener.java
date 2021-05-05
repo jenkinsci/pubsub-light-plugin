@@ -75,8 +75,8 @@ public class SyncQueueListener extends QueueListener {
     //
     // Added as a result of https://issues.jenkins-ci.org/browse/JENKINS-39794
     //
-    private static BlockingQueue<Queue.LeftItem> queueTaskLeftPublishQueue = new LinkedBlockingQueue<>();
-    private static BlockingQueue<Queue.LeftItem> tryLaterQueueTaskLeftQueue = new LinkedBlockingQueue<>(); // see comment above
+    private static final BlockingQueue<Queue.LeftItem> queueTaskLeftPublishQueue = new LinkedBlockingQueue<>();
+    private static final BlockingQueue<Queue.LeftItem> tryLaterQueueTaskLeftQueue = new LinkedBlockingQueue<>(); // see comment above
     private static volatile boolean stopTaskLeftPublishing = false;
     private static final long POLL_TIMEOUT_MILLIS = 1000;
 

@@ -83,7 +83,7 @@ public class SyncJobCRUDListener extends ItemListener {
     private void publish(Item item, Events.JobChannel event, Properties properties) {
         if (item instanceof Job) {
             try {
-                Message message = new JobMessage(item).setEventName(event);
+                Message<JobMessage> message = new JobMessage(item).setEventName(event);
                 
                 if (properties != null) {
                     message.putAll(properties);

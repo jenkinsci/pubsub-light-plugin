@@ -64,7 +64,7 @@ public final class GuavaPubsubBus extends PubsubBus {
     @Override
     protected ChannelPublisher publisher(@Nonnull String channelName) {
         final EventBus channelBus = getChannelBus(channelName);
-        return message -> channelBus.post(message);
+        return channelBus::post;
     }
 
     @Override
