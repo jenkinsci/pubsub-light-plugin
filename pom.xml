@@ -44,12 +44,6 @@
   <dependencies>
 
     <dependency>
-      <groupId>org.jenkins-ci.main</groupId>
-      <artifactId>jenkins-core</artifactId>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
       <version>2.2</version>
@@ -82,7 +76,6 @@
           <artifactId>maven-hpi-plugin</artifactId>
           <extensions>true</extensions>
           <configuration>
-            <showDeprecation>true</showDeprecation>
             <contextPath>/jenkins</contextPath>
             <!-- TODO specify ${java.level} when JENKINS-20679 implemented -->
             <disabledTestInjection>true</disabledTestInjection>

@@ -1,14 +1,15 @@
 <html>
 <body>
-A light-weight <a href="http://www.enterpriseintegrationpatterns.com/patterns/messaging/PublishSubscribeChannel.html">Publish-Subscribe</a> (async) event notification module for Jenkins.
 <p>
+A light-weight <a href="http://www.enterpriseintegrationpatterns.com/patterns/messaging/PublishSubscribeChannel.html">Publish-Subscribe</a> (async) event notification module for Jenkins.
+</p>
 
 <h1>Light-weight messages</h1>
-We purposely chose a very simple {@link Properties} based (name-value pairs) extension for the message
+We purposely chose a very simple {@link java.util.Properties} based (name-value pairs) extension for the message
 type, so as to avoid marshal/unmarshal issues with more complex message type
-(the {@link PubsubBus} implementation could be distributed). It is also hoped that
+(the {@link org.jenkinsci.plugins.pubsub.PubsubBus} implementation could be distributed). It is also hoped that
 this approach will promote the use of very light-weight event messages that contain
-"just enough" information as to allow {@link ChannelSubscriber}s to decide if they
+"just enough" information as to allow {@link org.jenkinsci.plugins.pubsub.ChannelSubscriber}s to decide if they
 are interested in the event (or not). If they are interested in the event, they can
 use standard Jenkins mechanisms to gain access to the full domain model object(s)
 relating to the event.
@@ -20,7 +21,7 @@ light-weight events i.e. sending complex/bloated events is already considered as
 being an anti-pattern here.
 
 <h1>Pre-defined Events and EventProps</h1>
-As stated above, this library assumes light-weight {@link Properties} based (name-value pairs)
+As stated above, this library assumes light-weight {@link java.util.Properties} based (name-value pairs)
 messages, where the names and values are opague/untyped Strings.
 <p>
 For this reason, we have defined a few types that we hope will help us to standardize
