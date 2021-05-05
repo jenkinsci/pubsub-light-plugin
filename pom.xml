@@ -18,7 +18,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.level>8</java.level>
-    <jenkins.version>2.121.1</jenkins.version>
+    <jenkins.version>2.270</jenkins.version>
   </properties>
 
   <scm>
@@ -52,7 +52,7 @@
     <dependency>
       <groupId>org.jenkins-ci.modules</groupId>
       <artifactId>instance-identity</artifactId>
-      <version>2.1</version>
+      <version>2.2</version>
       <scope>provided</scope>
     </dependency>
     
