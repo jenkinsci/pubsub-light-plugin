@@ -245,7 +245,7 @@ public abstract class Message<T extends Message> extends Properties {
     }
 
     /**
-     * Get the Jenkins instance URL of the master from which the event was published.
+     * Get the Jenkins instance URL of the controller from which the event was published.
      *
      * @return The Jenkins instance identity.
      * @see #getJenkinsInstanceId()
@@ -255,7 +255,7 @@ public abstract class Message<T extends Message> extends Properties {
     }
 
     /**
-     * Get the Jenkins instance identity of the master from which the event was published.
+     * Get the Jenkins instance identity of the controller from which the event was published.
      * <p>
      * <strong>Note</strong> that this is not automatically added to every event since the
      * identity key is quite large, adding a lot of weight to each event. To add the identity
@@ -273,7 +273,7 @@ public abstract class Message<T extends Message> extends Properties {
     }
 
     /**
-     * Set the Jenkins instance identity of the master from which the event was published.
+     * Set the Jenkins instance identity of the controller from which the event was published.
      */
     public T setJenkinsInstanceId() {
         if (instanceIdentity != null) {

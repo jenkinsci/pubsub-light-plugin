@@ -39,23 +39,23 @@ public class GuavaPubsubBusItemTest {
         User alice = User.get("alice");
 
         ChannelPublisher jobPublisher = bus.publisher("jenkins.job");
-        ChannelPublisher slavePublisher = bus.publisher("jenkins.slave");
+        ChannelPublisher slavePublisher = bus.publisher("jenkins.agent");
         MockSubscriber subs1 = new MockSubscriber();
         MockSubscriber subs2 = new MockSubscriber();
 
         // Subscribers ...
         bus.subscribe("jenkins.job", subs1, alice.impersonate(), null);
-        bus.subscribe("jenkins.slave", subs2, alice.impersonate(), null);
+        bus.subscribe("jenkins.agent", subs2, alice.impersonate(), null);
         
         // Publish ...
         jobPublisher.publish(new SimpleMessage().set("joba", "joba"));
-        slavePublisher.publish(new SimpleMessage().set("slavea", "slavea"));
+        slavePublisher.publish(new SimpleMessage().set("agenta", "agenta"));
         
         // Check receipt ...
         subs1.waitForMessageCount(1);
         assertEquals("joba", subs1.messages.get(0).getProperty("joba"));
         subs2.waitForMessageCount(1);
-        assertEquals("slavea", subs2.messages.get(0).getProperty("slavea"));
+        assertEquals("agenta", subs2.messages.get(0).getProperty("agenta"));
     }
 
     @Test
