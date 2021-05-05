@@ -8,7 +8,7 @@
   </parent>
   
   <artifactId>pubsub-light</artifactId>
-  <version>1.15-SNAPSHOT</version>
+  <version>1.14-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
   <name>Jenkins Pub-Sub "light" Bus</name>
