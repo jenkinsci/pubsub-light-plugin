@@ -8,7 +8,7 @@
   </parent>
   
   <artifactId>pubsub-light</artifactId>
-  <version>1.14-SNAPSHOT</version>
+  <version>1.14</version>
   <packaging>hpi</packaging>
 
   <name>Jenkins Pub-Sub "light" Bus</name>
@@ -25,7 +25,7 @@
     <connection>scm:git:git://github.com/jenkinsci/pubsub-light-module.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/pubsub-light-module.git</developerConnection>
     <url>https://github.com/jenkinsci/pubsub-light-module</url>
-    <tag>HEAD</tag>
+    <tag>pubsub-light-1.14</tag>
   </scm>
 
   <repositories>
