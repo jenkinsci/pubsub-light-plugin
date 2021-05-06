@@ -1,5 +1,7 @@
 # Release Notes
 
+__New releases notes will be available in https://github.com/jenkinsci/pubsub-light-plugin/releases__
+
 ## 1.13
 
 Release date: (Aug 16, 2019)
