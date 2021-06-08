@@ -28,6 +28,7 @@ import hudson.model.Item;
 import hudson.model.Queue;
 import hudson.model.queue.QueueListener;
 import hudson.model.queue.QueueTaskFuture;
+import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.pubsub.EventProps;
 import org.jenkinsci.plugins.pubsub.Events;
 import org.jenkinsci.plugins.pubsub.MessageException;
@@ -91,7 +92,6 @@ public class SyncQueueListener extends QueueListener {
                             Queue.LeftItem leftItem = queueTaskLeftPublishQueue.poll(POLL_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
                             if (leftItem != null) {
                                 QueueTaskFuture<Queue.Executable> future = leftItem.getFuture();
-
                                 if (future.isDone()) {
                                     // Drain the "try later" queue now before we possibly add more to
                                     // it (see below). If the main queue (queueTaskLeftPublishQueue) was empty,
@@ -108,7 +108,11 @@ public class SyncQueueListener extends QueueListener {
                                     // the "try later" queue ensures that it will be left for a little while
                                     // if the main queue is empty i.e. we avoid a tight loop here.
                                     // See top level comments.
-                                    tryLaterQueueTaskLeftQueue.put(leftItem);
+                                    // if the item is not anymore in the Queue we do not need to keep storing it for
+                                    // later retry
+                                    if (Queue.getInstance().getItem(leftItem.getId())!=null){
+                                        tryLaterQueueTaskLeftQueue.put(leftItem);
+                                    }
                                 }
                             } else {
                                 // See top level comments.
