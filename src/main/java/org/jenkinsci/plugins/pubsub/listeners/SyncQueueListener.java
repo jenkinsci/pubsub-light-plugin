@@ -75,8 +75,8 @@ public class SyncQueueListener extends QueueListener {
     //
     // Added as a result of https://issues.jenkins-ci.org/browse/JENKINS-39794
     //
-    private static final BlockingQueue<Queue.LeftItem> queueTaskLeftPublishQueue = new LinkedBlockingQueue<>();
-    private static final BlockingQueue<Queue.LeftItem> tryLaterQueueTaskLeftQueue = new LinkedBlockingQueue<>(); // see comment above
+    private static BlockingQueue<Long> queueTaskLeftPublishQueue = new LinkedBlockingQueue<>();
+    private static BlockingQueue<Long> tryLaterQueueTaskLeftQueue = new LinkedBlockingQueue<>(); // see comment above
     private static volatile boolean stopTaskLeftPublishing = false;
     private static final long POLL_TIMEOUT_MILLIS = 1000;
 
@@ -88,7 +88,8 @@ public class SyncQueueListener extends QueueListener {
                         try {
                             // Pull items off the queue and check are they "done". Publish them
                             // if they are, put them into a "try later" queue if they're not.
-                            Queue.LeftItem leftItem = queueTaskLeftPublishQueue.poll(POLL_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+                            Long id = queueTaskLeftPublishQueue.poll(POLL_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+                            Queue.LeftItem leftItem = (Queue.LeftItem) Queue.getInstance().getItem(id);
                             if (leftItem != null) {
                                 QueueTaskFuture<Queue.Executable> future = leftItem.getFuture();
 
@@ -108,7 +109,7 @@ public class SyncQueueListener extends QueueListener {
                                     // the "try later" queue ensures that it will be left for a little while
                                     // if the main queue is empty i.e. we avoid a tight loop here.
                                     // See top level comments.
-                                    tryLaterQueueTaskLeftQueue.put(leftItem);
+                                    tryLaterQueueTaskLeftQueue.put(leftItem.getId());
                                 }
                             } else {
                                 // See top level comments.
@@ -150,7 +151,7 @@ public class SyncQueueListener extends QueueListener {
 
             if (!stopTaskLeftPublishing) {
                 try {
-                    queueTaskLeftPublishQueue.put(li);
+                    queueTaskLeftPublishQueue.put(li.getId());
                 } catch (InterruptedException e) {
                     // Queue access error. This event is going to fall on
                     // the floor ... sorry !!

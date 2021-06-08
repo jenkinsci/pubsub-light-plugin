@@ -43,7 +43,7 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
 
     private static final Logger LOGGER = Logger.getLogger(JobChannelMessage.class.getName());
 
-    transient Item jobChannelItem;
+    transient String jobChannelItemFullName;
 
     /**
      * Create a Hob message instance.
@@ -80,20 +80,19 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
      * Jenkins {@link Item}.
      */
     public synchronized @CheckForNull Item getJobChannelItem() {
-        if (jobLookupComplete || jobChannelItem != null) {
-            return jobChannelItem;
+        if (jobLookupComplete || jobChannelItemFullName != null) {
+            return Jenkins.get().getItemByFullName(jobChannelItemFullName);
         }
         
         try {
             String jobName = get(EventProps.Job.job_name);
             if (jobName != null) {
-                Jenkins jenkins = Jenkins.get();
-                jobChannelItem = jenkins.getItemByFullName(jobName);
+                jobChannelItemFullName = jobName;
             }
         } finally {
             jobLookupComplete = true;
         }
-        return jobChannelItem;
+        return Jenkins.get().getItemByFullName(jobChannelItemFullName);
     }
 
     /**
@@ -105,9 +104,10 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
      */
     public synchronized @CheckForNull ParameterizedJobMixIn.ParameterizedJob getJob() {
         LOGGER.warning(String.format("Unexpected call to deprecated method: %s.getJob(). Switch to using getJobChannelItem().", JobChannelMessage.class.getName()));
-        if (jobChannelItem == null) {
+        if (jobChannelItemFullName == null) {
             return null;
         }
+        Item jobChannelItem = Jenkins.get().getItemByFullName(jobChannelItemFullName);
         if (jobChannelItem instanceof ParameterizedJobMixIn.ParameterizedJob) {
             return (ParameterizedJobMixIn.ParameterizedJob) jobChannelItem;
         }
@@ -115,7 +115,7 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
     }
 
     private synchronized void setJobChannelItem(@Nonnull Item jobChannelItem) {
-        this.jobChannelItem = jobChannelItem;
+        this.jobChannelItemFullName = jobChannelItem.getFullName();
         super.setChannelName(Events.JobChannel.NAME);
         set(EventProps.Job.job_name, jobChannelItem.getFullName());
         setItemProps(jobChannelItem);

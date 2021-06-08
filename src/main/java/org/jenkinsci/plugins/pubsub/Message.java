@@ -74,18 +74,17 @@ import java.util.UUID;
  */
 public abstract class Message<T extends Message> extends Properties {
 
-    private static final Jenkins jenkins = Jenkins.getInstanceOrNull();
     private static final String instanceIdentity;
     private static final String instanceRootUrl;
 
     static {
-        if (jenkins != null) {
+        if (Jenkins.getInstanceOrNull() != null) {
             // As implemented in PageDecoratorImpl.java in the instance-identity-module.
             // Would have been nice if there was a utility/toString() for this.
             InstanceIdentity identity = InstanceIdentity.get();
             RSAPublicKey key = identity.getPublic();
             instanceIdentity = new String(Base64.encodeBase64(key.getEncoded()), StandardCharsets.UTF_8);
-            instanceRootUrl = jenkins.getRootUrl();
+            instanceRootUrl = Jenkins.get().getRootUrl();
         } else {
             instanceIdentity = null;
             instanceRootUrl = null;

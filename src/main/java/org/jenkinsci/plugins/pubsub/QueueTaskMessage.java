@@ -25,6 +25,7 @@ package org.jenkinsci.plugins.pubsub;
 
 import hudson.model.Item;
 import hudson.model.Queue;
+import jenkins.model.Jenkins;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -38,19 +39,24 @@ public final class QueueTaskMessage extends JobChannelMessage<QueueTaskMessage> 
 
     private static final long serialVersionUID = -1L;
 
-    transient Queue.Item queueItem;
+    transient Long queueItemId = null;
 
     public QueueTaskMessage() {
     }
 
     public QueueTaskMessage(@Nonnull Queue.Item item, @Nonnull Item jobChannelItem) {
         super(jobChannelItem);
-        this.queueItem = item;
+        this.queueItemId = item.getId();
     }
 
+    public QueueTaskMessage(@Nonnull Long itemId, @Nonnull Item jobChannelItem) {
+        super(jobChannelItem);
+        this.queueItemId = itemId;
+    }
+    
     @CheckForNull
     public Queue.Item getQueueItem() {
-        return queueItem;
+        return Queue.getInstance().getItem(queueItemId);
     }
 
     /**
