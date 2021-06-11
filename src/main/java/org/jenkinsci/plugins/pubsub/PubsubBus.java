@@ -26,18 +26,16 @@ package org.jenkinsci.plugins.pubsub;
 import hudson.ExtensionList;
 import hudson.ExtensionListListener;
 import hudson.ExtensionPoint;
-import hudson.init.Terminator;
 import hudson.security.AccessControlled;
+import org.acegisecurity.Authentication;
+import org.jenkinsci.plugins.pubsub.listeners.SyncQueueListener;
+
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import org.acegisecurity.Authentication;
-import org.jenkinsci.plugins.pubsub.listeners.SyncQueueListener;
-import org.kohsuke.accmod.Restricted;
-import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /**
  * Abstract Pub-sub bus.
@@ -50,44 +48,20 @@ public abstract class PubsubBus implements ExtensionPoint {
 
     private static List<AbstractChannelSubscriber> autoSubscribers = new CopyOnWriteArrayList<>();
 
-    private static final Object shutdownHookLock = new Object();
-    private static Thread shutdownHook;
-
     static {
-        shutdownHook = new Thread(() -> {
-            synchronized (shutdownHookLock) {
-                shutdownHook = null;
-            }
-            try {
-                SyncQueueListener.shutdown();
-            } finally {
-                if (Holder.pubsubBus != null) {
-                    try {
-                        unregisterAutoChannelSubscribers(Holder.pubsubBus);
-                    } finally {
-                        Holder.pubsubBus.shutdown();
+        Runtime.getRuntime().addShutdownHook( new Thread(() -> {
+                try {
+                    SyncQueueListener.shutdown();
+                } finally {
+                    if (Holder.pubsubBus != null) {
+                        try {
+                            unregisterAutoChannelSubscribers(Holder.pubsubBus);
+                        } finally {
+                            Holder.pubsubBus.shutdown();
+                        }
                     }
                 }
-            }
-        });
-        Runtime.getRuntime().addShutdownHook(shutdownHook);
-    }
-
-    @Terminator()
-    @Restricted(NoExternalUse.class)
-    public static void shutdownEarly() throws InterruptedException {
-        Thread shutdownHook;
-        synchronized (shutdownHookLock) {
-            shutdownHook = PubsubBus.shutdownHook;
-            PubsubBus.shutdownHook = null;
-            if (shutdownHook != null) {
-                Runtime.getRuntime().removeShutdownHook(shutdownHook);
-            }
-        }
-        if (shutdownHook != null) {
-            shutdownHook.start();
-            shutdownHook.join();
-        }
+        }));
     }
 
     private static final class Holder {
