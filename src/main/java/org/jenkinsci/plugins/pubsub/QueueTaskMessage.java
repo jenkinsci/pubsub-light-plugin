@@ -56,7 +56,7 @@ public final class QueueTaskMessage extends JobChannelMessage<QueueTaskMessage> 
     
     @CheckForNull
     public Queue.Item getQueueItem() {
-        return Queue.getInstance().getItem(queueItemId);
+        return queueItemId != null ? Queue.getInstance().getItem(queueItemId) : null;
     }
 
     /**
