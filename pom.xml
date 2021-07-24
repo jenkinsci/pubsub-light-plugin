@@ -22,9 +22,9 @@
   </properties>
 
   <scm>
-    <connection>scm:git:git://github.com/jenkinsci/pubsub-light-module.git</connection>
-    <developerConnection>scm:git:git@github.com:jenkinsci/pubsub-light-module.git</developerConnection>
-    <url>https://github.com/jenkinsci/pubsub-light-module</url>
+    <connection>scm:git:git://github.com/jenkinsci/pubsub-light-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/pubsub-light-plugin.git</developerConnection>
+    <url>https://github.com/jenkinsci/pubsub-light-plugin</url>
     <tag>HEAD</tag>
   </scm>
 
