@@ -6,18 +6,11 @@ import hudson.model.Job;
 import hudson.model.User;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.security.ACL;
-import hudson.security.AuthorizationMatrixProperty;
-import hudson.security.Permission;
-import hudson.security.ProjectMatrixAuthorizationStrategy;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -33,14 +26,11 @@ public class GuavaPubsubBusRunTest {
     
     @Rule
     public JenkinsRule jenkins = new JenkinsRule();
-    
+
     @Before
     public void setupRealm() {
         jenkins.jenkins.setSecurityRealm(jenkins.createDummySecurityRealm());
-        ProjectMatrixAuthorizationStrategy auth = new ProjectMatrixAuthorizationStrategy();
-        auth.add(Job.READ, "alice");
-        auth.add(Job.CREATE, "alice");
-        jenkins.jenkins.setAuthorizationStrategy(auth);
+        jenkins.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Job.READ, Job.CREATE).everywhere().to("alice"));
     }
     
     @Test
@@ -64,11 +54,6 @@ public class GuavaPubsubBusRunTest {
                 public void run() {
                     try {
                         FreeStyleProject job = jenkins.createFreeStyleProject("a-job");
-
-                        Map<Permission,Set<String>> perms = new HashMap<>();
-                        perms.put(Job.CREATE, Collections.singleton("alice"));
-                        job.addProperty(new AuthorizationMatrixProperty(perms));
-
                         QueueTaskFuture<FreeStyleBuild> future = job.scheduleBuild2(0);
                         jenkins.assertBuildStatusSuccess(future);
                     } catch (Exception e) {
