@@ -9,7 +9,7 @@
   </parent>
   
   <artifactId>pubsub-light</artifactId>
-  <version>${revision}${changelist}</version>
+  <version>1.17</version>
   <packaging>hpi</packaging>
 
   <name>Jenkins Pub-Sub "light" Bus</name>
@@ -28,7 +28,7 @@
     <connection>scm:git:git://github.com/${gitHubRepo}.git</connection>
     <developerConnection>scm:git:git@github.com:${gitHubRepo}.git</developerConnection>
     <url>https://github.com/${gitHubRepo}</url>
-    <tag>${scmTag}</tag>
+    <tag>pubsub-light-1.17</tag>
   </scm>
 
   <repositories>
