@@ -23,15 +23,19 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
+import hudson.model.Cause;
 import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.Result;
 import hudson.model.Run;
 import hudson.security.AccessControlled;
+import org.apache.commons.lang.StringUtils;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Jenkins {@link Run} domain model {@link PubsubBus} message instance.
@@ -117,5 +121,15 @@ public final class RunMessage extends JobChannelMessage<RunMessage> {
             runLookupComplete = true;
         }
         return run;
+    }
+
+    public RunMessage withCauses(@Nonnull Run run) {
+        // csv list of the accumulated causes of this run
+        final List<String> causes = new ArrayList<>();
+        for (Cause cause : (List<Cause>) run.getCauses()) {
+            causes.add(cause.getClass().getSimpleName());
+        }
+        set(EventProps.Job.job_run_causes, StringUtils.join(causes, ","));
+        return this;
     }
 }
