@@ -9,8 +9,8 @@ public class EventFilterTest {
     @Test
     public void test_no_default_props() {
         // A Message should have default props set on it.
-        assertTrue(new SimpleMessage().size() > 0);
+        assertFalse(new SimpleMessage().isEmpty());
         // But an EventFilter should not.
-        assertTrue(new EventFilter().size() == 0);
+        assertTrue(new EventFilter().isEmpty());
     }
 }

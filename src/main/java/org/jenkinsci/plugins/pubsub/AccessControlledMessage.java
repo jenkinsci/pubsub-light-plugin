@@ -23,15 +23,15 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.security.ACL;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.Authentication;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 
 /**
  * {@link AccessControlled} {@link PubsubBus} message instance.
@@ -49,7 +49,7 @@ import javax.annotation.Nonnull;
  * <h1>PubsubBus implementations</h1>
  * {@link PubsubBus} implementations should watch for this message subtype,
  * calling the relevant Jenkins security APIs as appropriate
- * ({@link ACL#impersonate(Authentication)}, {@link AccessControlled} etc).
+ * ({@link ACL#as2(Authentication)}, {@link AccessControlled} etc).
  * See {@link GuavaPubsubBus} implementation as an example.
  * 
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -66,7 +66,7 @@ abstract class AccessControlledMessage<T extends AccessControlledMessage> extend
      * Get the permission required to see the message.
      * @return The permission required to see the message.
      */
-    protected abstract @Nonnull Permission getRequiredPermission();
+    protected abstract @NonNull Permission getRequiredPermission();
     
     /**
      * Get the Jenkins {@link AccessControlled} object associated with this message.
@@ -79,7 +79,7 @@ abstract class AccessControlledMessage<T extends AccessControlledMessage> extend
     /**
      * {@inheritDoc}
      */
-    public @Nonnull
+    public @NonNull
     ACL getACL() {
         AccessControlled eventItem = getAccessControlled();
         if (eventItem != null) {
@@ -93,7 +93,7 @@ abstract class AccessControlledMessage<T extends AccessControlledMessage> extend
     /**
      * {@inheritDoc}
      */
-    public void checkPermission(@Nonnull Permission permission) throws AccessDeniedException {
+    public void checkPermission(@NonNull Permission permission) throws AccessDeniedException {
         if (isUnknownToJenkins()) {
             throw new AccessDeniedException(String.format("Jenkins Object '%s' Unknown.", getObjectName()));
         }
@@ -103,7 +103,7 @@ abstract class AccessControlledMessage<T extends AccessControlledMessage> extend
     /**
      * {@inheritDoc}
      */
-    public boolean hasPermission(@Nonnull Permission permission) {
+    public boolean hasPermission(@NonNull Permission permission) {
         if (isUnknownToJenkins()) {
             return false;
         }

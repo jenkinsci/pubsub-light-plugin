@@ -23,7 +23,7 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -34,5 +34,5 @@ public interface ChannelPublisher {
      * Publish a message on the channel.
      * @param message The message properties.
      */
-    void publish(@Nonnull Message message);
+    void publish(@NonNull Message message);
 }

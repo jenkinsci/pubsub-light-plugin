@@ -23,6 +23,7 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.Result;
@@ -30,7 +31,6 @@ import hudson.model.Run;
 import hudson.security.AccessControlled;
 
 import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 import java.util.Collection;
 
 /**
@@ -55,7 +55,7 @@ public final class RunMessage extends JobChannelMessage<RunMessage> {
      * Create a message instance associated with a Jenkins {@link Run}.
      * @param run The Jenkins {@link Run} with this message instance is to be associated.
      */
-    public RunMessage(@Nonnull Run run) {
+    public RunMessage(@NonNull Run run) {
         super(run.getParent());
         this.run = run;
         set(EventProps.Jenkins.jenkins_object_name, run.getDisplayName());

@@ -23,15 +23,16 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionListListener;
 import hudson.ExtensionPoint;
+import hudson.Util;
 import hudson.security.AccessControlled;
-import org.acegisecurity.Authentication;
+import org.springframework.security.core.Authentication;
 import org.jenkinsci.plugins.pubsub.listeners.SyncQueueListener;
 
 import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
@@ -93,7 +94,7 @@ public abstract class PubsubBus implements ExtensionPoint {
      * @return The installed {@link PubsubBus} implementation, or default
      * implementation if none are found.
      */
-    public static @Nonnull PubsubBus getBus() {
+    public static @NonNull PubsubBus getBus() {
         return Holder.pubsubBus;
     }
 
@@ -105,14 +106,14 @@ public abstract class PubsubBus implements ExtensionPoint {
      *
      * @param message The message properties.
      */
-    public void publish(@Nonnull Message message) throws MessageException {
+    public void publish(@NonNull Message message) throws MessageException {
         String channelName = message.getChannelName();
         String eventName = message.getEventName();
 
-        if (channelName == null || channelName.length() == 0) {
+        if (channelName == null || channelName.isEmpty()) {
             throw new MessageException(String.format("Channel name property '%s' not set on the Message instance.", EventProps.Jenkins.jenkins_channel));
         }
-        if (eventName == null || eventName.length() == 0) {
+        if (eventName == null || eventName.isEmpty()) {
             throw new MessageException(String.format("Event name property '%s' not set on the Message instance.", EventProps.Jenkins.jenkins_event));
         }
 
@@ -149,7 +150,7 @@ public abstract class PubsubBus implements ExtensionPoint {
      * @param channelName       The channel name.
      * @return The {@link ChannelPublisher} instance.
      */
-    protected abstract @Nonnull ChannelPublisher publisher(@Nonnull String channelName);
+    protected abstract @NonNull ChannelPublisher publisher(@NonNull String channelName);
 
     /**
      * Subscribe to events on the specified event channel.
@@ -160,18 +161,52 @@ public abstract class PubsubBus implements ExtensionPoint {
      *                    This tells the bus to only forward messages that match the properties
      *                    (names and values) specified in the filter.
      */
-    public abstract void subscribe(@Nonnull String channelName,
-                                       @Nonnull ChannelSubscriber subscriber,
-                                       @Nonnull Authentication authentication,
-                                       @CheckForNull EventFilter eventFilter);
+    @Deprecated
+    public void subscribe(@NonNull String channelName,
+                                       @NonNull ChannelSubscriber subscriber,
+                                       @NonNull org.acegisecurity.Authentication authentication,
+                                       @CheckForNull EventFilter eventFilter) {
+
+        if (Util.isOverridden(
+                PubsubBus.class,
+                getClass(),
+                "subscribe2",
+                String.class,
+                ChannelSubscriber.class,
+                Authentication.class,
+                EventFilter.class
+        )) {
+            subscribe2(channelName, subscriber, authentication.toSpring(), eventFilter);
+        } else {
+            // happens only if the subtype fails to override either subscribe2 method
+            throw new AbstractMethodError("Plugin class '" + this.getClass().getName() + "' does not override " +
+                    "either subscribe or subscribe2 methods.");
+        }
+    }
+
+    /**
+     * Subscribe to events on the specified event channel.
+     * @param channelName The channel name.
+     * @param subscriber  The subscriber instance that will receive the events.
+     * @param authentication The authentication to which the subscription is associated.
+     * @param eventFilter A message filter, or {@code null} if no filtering is to be applied.
+     *                    This tells the bus to only forward messages that match the properties
+     *                    (names and values) specified in the filter.
+     */
+    public void subscribe2(@NonNull String channelName,
+                          @NonNull ChannelSubscriber subscriber,
+                          @NonNull Authentication authentication,
+                          @CheckForNull EventFilter eventFilter) {
+        subscribe(channelName, subscriber, org.acegisecurity.Authentication.fromSpring(authentication), eventFilter);
+    }
 
     /**
      * Unsubscribe from events on the specified event channel.
      * @param channelName The channel name.
      * @param subscriber  The subscriber instance that was used to receive events.
      */
-    public abstract void unsubscribe(@Nonnull String channelName,
-                                       @Nonnull ChannelSubscriber subscriber);
+    public abstract void unsubscribe(@NonNull String channelName,
+                                       @NonNull ChannelSubscriber subscriber);
 
     /**
      * Shutdown the bus.
@@ -197,10 +232,10 @@ public abstract class PubsubBus implements ExtensionPoint {
         for (AbstractChannelSubscriber subscriber : subscribers) {
             // If it's not already subscribed, subscribe it.
             if (!autoSubscribers.contains(subscriber)) {
-                pubsubBus.subscribe(
+                pubsubBus.subscribe2(
                         subscriber.getChannelName(),
                         subscriber,
-                        subscriber.getAuthentication(),
+                        subscriber.getAuthentication2(),
                         subscriber.getEventFilter());
             }
             newAutoSubscribersList.add(subscriber);

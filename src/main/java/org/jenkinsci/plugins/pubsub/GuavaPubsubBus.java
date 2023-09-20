@@ -26,18 +26,18 @@ package org.jenkinsci.plugins.pubsub;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.security.ACL;
 import hudson.util.CopyOnWriteMap;
 import jenkins.model.Jenkins;
-import org.acegisecurity.Authentication;
 
 import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import org.springframework.security.core.Authentication;
 
 /**
  * Default {@link PubsubBus} implementation.
@@ -60,15 +60,15 @@ public final class GuavaPubsubBus extends PubsubBus {
         start();
     }
 
-    @Nonnull
+    @NonNull
     @Override
-    protected ChannelPublisher publisher(@Nonnull String channelName) {
+    protected ChannelPublisher publisher(@NonNull String channelName) {
         final EventBus channelBus = getChannelBus(channelName);
         return channelBus::post;
     }
 
     @Override
-    public void subscribe(@Nonnull String channelName, @Nonnull ChannelSubscriber subscriber, @Nonnull Authentication authentication, @CheckForNull EventFilter eventFilter) {
+    public void subscribe2(@NonNull String channelName, @NonNull ChannelSubscriber subscriber, @NonNull Authentication authentication, @CheckForNull EventFilter eventFilter) {
         GuavaSubscriber guavaSubscriber = new GuavaSubscriber(subscriber, authentication, eventFilter);
         EventBus channelBus = getChannelBus(channelName);
         channelBus.register(guavaSubscriber);
@@ -76,7 +76,7 @@ public final class GuavaPubsubBus extends PubsubBus {
     }
 
     @Override
-    public void unsubscribe(@Nonnull String channelName, @Nonnull ChannelSubscriber subscriber) {
+    public void unsubscribe(@NonNull String channelName, @NonNull ChannelSubscriber subscriber) {
         GuavaSubscriber guavaSubscriber = subscribers.remove(subscriber);
         if (guavaSubscriber != null) {
             EventBus channelBus = getChannelBus(channelName);
@@ -117,18 +117,18 @@ public final class GuavaPubsubBus extends PubsubBus {
         private Authentication authentication;
         private final EventFilter eventFilter;
 
-        public GuavaSubscriber(@Nonnull ChannelSubscriber subscriber, Authentication authentication, EventFilter eventFilter) {
+        public GuavaSubscriber(@NonNull ChannelSubscriber subscriber, Authentication authentication, EventFilter eventFilter) {
             this.subscriber = subscriber;
             if (authentication != null) {
                 this.authentication = authentication;
             } else {
-                this.authentication = Jenkins.ANONYMOUS;
+                this.authentication = Jenkins.ANONYMOUS2;
             }
             this.eventFilter = eventFilter;
         }
 
         @Subscribe
-        public void onMessage(@Nonnull final Message message) {
+        public void onMessage(@NonNull final Message message) {
             if (eventFilter != null && !message.containsAll(eventFilter)) {
                 // Don't deliver the message.
                 return;
@@ -136,12 +136,11 @@ public final class GuavaPubsubBus extends PubsubBus {
             if (message instanceof AccessControlledMessage) {
                 if (authentication != null) {
                     final AccessControlledMessage accMessage = (AccessControlledMessage) message;
-                    ACL.impersonate(authentication,
-                        () -> {
-                            if (accMessage.hasPermission(accMessage.getRequiredPermission())) {
-                                subscriber.onMessage(message.clone());
-                            }
-                        });
+                    try (var ignored = ACL.as2(authentication)) {
+                        if (accMessage.hasPermission(accMessage.getRequiredPermission())) {
+                            subscriber.onMessage(message.clone());
+                        }
+                    }
                 }
             } else {
                 subscriber.onMessage(message.clone());

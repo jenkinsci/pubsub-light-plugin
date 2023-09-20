@@ -44,23 +44,20 @@ public class GuavaPubsubBusRunTest {
             MockSubscriber bobSubs = new MockSubscriber();
 
             // alice and bob both subscribe to job event messages ...
-            bus.subscribe(Events.JobChannel.NAME, aliceSubs, alice.impersonate(), null);
-            bus.subscribe(Events.JobChannel.NAME, bobSubs, bob.impersonate(), null);
+            bus.subscribe2(Events.JobChannel.NAME, aliceSubs, alice.impersonate2(), null);
+            bus.subscribe2(Events.JobChannel.NAME, bobSubs, bob.impersonate2(), null);
 
             // Create a job as Alice and restrict it to her
             // bob etc should not be able to see it.
-            ACL.impersonate(alice.impersonate(), new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        FreeStyleProject job = jenkins.createFreeStyleProject("a-job");
-                        QueueTaskFuture<FreeStyleBuild> future = job.scheduleBuild2(0);
-                        jenkins.assertBuildStatusSuccess(future);
-                    } catch (Exception e) {
-                        fail(e.getMessage());
-                    }
+            try (var ignored = ACL.as(alice)) {
+                try {
+                    FreeStyleProject job = jenkins.createFreeStyleProject("a-job");
+                    QueueTaskFuture<FreeStyleBuild> future = job.scheduleBuild2(0);
+                    jenkins.assertBuildStatusSuccess(future);
+                } catch (Exception e) {
+                    fail(e.getMessage());
                 }
-            });
+            }
 
             aliceSubs.waitForMessageCount(4);
             

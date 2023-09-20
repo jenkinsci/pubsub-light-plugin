@@ -23,13 +23,13 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Item;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
 
 import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 
 /**
  * Jenkins {@link Item} domain model {@link PubsubBus} message instance.
@@ -55,7 +55,7 @@ public final class ItemMessage extends AccessControlledMessage<ItemMessage> {
      * @param messageItem The Jenkins {@link Item} with this message instance
      *                    is to be associated.
      */
-    public ItemMessage(@Nonnull Item messageItem) {
+    public ItemMessage(@NonNull Item messageItem) {
         this.messageItem = messageItem;
         set(EventProps.Jenkins.jenkins_object_name, messageItem.getFullName());
         set(EventProps.Jenkins.jenkins_object_url, messageItem.getUrl());
@@ -71,7 +71,7 @@ public final class ItemMessage extends AccessControlledMessage<ItemMessage> {
         return clone;
     }
 
-    @Nonnull
+    @NonNull
     @Override
     protected Permission getRequiredPermission() {
         return Item.READ;
@@ -89,11 +89,9 @@ public final class ItemMessage extends AccessControlledMessage<ItemMessage> {
         }
         
         try {
-            Jenkins jenkins = Jenkins.getInstance();
-
             String itemName = getObjectName();
             if (itemName != null) {
-                messageItem = jenkins.getItemByFullName(itemName);
+                messageItem = Jenkins.get().getItemByFullName(itemName);
             }
         } finally {
             messageItemLookupComplete = true;

@@ -70,7 +70,7 @@ public class MessageOriginIdentityTest {
         MockSubscriber subscriber = new MockSubscriber();
 
         // Subscribers ...
-        bus.subscribe("jenkins.job", subscriber, alice.impersonate(), null);
+        bus.subscribe2("jenkins.job", subscriber, alice.impersonate2(), null);
         
         // Publish ...
         publisher.publish(new SimpleMessage().set("joba", "joba"));
@@ -83,7 +83,7 @@ public class MessageOriginIdentityTest {
         Assert.assertEquals(jenkins.getURL().toString(), message.getJenkinsInstanceUrl());
         
         // Identity should not be on it by default.
-        Assert.assertEquals(null, message.getJenkinsInstanceId());
+        Assert.assertNull(message.getJenkinsInstanceId());
 
         // Set the identity and make sure it's the same as what's coming out of
         // PageDecoratorImpl.java in the instance-identity-module.

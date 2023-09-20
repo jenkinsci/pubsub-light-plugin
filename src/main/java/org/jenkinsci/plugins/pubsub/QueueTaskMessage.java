@@ -23,11 +23,11 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Item;
 import hudson.model.Queue;
 
 import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 
 /**
  * Queue task job channel event message.
@@ -43,7 +43,7 @@ public final class QueueTaskMessage extends JobChannelMessage<QueueTaskMessage> 
     public QueueTaskMessage() {
     }
 
-    public QueueTaskMessage(@Nonnull Queue.Item item, @Nonnull Item jobChannelItem) {
+    public QueueTaskMessage(@NonNull Queue.Item item, @NonNull Item jobChannelItem) {
         super(jobChannelItem);
         this.queueItem = item;
     }
