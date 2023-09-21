@@ -23,9 +23,9 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Item;
 
-import javax.annotation.Nonnull;
 
 /**
  * Basic Job channel event message.
@@ -37,7 +37,7 @@ public final class JobMessage extends JobChannelMessage<JobMessage> {
     public JobMessage() {
     }
 
-    public JobMessage(@Nonnull Item jobChannelItem) {
+    public JobMessage(@NonNull Item jobChannelItem) {
         super(jobChannelItem);
     }
 

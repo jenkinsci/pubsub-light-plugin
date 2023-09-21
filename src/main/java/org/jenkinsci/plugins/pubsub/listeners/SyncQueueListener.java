@@ -28,7 +28,6 @@ import hudson.model.Item;
 import hudson.model.Queue;
 import hudson.model.queue.QueueListener;
 import hudson.model.queue.QueueTaskFuture;
-import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.pubsub.EventProps;
 import org.jenkinsci.plugins.pubsub.Events;
 import org.jenkinsci.plugins.pubsub.MessageException;

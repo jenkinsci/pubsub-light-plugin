@@ -23,6 +23,7 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Item;
 import hudson.model.ItemGroup;
 import hudson.model.Job;
@@ -30,13 +31,12 @@ import hudson.search.Search;
 import hudson.search.SearchIndex;
 import hudson.security.ACL;
 import hudson.security.Permission;
-import org.acegisecurity.AccessDeniedException;
-import org.acegisecurity.Authentication;
 
-import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -61,13 +61,13 @@ public class MockItem implements Item {
 
     public static final ACL YES_ACL = new ACL() {
         @Override
-        public boolean hasPermission(@Nonnull Authentication a, @Nonnull Permission permission) {
+        public boolean hasPermission2(@NonNull Authentication a, @NonNull Permission permission) {
             return true;
         }
     };
     public static final ACL NO_ACL = new ACL() {
         @Override
-        public boolean hasPermission(@Nonnull Authentication a, @Nonnull Permission permission) {
+        public boolean hasPermission2(@NonNull Authentication a, @NonNull Permission permission) {
             return false;
         }
     };
@@ -100,8 +100,8 @@ public class MockItem implements Item {
         return null;
     }
 
-    public String getRelativeNameFrom(Item item) {
-        return null;
+    public String getRelativeNameFrom(@NonNull Item item) {
+        return "";
     }
 
     public String getUrl() {
@@ -160,16 +160,16 @@ public class MockItem implements Item {
 
     }
 
-    @Nonnull
+    @NonNull
     public ACL getACL() {
         return acl;
     }
 
-    public void checkPermission(@Nonnull Permission permission) throws AccessDeniedException {
+    public void checkPermission(@NonNull Permission permission) throws AccessDeniedException {
 
     }
 
-    public boolean hasPermission(@Nonnull Permission permission) {
+    public boolean hasPermission(@NonNull Permission permission) {
         return false;
     }
 

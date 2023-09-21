@@ -23,6 +23,8 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Item;
 import hudson.model.Job;
 import hudson.security.AccessControlled;
@@ -30,8 +32,6 @@ import hudson.security.Permission;
 import jenkins.model.Jenkins;
 import jenkins.model.ParameterizedJobMixIn;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 import java.util.logging.Logger;
 
 /**
@@ -53,7 +53,7 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
         setChannelName(Events.JobChannel.NAME);
     }
 
-    public JobChannelMessage(@Nonnull Item jobChannelItem) {
+    public JobChannelMessage(@NonNull Item jobChannelItem) {
         setJobChannelItem(jobChannelItem);
     }
 
@@ -103,6 +103,7 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
      * Jenkins {@link Job}.
      * @deprecated Use #getJobChannelItem.
      */
+    @Deprecated
     public synchronized @CheckForNull ParameterizedJobMixIn.ParameterizedJob getJob() {
         LOGGER.warning(String.format("Unexpected call to deprecated method: %s.getJob(). Switch to using getJobChannelItem().", JobChannelMessage.class.getName()));
         if (jobChannelItem == null) {
@@ -114,7 +115,7 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
         return null;
     }
 
-    private synchronized void setJobChannelItem(@Nonnull Item jobChannelItem) {
+    private synchronized void setJobChannelItem(@NonNull Item jobChannelItem) {
         this.jobChannelItem = jobChannelItem;
         super.setChannelName(Events.JobChannel.NAME);
         set(EventProps.Job.job_name, jobChannelItem.getFullName());
@@ -129,7 +130,7 @@ public abstract class JobChannelMessage<T extends JobChannelMessage> extends Acc
         return getJobChannelItem();
     }
 
-    @Nonnull
+    @NonNull
     @Override
     protected Permission getRequiredPermission() {
         return Item.READ;

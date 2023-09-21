@@ -23,11 +23,9 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
-import org.jenkinsci.plugins.pubsub.ChannelSubscriber;
-import org.jenkinsci.plugins.pubsub.Message;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.junit.Assert;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +35,7 @@ import java.util.List;
 public class MockSubscriber implements ChannelSubscriber {
     public List<Message> messages = new ArrayList<>();
 
-    public void onMessage(@Nonnull Message message) {
+    public void onMessage(@NonNull Message message) {
         messages.add(message);
     }
     

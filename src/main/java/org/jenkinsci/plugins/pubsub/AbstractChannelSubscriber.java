@@ -24,8 +24,9 @@
 package org.jenkinsci.plugins.pubsub;
 
 import hudson.ExtensionPoint;
+import hudson.Util;
 import hudson.security.ACL;
-import org.acegisecurity.Authentication;
+import org.springframework.security.core.Authentication;
 
 /**
  * Simple asynchronous {@link ChannelSubscriber} {@link ExtensionPoint} for Jenkins.
@@ -47,9 +48,26 @@ public abstract class AbstractChannelSubscriber implements ChannelSubscriber, Ex
      * Override to restrict. Default is {@link ACL#SYSTEM}.
      *
      * @return The {@link Authentication} used for listening for events on the channel.
+     * @deprecated Use {@link #getAuthentication2()} instead.
      */
-    public Authentication getAuthentication() {
-        return ACL.SYSTEM;
+    @Deprecated
+    public org.acegisecurity.Authentication getAuthentication() {
+        return org.acegisecurity.Authentication.fromSpring(getAuthentication2());
+    }
+
+    /**
+     * Get the {@link Authentication} used for listening for events on the channel.
+     * <p>
+     * Override to restrict. Default is {@link ACL#SYSTEM2}.
+     *
+     * @return The {@link Authentication} used for listening for events on the channel.
+     */
+    public Authentication getAuthentication2() {
+        if (Util.isOverridden(AbstractChannelSubscriber.class, getClass(), "getAuthentication")) {
+            return getAuthentication().toSpring();
+        } else {
+            return ACL.SYSTEM2;
+        }
     }
 
     /**

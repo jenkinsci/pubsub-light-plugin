@@ -23,9 +23,8 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionPoint;
-
-import javax.annotation.Nonnull;
 
 /**
  * Message enricher extension point.
@@ -43,5 +42,5 @@ public abstract class MessageEnricher implements ExtensionPoint {
      * Enrich the message with some additional data.
      * @param message The message instance.
      */
-    public abstract void enrich(@Nonnull Message message);
+    public abstract void enrich(@NonNull Message message);
 }

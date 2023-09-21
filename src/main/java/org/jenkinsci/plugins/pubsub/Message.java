@@ -23,14 +23,14 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Item;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.commons.codec.binary.Base64;
 import org.jenkinsci.main.modules.instance_identity.InstanceIdentity;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -314,7 +314,7 @@ public abstract class Message<T extends Message> extends Properties {
      * Set {@link Item} propertis on the message instance.
      * @param item The Jenkins {@link Item}.
      */
-    protected T setItemProps(@Nonnull Item item) {
+    protected T setItemProps(@NonNull Item item) {
         set(EventProps.Jenkins.jenkins_object_name, item.getFullName());
         set(EventProps.Jenkins.jenkins_object_url, item.getUrl());
         return (T) this;
@@ -342,7 +342,7 @@ public abstract class Message<T extends Message> extends Properties {
      * @return {@code true} if this message contain all of the properties supplied in the properties
      * argument, otherwise {@code false}.
      */
-    public boolean containsAll(@Nonnull Properties properties) {
+    public boolean containsAll(@NonNull Properties properties) {
         if (!properties.isEmpty()) {
             Set<Map.Entry<Object, Object>> entries = properties.entrySet();
             for (Map.Entry<Object, Object> entry : entries) {
@@ -363,7 +363,7 @@ public abstract class Message<T extends Message> extends Properties {
      * Write the message properties to JSON.
      * @return The message properties as a String.
      */
-    public final @Nonnull String toJSON() {
+    public final @NonNull String toJSON() {
         StringWriter writer = new StringWriter();
         try {
             toJSON(writer);
@@ -378,7 +378,7 @@ public abstract class Message<T extends Message> extends Properties {
      * @param writer The {@link Writer} instance.
      * @throws IOException Error writing to the {@link Writer}.
      */
-    public final void toJSON(@Nonnull Writer writer) throws IOException {
+    public final void toJSON(@NonNull Writer writer) throws IOException {
         JSONObject json = JSONObject.fromObject(this);
         json.write(writer);
         writer.flush();

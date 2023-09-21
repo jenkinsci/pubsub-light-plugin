@@ -23,11 +23,8 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
-import org.jenkinsci.plugins.pubsub.Message;
-import org.jenkinsci.plugins.pubsub.MessageEnricher;
-
-import javax.annotation.Nonnull;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -38,7 +35,7 @@ public class NoddyMessageEnricher extends MessageEnricher {
     public static final String NODDY_MESSAGE_ENRICHER_PROP = "NoddyMessageEnricher_prop";
 
     @Override
-    public void enrich(@Nonnull Message message) {
+    public void enrich(@NonNull Message message) {
         message.set(NODDY_MESSAGE_ENRICHER_PROP, "nice one");
     }
 }

@@ -23,7 +23,8 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import hudson.security.ACL;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -51,9 +52,8 @@ public class GuavaLoadTester {
 
     public static void main(String[] args) throws IOException {
         PubsubBus bus = new GuavaPubsubBus();
-        final Writer testWriter = new FileWriter("./target/guava-load-write.txt", false);
-        
-        try {
+
+        try (Writer testWriter = new FileWriter("./target/guava-load-write.txt", false)) {
             // publisher...
             ChannelPublisher publisher = bus.publisher("channel.a");
 
@@ -62,7 +62,7 @@ public class GuavaLoadTester {
             for (int i = 0; i < 20000; i++) {
                 MockSubscriber subscriber = new MockSubscriber() {
                     @Override
-                    public void onMessage(@Nonnull Message message) {
+                    public void onMessage(@NonNull Message message) {
                         // Add the overhead of writing to a stream. It's just a local file, but...
                         try {
                             message.toJSON(testWriter);
@@ -73,7 +73,7 @@ public class GuavaLoadTester {
                     }
                 };
                 subscribers.add(subscriber);
-                bus.subscribe("channel.a", subscriber, null, null);
+                bus.subscribe2("channel.a", subscriber, ACL.SYSTEM2, null);
             }
 
             System.out.println("starting...");
@@ -88,7 +88,6 @@ public class GuavaLoadTester {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            testWriter.close();
             bus.shutdown();
         }
     }

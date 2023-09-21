@@ -57,7 +57,7 @@ bus.publish(new <a href="org/jenkinsci/plugins/pubsub/Message.html">RunMessage</
 
 bus.subscribe(<a href="org/jenkinsci/plugins/pubsub/Events.JobChannel.html#NAME">Events.JobChannel.NAME</a>, new <a href="org/jenkinsci/plugins/pubsub/ChannelSubscriber.html">ChannelSubscriber</a>() {
         
-        public void onMessage(@Nonnull <a href="org/jenkinsci/plugins/pubsub/Message.html">Message</a> message) {
+        public void onMessage(@NonNull <a href="org/jenkinsci/plugins/pubsub/Message.html">Message</a> message) {
             if (message instanceof <a href="org/jenkinsci/plugins/pubsub/RunMessage.html">RunMessage</a>) {
                 RunMessage jobMessage = (RunMessage)message;
                 String jobName = jobMessage.getJobName();

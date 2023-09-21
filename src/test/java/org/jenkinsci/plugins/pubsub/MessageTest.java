@@ -45,7 +45,7 @@ public class MessageTest {
 
         // Check that the message has a UUID. Then remove it
         // so we can do a check on the rest of the content.
-        assertTrue(message.getEventUUID() != null);
+        assertNotNull(message.getEventUUID());
         message.remove(EventProps.Jenkins.jenkins_event_uuid.name());
         // Same for timestamp.
         assertTrue(message.getTimestampMillis() > 0);
