@@ -44,7 +44,7 @@ import java.util.UUID;
 /**
  * {@link PubsubBus} message instance.
  * 
- * <h1>Light-weight messages</h1>
+ * <h2>Light-weight messages</h2>
  * We purposely chose a very simple {@link Properties} based extension for the message
  * type, so as to avoid marshal/unmarshal issues with more complex message type
  * (the {@link PubsubBus} implementation could be distributed). It is also hoped that
@@ -63,7 +63,7 @@ import java.util.UUID;
  * <p>
  * <strong>Note</strong> the {@link AccessControlledMessage} subtype.
  *  
- * <h1>Event property namespaces</h1>
+ * <h2>Event property namespaces</h2>
  * Event property names are opaque {@link String}s. Any {@link String} is valid, but
  * we do recommend using valid underscores to namespace e.g. "a_b_c". 
  * This will help to avoid name collisions.

@@ -46,7 +46,7 @@ import org.springframework.security.core.Authentication;
  * to see those events. This {@link Message} is geared at helping in these
  * situations.
  * 
- * <h1>PubsubBus implementations</h1>
+ * <h2>PubsubBus implementations</h2>
  * {@link PubsubBus} implementations should watch for this message subtype,
  * calling the relevant Jenkins security APIs as appropriate
  * ({@link ACL#as2(Authentication)}, {@link AccessControlled} etc).
