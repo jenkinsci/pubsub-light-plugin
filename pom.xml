@@ -9,7 +9,7 @@
   </parent>
   
   <artifactId>pubsub-light</artifactId>
-  <version>${changelist}</version>
+  <version>${revision}${changelist}</version>
   <packaging>hpi</packaging>
 
   <name>Jenkins Pub-Sub "light" Bus</name>
@@ -17,7 +17,8 @@
   <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
 
   <properties>
-    <changelist>999999-SNAPSHOT</changelist>
+    <revision>1.19</revision>
+    <changelist>-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/${project.artifactId}-plugin</gitHubRepo>
     <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
     <jenkins.baseline>2.361</jenkins.baseline>
