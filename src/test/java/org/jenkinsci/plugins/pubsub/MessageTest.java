@@ -1,46 +1,49 @@
 package org.jenkinsci.plugins.pubsub;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class MessageTest {
-    
+class MessageTest {
+
     @Test
-    public void test_item_Message() {
+    void test_item_Message() {
         Message message = new ItemMessage(new MockItem("a"));
         assertEquals("a", message.getObjectName());
     }
-    
+
     @Test
-    public void test_containsAll() {
+    void test_containsAll() {
         Message message = new SimpleMessage();
-        
+
         message.setProperty("a", "a");
         message.setProperty("b", "b");
         message.setProperty("c", "c");
 
         EventFilter filter = new EventFilter();
-        
+
         assertTrue(message.containsAll(filter));
-        
+
         filter.setProperty("a", "a");
         assertTrue(message.containsAll(filter));
         filter.setProperty("b", "b");
         assertTrue(message.containsAll(filter));
         filter.setProperty("c", "c");
         assertTrue(message.containsAll(filter));
-        
+
         // Set a diff value for a ... should cause it to not match
         filter.setProperty("c", "--");
         assertFalse(message.containsAll(filter));
     }
-    
+
     @Test
-    public void test_toJSON() {
+    void test_toJSON() {
         Message message = new SimpleMessage().set("a", "aVal");
 
         // Check that the message has a UUID. Then remove it

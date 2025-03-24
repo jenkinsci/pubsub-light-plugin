@@ -31,12 +31,11 @@ import hudson.search.Search;
 import hudson.search.SearchIndex;
 import hudson.security.ACL;
 import hudson.security.Permission;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
+
+import java.io.File;
+import java.util.Collection;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
@@ -44,6 +43,7 @@ import org.springframework.security.core.Authentication;
 public class MockItem implements Item {
 
     private ACL acl;
+
     protected MockItem() {
         this(MockItem.class.getSimpleName());
     }
@@ -57,7 +57,7 @@ public class MockItem implements Item {
         return this;
     }
 
-    private String name;
+    private final String name;
 
     public static final ACL YES_ACL = new ACL() {
         @Override
@@ -116,7 +116,7 @@ public class MockItem implements Item {
         return "http://example.com/jenkins/x";
     }
 
-    public void onLoad(ItemGroup<? extends Item> parent, String name) throws IOException {
+    public void onLoad(ItemGroup<? extends Item> parent, String name) {
 
     }
 
@@ -128,11 +128,11 @@ public class MockItem implements Item {
 
     }
 
-    public void save() throws IOException {
+    public void save() {
 
     }
 
-    public void delete() throws IOException, InterruptedException {
+    public void delete() {
 
     }
 
@@ -152,11 +152,11 @@ public class MockItem implements Item {
         return null;
     }
 
-    public void onRenamed(Item item, String oldName, String newName) throws IOException {
+    public void onRenamed(Item item, String oldName, String newName) {
 
     }
 
-    public void onDeleted(Item item) throws IOException {
+    public void onDeleted(Item item) {
 
     }
 

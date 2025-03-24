@@ -24,31 +24,32 @@
 package org.jenkinsci.plugins.pubsub;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import org.junit.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public class MockSubscriber implements ChannelSubscriber {
-    public List<Message> messages = new ArrayList<>();
+    public final List<Message> messages = new ArrayList<>();
 
     public void onMessage(@NonNull Message message) {
         messages.add(message);
     }
-    
+
     public void waitForMessageCount(int count) {
         long start = System.currentTimeMillis();
-        while(messages.size() < count) {
+        while (messages.size() < count) {
             try {
                 Thread.sleep(5);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             if (System.currentTimeMillis() > start + 10000) {
-                Assert.fail("Timed out waiting on message count to reach " + count);
+                fail("Timed out waiting on message count to reach " + count);
             }
         }
     }

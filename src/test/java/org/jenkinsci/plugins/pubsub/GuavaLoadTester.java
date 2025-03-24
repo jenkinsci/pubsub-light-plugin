@@ -25,6 +25,7 @@ package org.jenkinsci.plugins.pubsub;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.security.ACL;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -35,7 +36,7 @@ import java.util.List;
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public class GuavaLoadTester {
-    
+
     //
     // Setup
     //  - 1 channel publisher

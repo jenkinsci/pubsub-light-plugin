@@ -27,43 +27,41 @@ package org.jenkinsci.plugins.pubsub;
 import hudson.ExtensionList;
 import hudson.model.User;
 import org.jenkinsci.main.modules.instance_identity.PageDecoratorImpl;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 import java.io.IOException;
 
-import org.junit.Assert;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class MessageOriginIdentityTest {
-    
-    @Rule
-    public JenkinsRule jenkins = new JenkinsRule();
-    
-    private GuavaPubsubBus bus;
-    
-    @Before
-    public void setupRealm() {
-        jenkins.jenkins.setSecurityRealm(jenkins.createDummySecurityRealm());
-    }
+@WithJenkins
+class MessageOriginIdentityTest {
 
-    @Before
-    public void startBus() {
+    private JenkinsRule jenkins;
+
+    private GuavaPubsubBus bus;
+
+    @BeforeEach
+    void setUp(JenkinsRule j) {
+        jenkins = j;
+        jenkins.jenkins.setSecurityRealm(jenkins.createDummySecurityRealm());
         bus = new GuavaPubsubBus();
     }
 
-    @After
-    public void stop() {
+    @AfterEach
+    void stop() {
         bus.shutdown();
     }
-    
+
     @Test
-    public void test() throws IOException {
+    void test() throws IOException {
         User alice = User.get("alice");
 
         ChannelPublisher publisher = bus.publisher("jenkins.job");
@@ -71,24 +69,24 @@ public class MessageOriginIdentityTest {
 
         // Subscribers ...
         bus.subscribe2("jenkins.job", subscriber, alice.impersonate2(), null);
-        
+
         // Publish ...
         publisher.publish(new SimpleMessage().set("joba", "joba"));
         subscriber.waitForMessageCount(1);
-        
+
         // Checks ...
-        
+
         Message message = subscriber.messages.get(0);
 
-        Assert.assertEquals(jenkins.getURL().toString(), message.getJenkinsInstanceUrl());
-        
+        assertEquals(jenkins.getURL().toString(), message.getJenkinsInstanceUrl());
+
         // Identity should not be on it by default.
-        Assert.assertNull(message.getJenkinsInstanceId());
+        assertNull(message.getJenkinsInstanceId());
 
         // Set the identity and make sure it's the same as what's coming out of
         // PageDecoratorImpl.java in the instance-identity-module.
         message.setJenkinsInstanceId();
-        Assert.assertEquals(getInstanceIdFromPageDecoratorImpl(), message.getJenkinsInstanceId());
+        assertEquals(getInstanceIdFromPageDecoratorImpl(), message.getJenkinsInstanceId());
     }
 
     private String getInstanceIdFromPageDecoratorImpl() {

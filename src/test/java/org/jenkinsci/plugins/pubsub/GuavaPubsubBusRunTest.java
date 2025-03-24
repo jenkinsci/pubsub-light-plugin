@@ -6,35 +6,36 @@ import hudson.model.Job;
 import hudson.model.User;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.security.ACL;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class GuavaPubsubBusRunTest {
-    
-    @Rule
-    public JenkinsRule jenkins = new JenkinsRule();
+@WithJenkins
+class GuavaPubsubBusRunTest {
 
-    @Before
-    public void setupRealm() {
+    private JenkinsRule jenkins;
+
+    @BeforeEach
+    void setUp(JenkinsRule j) {
+        jenkins = j;
         jenkins.jenkins.setSecurityRealm(jenkins.createDummySecurityRealm());
         jenkins.jenkins.setAuthorizationStrategy(new MockAuthorizationStrategy().grant(Job.READ, Job.CREATE).everywhere().to("alice"));
     }
-    
+
     @Test
-    public void test_Run() throws Exception {
+    void test_Run() {
         final PubsubBus bus = PubsubBus.getBus();
         try {
             User alice = User.get("alice");
@@ -50,17 +51,15 @@ public class GuavaPubsubBusRunTest {
             // Create a job as Alice and restrict it to her
             // bob etc should not be able to see it.
             try (var ignored = ACL.as(alice)) {
-                try {
+                assertDoesNotThrow(() -> {
                     FreeStyleProject job = jenkins.createFreeStyleProject("a-job");
                     QueueTaskFuture<FreeStyleBuild> future = job.scheduleBuild2(0);
                     jenkins.assertBuildStatusSuccess(future);
-                } catch (Exception e) {
-                    fail(e.getMessage());
-                }
+                });
             }
 
             aliceSubs.waitForMessageCount(4);
-            
+
             // Security check ...
             // alice should have received the run messages, but not bob.
             assertFalse(aliceSubs.messages.isEmpty());
@@ -68,7 +67,7 @@ public class GuavaPubsubBusRunTest {
 
             assertEquals(Events.JobChannel.job_crud_created.name(), aliceSubs.messages.get(0).getEventName());
             assertEquals(Events.JobChannel.job_run_queue_enter.name(), aliceSubs.messages.get(1).getEventName());
-            
+
             // Check make sure message enrichment happened.
             // https://issues.jenkins-ci.org/browse/JENKINS-36218
             assertEquals("nice one", aliceSubs.messages.get(0).get(NoddyMessageEnricher.NODDY_MESSAGE_ENRICHER_PROP));
@@ -87,10 +86,9 @@ public class GuavaPubsubBusRunTest {
             assertNotNull(runMessage.jobChannelItem);
             assertNotNull(runMessage.run);
             assertEquals(queueMessage.jobChannelItem, runMessage.jobChannelItem);
-            
+
             // And check that the queue Ids match
             assertEquals(queueMessage.get(EventProps.Job.job_run_queueId), runMessage.get(EventProps.Job.job_run_queueId));
-                    
         } finally {
             bus.shutdown();
         }
