@@ -1,41 +1,39 @@
 package org.jenkinsci.plugins.pubsub;
 
 import hudson.model.User;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
-public class GuavaPubsubBusItemTest {
-    
-    @Rule
-    public JenkinsRule jenkins = new JenkinsRule();
-    
-    private GuavaPubsubBus bus;
-    
-    @Before
-    public void setupRealm() {
-        jenkins.jenkins.setSecurityRealm(jenkins.createDummySecurityRealm());
-    }
+@WithJenkins
+class GuavaPubsubBusItemTest {
 
-    @Before
-    public void startBus() {
+    private JenkinsRule jenkins;
+
+    private GuavaPubsubBus bus;
+
+    @BeforeEach
+    void setUp(JenkinsRule j) {
+        jenkins = j;
+        jenkins.jenkins.setSecurityRealm(jenkins.createDummySecurityRealm());
         bus = new GuavaPubsubBus();
     }
 
-    @After
-    public void stop() {
+    @AfterEach
+    void stop() {
         bus.shutdown();
     }
-    
+
     @Test
-    public void test_non_filtered() {
+    void test_non_filtered() {
         User alice = User.get("alice");
 
         ChannelPublisher jobPublisher = bus.publisher("jenkins.job");
@@ -46,11 +44,11 @@ public class GuavaPubsubBusItemTest {
         // Subscribers ...
         bus.subscribe2("jenkins.job", subs1, alice.impersonate2(), null);
         bus.subscribe2("jenkins.agent", subs2, alice.impersonate2(), null);
-        
+
         // Publish ...
         jobPublisher.publish(new SimpleMessage().set("joba", "joba"));
         slavePublisher.publish(new SimpleMessage().set("agenta", "agenta"));
-        
+
         // Check receipt ...
         subs1.waitForMessageCount(1);
         assertEquals("joba", subs1.messages.get(0).getProperty("joba"));
@@ -59,7 +57,7 @@ public class GuavaPubsubBusItemTest {
     }
 
     @Test
-    public void test_filtered() {
+    void test_filtered() {
         User alice = User.get("alice");
 
         ChannelPublisher jobPublisher = bus.publisher("jenkins.job");
@@ -67,25 +65,25 @@ public class GuavaPubsubBusItemTest {
 
         // Subscribers ...
         bus.subscribe2("jenkins.job", subs, alice.impersonate2(), new EventFilter().set("joba", "joba"));
-        
+
         // Publish ...
         jobPublisher.publish(new SimpleMessage().set("joba", "joba")); // Should get delivered
         jobPublisher.publish(new SimpleMessage().set("joba", "----")); // Should get filtered out
-        
+
         // Check receipt ...
         subs.waitForMessageCount(1);
         assertEquals("joba", subs.messages.get(0).getProperty("joba"));
     }
 
     @Test
-    public void test_has_permissions() throws InterruptedException {
+    void test_has_permissions() throws InterruptedException {
         User alice = User.get("alice");
 
         ChannelPublisher jobPublisher = bus.publisher("jenkins.job");
         MockSubscriber subs = new MockSubscriber();
 
         bus.subscribe2("jenkins.job", subs, alice.impersonate2(), null);
-        
+
         jobPublisher.publish(new ItemMessage(new MockItem().setACL(MockItem.YES_ACL)).set("joba", "1"));
         jobPublisher.publish(new ItemMessage(new MockItem().setACL(MockItem.YES_ACL)).set("joba", "2"));
         subs.waitForMessageCount(2);
@@ -96,11 +94,11 @@ public class GuavaPubsubBusItemTest {
         jobPublisher.publish(new ItemMessage(new MockItem().setACL(MockItem.YES_ACL)).set("joba", "4"));
         subs.waitForMessageCount(3);
         assertEquals(3, subs.messages.size());
-        
+
         // Check and make sure all the messages are clones i.e. do not have a copy of
         // the MockItem used to create the original
         for (Message message : subs.messages) {
-            assertNull(((ItemMessage)message).messageItem);
+            assertNull(((ItemMessage) message).messageItem);
         }
     }
 }

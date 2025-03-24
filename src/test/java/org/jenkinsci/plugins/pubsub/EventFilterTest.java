@@ -1,13 +1,14 @@
 package org.jenkinsci.plugins.pubsub;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class EventFilterTest {
+class EventFilterTest {
 
     @Test
-    public void test_no_default_props() {
+    void test_no_default_props() {
         // A Message should have default props set on it.
         assertFalse(new SimpleMessage().isEmpty());
         // But an EventFilter should not.

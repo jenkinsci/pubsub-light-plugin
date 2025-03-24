@@ -30,6 +30,7 @@ import hudson.security.Permission;
 import jenkins.model.Jenkins;
 
 import javax.annotation.CheckForNull;
+import java.io.Serial;
 
 /**
  * Jenkins {@link Item} domain model {@link PubsubBus} message instance.
@@ -37,7 +38,8 @@ import javax.annotation.CheckForNull;
  * @author <a href="mailto:tom.fennelly@gmail.com">tom.fennelly@gmail.com</a>
  */
 public final class ItemMessage extends AccessControlledMessage<ItemMessage> {
-    
+
+    @Serial
     private static final long serialVersionUID = -1L;
 
     transient Item messageItem;
@@ -52,6 +54,7 @@ public final class ItemMessage extends AccessControlledMessage<ItemMessage> {
 
     /**
      * Create a message instance associated with a Jenkins {@link Item}.
+     *
      * @param messageItem The Jenkins {@link Item} with this message instance
      *                    is to be associated.
      */
@@ -79,6 +82,7 @@ public final class ItemMessage extends AccessControlledMessage<ItemMessage> {
 
     /**
      * Get the Jenkins {@link Item} assocated with this message.
+     *
      * @return The Jenkins {@link Item} assocated with this message,
      * or {code null} if the message is not associated with a
      * Jenkins {@link Item}.
@@ -87,7 +91,7 @@ public final class ItemMessage extends AccessControlledMessage<ItemMessage> {
         if (messageItemLookupComplete || messageItem != null) {
             return messageItem;
         }
-        
+
         try {
             String itemName = getObjectName();
             if (itemName != null) {
