@@ -23,11 +23,10 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Item;
 import hudson.model.Queue;
-
-import javax.annotation.CheckForNull;
 
 /**
  * Queue task job channel event message.

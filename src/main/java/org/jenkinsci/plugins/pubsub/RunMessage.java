@@ -23,6 +23,7 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Item;
 import hudson.model.Job;
@@ -30,7 +31,6 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.security.AccessControlled;
 
-import javax.annotation.CheckForNull;
 import java.util.Collection;
 
 /**

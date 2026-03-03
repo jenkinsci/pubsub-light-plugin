@@ -26,12 +26,12 @@ package org.jenkinsci.plugins.pubsub;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.security.ACL;
 import hudson.util.CopyOnWriteMap;
 import jenkins.model.Jenkins;
 
-import javax.annotation.CheckForNull;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
