@@ -23,6 +23,7 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.ExtensionList;
 import hudson.ExtensionListListener;
@@ -32,7 +33,6 @@ import hudson.security.AccessControlled;
 import org.springframework.security.core.Authentication;
 import org.jenkinsci.plugins.pubsub.listeners.SyncQueueListener;
 
-import javax.annotation.CheckForNull;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;

@@ -23,13 +23,12 @@
  */
 package org.jenkinsci.plugins.pubsub;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Item;
 import hudson.security.AccessControlled;
 import hudson.security.Permission;
 import jenkins.model.Jenkins;
-
-import javax.annotation.CheckForNull;
 
 /**
  * Jenkins {@link Item} domain model {@link PubsubBus} message instance.
